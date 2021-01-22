@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vs-code
+settings.json
+
+# Logging
+log.out

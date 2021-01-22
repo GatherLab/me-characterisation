@@ -73,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # easier and prettier)
         self.actionDocumentation.triggered.connect(
             lambda: webbrowser.open(
-                "https://github.com/GatherLab/OLED-jvl-measurement/blob/main/README.md"
+                https://github.com/GatherLab/me-measurement/blob/main/README.md
             )
         )
 
