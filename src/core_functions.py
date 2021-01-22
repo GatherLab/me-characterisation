@@ -1,7 +1,7 @@
 import logging
 import json
 import os.path
-from pathlib import Pat
+from pathlib import Path
 
 
 def log_message(message):
