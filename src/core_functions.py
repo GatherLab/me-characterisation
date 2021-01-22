@@ -1,4 +1,7 @@
 import logging
+import json
+import os.path
+from pathlib import Pat
 
 
 def log_message(message):
@@ -10,3 +13,27 @@ def log_message(message):
     # self.statusbar.showMessage(message, 10000000)
     logging.info(message)
     print(message)
+
+
+def read_global_settings():
+    """
+    Read in global settings from file. The file can be changed using the
+    settings window.
+    """
+    # Load from file to fill the lines
+    with open(
+        os.path.join(Path(__file__).parent.parent, "usr", "global_settings.json")
+    ) as json_file:
+        data = json.load(json_file)
+    try:
+        settings = data["overwrite"]
+
+        # Update statusbar
+        log_message("Global Settings Read from File")
+    except:
+        settings = data["default"]
+
+        # Update statusbar
+        log_message("Default device parameters taken")
+
+    return settings[0]

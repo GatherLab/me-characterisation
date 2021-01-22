@@ -187,7 +187,7 @@ class Ui_MainWindow(object):
         self.sw_header2_label = QtWidgets.QLabel(self.setup_widget)
         self.sw_header2_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
         self.sw_header2_label.setObjectName("sw_header2_label")
-        self.gridLayout_7.addWidget(self.sw_header2_label, 4, 0, 1, 1)
+        self.gridLayout_7.addWidget(self.sw_header2_label, 5, 0, 1, 1)
 
         # Setup widget base folder path
         self.sw_folder_path_horizontalLayout = QtWidgets.QHBoxLayout()
@@ -215,14 +215,6 @@ class Ui_MainWindow(object):
         self.sw_folder_path_label = QtWidgets.QLabel(self.setup_widget)
         self.sw_folder_path_label.setObjectName("sw_folder_path_label")
         self.gridLayout_7.addWidget(self.sw_folder_path_label, 1, 0, 1, 1)
-
-        # Setup widget current tester voltage
-        self.sw_ct_voltage_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
-        self.sw_ct_voltage_spinBox.setObjectName("sw_ct_voltage_spinBox")
-        self.gridLayout_7.addWidget(self.sw_ct_voltage_spinBox, 8, 1, 1, 1)
-        self.sw_change_voltage_label = QtWidgets.QLabel(self.setup_widget)
-        self.sw_change_voltage_label.setObjectName("sw_change_voltage_label")
-        self.gridLayout_7.addWidget(self.sw_change_voltage_label, 8, 0, 1, 1)
 
         # Setup widget batch name
         self.sw_batch_name_label = QtWidgets.QLabel(self.setup_widget)
@@ -255,134 +247,9 @@ class Ui_MainWindow(object):
         self.sw_header1_label.setObjectName("sw_header1_label")
         self.gridLayout_7.addWidget(self.sw_header1_label, 0, 0, 1, 1)
 
-        # ------------- Setup widget, Select pixels to test ------------------ #
-        self.sw_select_pixel_widget = QtWidgets.QWidget(self.setup_widget)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.sw_select_pixel_widget.sizePolicy().hasHeightForWidth()
-        )
-        self.sw_select_pixel_widget.setSizePolicy(sizePolicy)
-        self.sw_select_pixel_widget.setMinimumSize(QtCore.QSize(100, 0))
-        self.sw_select_pixel_widget.setMaximumSize(QtCore.QSize(171, 200))
-        self.sw_select_pixel_widget.setObjectName("sw_select_pixel_widget")
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.sw_select_pixel_widget)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.sw_pixel_label = QtWidgets.QLabel(self.sw_select_pixel_widget)
-        self.sw_pixel_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.sw_pixel_label.setObjectName("sw_pixel_label")
-        self.gridLayout_6.addWidget(self.sw_pixel_label, 1, 0, 1, 1)
+        # Current LCD number widget
+        self.sw_source_vc_horizonalLayout = QtWidgets.QHBoxLayout()
 
-        # Activate local mode button
-        self.sw_activate_local_mode_pushButton = QtWidgets.QPushButton(
-            self.sw_select_pixel_widget
-        )
-        self.sw_activate_local_mode_pushButton.setObjectName(
-            "sw_activate_local_mode_pushButton"
-        )
-        # self.sw_activate_local_mode_horizontalLayout.addWidget(self.sw_browse_pushButton)
-        self.gridLayout_6.addWidget(self.sw_activate_local_mode_pushButton, 0, 0, 1, 2)
-
-        # Pixel 1
-        self.sw_pixel1_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.sw_pixel1_pushButton.sizePolicy().hasHeightForWidth()
-        )
-        self.sw_pixel1_pushButton.setSizePolicy(sizePolicy)
-        self.sw_pixel1_pushButton.setMinimumSize(QtCore.QSize(0, 0))
-        self.sw_pixel1_pushButton.setCheckable(True)
-        self.sw_pixel1_pushButton.setChecked(False)
-        self.sw_pixel1_pushButton.setAutoRepeat(False)
-        self.sw_pixel1_pushButton.setObjectName("sw_pixel1_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel1_pushButton, 2, 0, 1, 1)
-
-        # Pixel 2
-        self.sw_pixel2_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel2_pushButton.setCheckable(True)
-        self.sw_pixel2_pushButton.setChecked(False)
-        self.sw_pixel2_pushButton.setObjectName("sw_pixel2_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel2_pushButton, 4, 0, 1, 1)
-
-        # Pixel 3
-        self.sw_pixel3_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel3_pushButton.setCheckable(True)
-        self.sw_pixel3_pushButton.setChecked(False)
-        self.sw_pixel3_pushButton.setObjectName("sw_pixel3_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel3_pushButton, 5, 0, 1, 1)
-
-        # Pixel 4
-        self.sw_pixel4_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel4_pushButton.setCheckable(True)
-        self.sw_pixel4_pushButton.setChecked(False)
-        self.sw_pixel4_pushButton.setObjectName("sw_pixel4_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel4_pushButton, 6, 0, 1, 1)
-
-        # Pixel 5
-        self.sw_pixel5_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel5_pushButton.setCheckable(True)
-        self.sw_pixel5_pushButton.setChecked(False)
-        self.sw_pixel5_pushButton.setObjectName("sw_pixel5_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel5_pushButton, 2, 1, 1, 1)
-
-        # Pixel 6
-        self.sw_pixel6_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel6_pushButton.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.sw_pixel6_pushButton.setCheckable(True)
-        self.sw_pixel6_pushButton.setChecked(False)
-        self.sw_pixel6_pushButton.setObjectName("sw_pixel6_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel6_pushButton, 4, 1, 1, 1)
-
-        # Pixel 7
-        self.sw_pixel7_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel7_pushButton.setCheckable(True)
-        self.sw_pixel7_pushButton.setChecked(False)
-        self.sw_pixel7_pushButton.setObjectName("sw_pixel7_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel7_pushButton, 5, 1, 1, 1)
-
-        # Pixel 8
-        self.sw_pixel8_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_pixel8_pushButton.setCheckable(True)
-        self.sw_pixel8_pushButton.setChecked(False)
-        self.sw_pixel8_pushButton.setObjectName("sw_pixel8_pushButton")
-        self.gridLayout_6.addWidget(self.sw_pixel8_pushButton, 6, 1, 1, 1)
-
-        # Select all
-        self.sw_select_all_pushButton = QtWidgets.QPushButton(
-            self.sw_select_pixel_widget
-        )
-        self.sw_select_all_pushButton.setObjectName("sw_select_all_pushButton")
-        self.gridLayout_6.addWidget(self.sw_select_all_pushButton, 8, 0, 1, 1)
-
-        # Unselect all
-        self.sw_unselect_all_push_button = QtWidgets.QPushButton(
-            self.sw_select_pixel_widget
-        )
-        self.sw_unselect_all_push_button.setObjectName("sw_unselect_all_push_button")
-        self.gridLayout_6.addWidget(self.sw_unselect_all_push_button, 8, 1, 1, 1)
-
-        # Prebias all
-        self.sw_prebias_pushButton = QtWidgets.QPushButton(self.sw_select_pixel_widget)
-        self.sw_prebias_pushButton.setObjectName("sw_prebias_pushButton")
-        self.gridLayout_6.addWidget(self.sw_prebias_pushButton, 9, 0, 1, 1)
-
-        # Autotest all
-        self.sw_auto_test_pushButton = QtWidgets.QPushButton(
-            self.sw_select_pixel_widget
-        )
-        self.sw_auto_test_pushButton.setObjectName("sw_auto_test_pushButton")
-        self.gridLayout_6.addWidget(self.sw_auto_test_pushButton, 9, 1, 1, 1)
-
-        self.gridLayout_7.addWidget(self.sw_select_pixel_widget, 5, 0, 1, 1)
-
-        # LCD number widget
         self.sw_current_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
@@ -397,8 +264,45 @@ class Ui_MainWindow(object):
         self.sw_current_lcdNumber.setAutoFillBackground(False)
         self.sw_current_lcdNumber.setSmallDecimalPoint(False)
         self.sw_current_lcdNumber.setObjectName("sw_current_lcdNumber")
-        self.sw_current_lcdNumber.display("0.0001 A")
-        self.gridLayout_7.addWidget(self.sw_current_lcdNumber, 5, 1, 1, 1)
+        self.sw_current_lcdNumber.display("2 A")
+
+        # Voltage LCD number widget
+        self.sw_voltage_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.sw_voltage_lcdNumber.sizePolicy().hasHeightForWidth()
+        )
+        self.sw_voltage_lcdNumber.setSizePolicy(sizePolicy)
+        self.sw_voltage_lcdNumber.setDigitCount(10)
+        self.sw_voltage_lcdNumber.setAutoFillBackground(False)
+        self.sw_voltage_lcdNumber.setSmallDecimalPoint(False)
+        self.sw_voltage_lcdNumber.setObjectName("sw_voltage_lcdNumber")
+        self.sw_voltage_lcdNumber.display("10 U")
+
+        self.sw_source_vc_horizonalLayout.addWidget(self.sw_voltage_lcdNumber)
+        self.sw_source_vc_horizonalLayout.addWidget(self.sw_current_lcdNumber)
+
+        self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 5, 1, 1, 2)
+
+        # Setup widget current tester voltage
+        self.sw_change_voltage_label = QtWidgets.QLabel(self.setup_widget)
+        self.sw_change_voltage_label.setObjectName("sw_change_voltage_label")
+        self.gridLayout_7.addWidget(self.sw_change_voltage_label, 6, 0, 1, 1)
+
+        self.sw_set_vc_horizontalLayout = QtWidgets.QHBoxLayout()
+        self.sw_voltage_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        self.sw_voltage_spinBox.setObjectName("sw_voltage_spinBox")
+        self.sw_set_vc_horizontalLayout.addWidget(self.sw_voltage_spinBox)
+
+        self.sw_current_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        self.sw_current_spinBox.setObjectName("sw_current_spinBox")
+        self.sw_set_vc_horizontalLayout.addWidget(self.sw_current_spinBox)
+
+        self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 6, 1, 1, 1)
 
         self.tabWidget.addTab(self.setup_widget, "")
 
@@ -745,9 +649,12 @@ class Ui_MainWindow(object):
         # self.gatherlab_label.setText(
         # _translate("MainWindow", "Gatherlab JVL Measurement")
         # )
-        self.sw_header2_label.setText(_translate("MainWindow", "Current Tester"))
+        self.sw_header2_label.setText(
+            _translate("MainWindow", "Source Voltage & Current")
+        )
         self.sw_browse_pushButton.setText(_translate("MainWindow", "Browse"))
-        self.sw_ct_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.sw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.sw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.sw_batch_name_label.setText(_translate("MainWindow", "Batch Name"))
         self.sw_device_number_label.setText(_translate("MainWindow", "Device Number"))
         self.sw_header1_label.setToolTip(
@@ -761,24 +668,6 @@ class Ui_MainWindow(object):
         self.sw_header1_label.setText(
             _translate("MainWindow", "Batch Name and File Path")
         )
-        self.sw_activate_local_mode_pushButton.setText(
-            _translate("MainWindow", "Reset Hardware")
-        )
-        self.sw_pixel_label.setText(_translate("MainWindow", "Select Pixels"))
-        self.sw_pixel2_pushButton.setText(_translate("MainWindow", "2"))
-        self.sw_pixel1_pushButton.setText(_translate("MainWindow", "1"))
-        self.sw_pixel3_pushButton.setText(_translate("MainWindow", "3"))
-        self.sw_select_all_pushButton.setText(_translate("MainWindow", "Select All"))
-        self.sw_unselect_all_push_button.setText(
-            _translate("MainWindow", "Unselect All")
-        )
-        self.sw_pixel4_pushButton.setText(_translate("MainWindow", "4"))
-        self.sw_prebias_pushButton.setText(_translate("MainWindow", "Pre-Bias All"))
-        self.sw_auto_test_pushButton.setText(_translate("MainWindow", "Auto Test All"))
-        self.sw_pixel8_pushButton.setText(_translate("MainWindow", "8"))
-        self.sw_pixel7_pushButton.setText(_translate("MainWindow", "7"))
-        self.sw_pixel6_pushButton.setText(_translate("MainWindow", "6"))
-        self.sw_pixel5_pushButton.setText(_translate("MainWindow", "5"))
         self.sw_change_voltage_label.setText(
             _translate("MainWindow", "Change Voltage (V)")
         )

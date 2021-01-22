@@ -73,11 +73,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # easier and prettier)
         self.actionDocumentation.triggered.connect(
             lambda: webbrowser.open(
-                https://github.com/GatherLab/me-measurement/blob/main/README.md
+                "https://github.com/GatherLab/me-measurement/blob/main/README.md"
             )
         )
 
         self.actionOpen_Log.triggered.connect(lambda: self.open_file("log.out"))
+
+        # -------------------------------------------------------------------- #
+        # --------------------------- Setup Widget --------------------------- #
+        # -------------------------------------------------------------------- #
+        self.sw_browse_pushButton.clicked.connect(self.browse_folder)
 
         # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
