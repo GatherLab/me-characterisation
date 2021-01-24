@@ -406,121 +406,6 @@ class Ui_MainWindow(object):
             self.specw_voltage_spinBox, 2, 0, 1, 1
         )
 
-        # ---------------------- Select pixel widget ------------------------- #
-        self.specw_select_pixel_widget = QtWidgets.QWidget(
-            self.specw_scrollAreaWidgetContents
-        )
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.specw_select_pixel_widget.sizePolicy().hasHeightForWidth()
-        )
-        self.specw_select_pixel_widget.setSizePolicy(sizePolicy)
-        self.specw_select_pixel_widget.setMinimumSize(QtCore.QSize(100, 0))
-        self.specw_select_pixel_widget.setMaximumSize(QtCore.QSize(150, 124))
-        self.specw_select_pixel_widget.setObjectName("specw_select_pixel_widget")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.specw_select_pixel_widget)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.specw_select_pixel_label = QtWidgets.QLabel(
-            self.specw_scrollAreaWidgetContents
-        )
-        self.specw_select_pixel_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.specw_select_pixel_label.setObjectName("specw_select_pixel_label")
-        self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_select_pixel_label, 3, 0, 1, 1
-        )
-
-        # Pixel 1
-        self.specw_pixel1_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.specw_pixel1_pushButton.sizePolicy().hasHeightForWidth()
-        )
-        self.specw_pixel1_pushButton.setSizePolicy(sizePolicy)
-        self.specw_pixel1_pushButton.setMinimumSize(QtCore.QSize(0, 0))
-        self.specw_pixel1_pushButton.setCheckable(True)
-        self.specw_pixel1_pushButton.setChecked(False)
-        self.specw_pixel1_pushButton.setAutoRepeat(False)
-        self.specw_pixel1_pushButton.setObjectName("specw_pixel1_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel1_pushButton, 0, 0, 1, 1)
-
-        # Pixel 2
-        self.specw_pixel2_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel2_pushButton.setCheckable(True)
-        self.specw_pixel2_pushButton.setChecked(False)
-        self.specw_pixel2_pushButton.setObjectName("specw_pixel2_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel2_pushButton, 2, 0, 1, 1)
-
-        # Pixel 3
-        self.specw_pixel3_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel3_pushButton.setCheckable(True)
-        self.specw_pixel3_pushButton.setChecked(False)
-        self.specw_pixel3_pushButton.setObjectName("specw_pixel3_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel3_pushButton, 3, 0, 1, 1)
-
-        # Pixel 4
-        self.specw_pixel4_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel4_pushButton.setCheckable(True)
-        self.specw_pixel4_pushButton.setChecked(False)
-        self.specw_pixel4_pushButton.setObjectName("specw_pixel4_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel4_pushButton, 4, 0, 1, 1)
-
-        # Pixel 5
-        self.specw_pixel5_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel5_pushButton.setCheckable(True)
-        self.specw_pixel5_pushButton.setChecked(False)
-        self.specw_pixel5_pushButton.setObjectName("specw_pixel5_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel5_pushButton, 0, 1, 1, 1)
-
-        # Pixel 6
-        self.specw_pixel6_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel6_pushButton.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.specw_pixel6_pushButton.setCheckable(True)
-        self.specw_pixel6_pushButton.setChecked(False)
-        self.specw_pixel6_pushButton.setObjectName("specw_pixel6_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel6_pushButton, 2, 1, 1, 1)
-
-        # Pixel 7
-        self.specw_pixel7_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel7_pushButton.setCheckable(True)
-        self.specw_pixel7_pushButton.setChecked(False)
-        self.specw_pixel7_pushButton.setObjectName("specw_pixel7_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel7_pushButton, 3, 1, 1, 1)
-
-        # Pixel 8
-        self.specw_pixel8_pushButton = QtWidgets.QPushButton(
-            self.specw_select_pixel_widget
-        )
-        self.specw_pixel8_pushButton.setCheckable(True)
-        self.specw_pixel8_pushButton.setChecked(False)
-        self.specw_pixel8_pushButton.setObjectName("specw_pixel8_pushButton")
-        self.gridLayout_4.addWidget(self.specw_pixel8_pushButton, 4, 1, 1, 1)
-
-        self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_select_pixel_widget, 4, 0, 1, 1, QtCore.Qt.AlignHCenter
-        )
-
         # Save Spectrum button
         self.specw_save_spectrum_pushButton = QtWidgets.QPushButton(
             self.specw_scrollAreaWidgetContents
@@ -686,14 +571,6 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.setup_widget), _translate("MainWindow", "Setup")
         )
-        self.specw_pixel2_pushButton.setText(_translate("MainWindow", "2"))
-        self.specw_pixel1_pushButton.setText(_translate("MainWindow", "1"))
-        self.specw_pixel4_pushButton.setText(_translate("MainWindow", "4"))
-        self.specw_pixel3_pushButton.setText(_translate("MainWindow", "3"))
-        self.specw_pixel8_pushButton.setText(_translate("MainWindow", "8"))
-        self.specw_pixel7_pushButton.setText(_translate("MainWindow", "7"))
-        self.specw_pixel6_pushButton.setText(_translate("MainWindow", "6"))
-        self.specw_pixel5_pushButton.setText(_translate("MainWindow", "5"))
         # self.specw_max_voltage_label.setText(
         # _translate("MainWindow", "Max Voltage (V)")
         # )
@@ -711,12 +588,12 @@ class Ui_MainWindow(object):
         # self.specw_pd_saturation_checkBox.setText(
         # _translate("MainWindow", "Check for PD Saturation")
         # )
-        self.specw_select_pixel_label.setText(_translate("MainWindow", "Select Pixels"))
+        # self.specw_select_pixel_label.setText(_translate("MainWindow", "Select Pixels"))
         # self.specw_bad_contact_checkBox.setText(
         # _translate("MainWindow", "Check fo Bad Contacts")
         # )
         self.specw_save_spectrum_pushButton.setText(
-            _translate("MainWindow", "Save Spectrum")
+            _translate("MainWindow", "Start Measurement")
         )
         self.specw_header1_label.setText(
             _translate("MainWindow", "Measurement Parameters")
@@ -724,7 +601,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.spectrum_widget),
-            _translate("MainWindow", "Spectrum"),
+            _translate("MainWindow", "Frequency Scan),
         )
 
         self.menudfg.setTitle(_translate("MainWindow", "File"))
