@@ -5,6 +5,7 @@ import core_functions as cf
 
 import time
 import re
+import sys
 
 import numpy as np
 import pandas as pd
@@ -170,6 +171,9 @@ class VoltcraftSource:
         self.maximum_voltage = float(gmax[0:3]) / 10
         self.maximum_current = float(gmax[3:6]) / 10
 
+        self.output(False)
+        self.set_voltage(5)
+        self.set_current(1)
         cf.log_message("Source successfully initialised")
 
     def query(self, cmd):
@@ -271,3 +275,127 @@ class VoltcraftSource:
 
         # Set the state variable
         self.output_state = self.output_state
+
+
+class Arduino:
+    """
+    Class that manages all functionality of the arduino
+    """
+
+    def __init__(self, com_address):
+
+        # Check for devices on the pc
+        rm = pyvisa.ResourceManager()
+        # The actual addresses for the Keithleys can be accessed via rm.list_resources()
+        visa_resources = rm.list_resources()
+
+        # Open COM port to Arduino
+        if com_address not in visa_resources:
+            cf.log_message(
+                "The Arduino seems to be missing. Try to reconnect to computer."
+            )
+
+        # Instead of letting the user explicitly define the COM port after he
+        # already defined the com_address, search for the number in the
+        # com_address to construct the right string
+        arduino_port = "COM" + re.findall(r"\d+", com_address)[0]
+
+        # assign name to Arduino and assign short timeout to be able to do things fast
+        self.arduino = serial.Serial(arduino_port, timeout=0.01)
+
+        # Try to open the serial connection
+        try:
+            self.init_serial_connection()
+        except serial.SerialException:
+            # If the serial connection was already established, close it again and open it again
+            try:
+                self.arduino.close()
+                self.init_serial_connection()
+            except IOError:
+                cf.log_message(
+                    "COM port to Arduino already open. Reconnect arduino manually and try again."
+                )
+                sys.exit()
+
+        # cf.log_message("Arduino successfully initiated")
+
+    def init_serial_connection(self, wait=1):
+        """
+        Private function
+        Initialise serial connection to com.
+
+        com: func
+            specify COM port. Needs to be opened prior to calling this function.
+            e.g.:
+                > arduino = serial.Serial(2, timeout=0.2)
+                > arduino_init(com=arduino)
+        wait: flt
+            time in seconds to wait before collecting initialisation message.
+        """
+
+        # Open serial port
+        try:
+            self.arduino.open()
+        except serial.SerialException:
+            # If port was already open, we do not have to open it obviously.
+            cf.log_message("Arduino port was already open")
+
+        # Wait for a defined period of time
+        time.sleep(wait)
+
+        # Read serial port result
+        cf.log_message(
+            "Arduino serial port successfully initialised with "
+            + str(self.arduino.readall())
+        )
+        # self.queue.put(com.readall())
+        self.serial_connection_open = True
+
+    def close_serial_connection(self):
+        """
+        Close connection to arduino
+        """
+        self.arduino.close()
+        self.serial_connection_open = False
+
+    def set_frequency(self, frequency):
+        """
+        Function that allows to set the frequency on the Arduino (by using
+        the Serial Connection interface)
+        It is set in kHz
+        """
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the frequency to the serial interface
+        freq = str.encode(str(frequency * 1000) + "\n")
+        com.write(freq)
+
+        # Read answer from Arduino
+        cf.log_message(com.readall())
+
+    def read_frequency(self):
+        """
+        Function that asks the arduino to return the frequency
+        """
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the frequency to the serial interface
+        com.write(str.encode("freq\n"))
+
+        # Read answer from Arduino
+        frequency = com.readall()
+        try:
+            frequency = float(frequency)
+        except:
+            cf.log_message("Could not convert frequency to float")
+
+        cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
+        return frequency

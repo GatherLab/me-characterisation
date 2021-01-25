@@ -2,9 +2,10 @@ from UI_main_window import Ui_MainWindow
 from settings import Settings
 from loading_window import LoadingWindow
 
-from spectrum_measurement import SpectrumMeasurement
+from spectrum_measurement import FrequencyScan
+from setup import SetupThread
 
-from hardware import RigolOscilloscope, VoltcraftSource
+from hardware import RigolOscilloscope, VoltcraftSource, Arduino
 
 import core_functions as cf
 
@@ -43,11 +44,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
         # -------------------------- Hardware Setup -------------------------- #
         # -------------------------------------------------------------------- #
+        self.t = 0
 
         # Execute initialisation thread
         oscilloscope_address = "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR"
         source_address = "ASRL4::INSTR"
-        loading_window = LoadingWindow(oscilloscope_address, source_address, self)
+        arduino_address = "ASRL5::INSTR"
+        loading_window = LoadingWindow(
+            oscilloscope_address, source_address, arduino_address, self
+        )
 
         # Execute loading dialog
         loading_window.exec()
@@ -84,14 +89,53 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
         self.sw_browse_pushButton.clicked.connect(self.browse_folder)
 
+        # Setup and start setup thread that continuously reads out the voltage
+        # and current of the source as well as the frequency of the Arduino
+        self.setup_thread = SetupThread(self.source, self.arduino, self)
+        self.setup_thread.start()
+        self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
+        self.sw_current_spinBox.valueChanged.connect(self.current_changed)
+        self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
+
         # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
         # -------------------------------------------------------------------- #
 
-        # Set standard parameters for autotube measurement
-        # self.aw_min_voltage_spinBox.setValue(-2)
-        # self.aw_min_voltage_spinBox.setMinimum(-50)
-        # self.aw_max_voltage_spinBox.setValue(5)
+        # Set standard parameters for setup
+        self.sw_frequency_spinBox.setValue(10)
+        self.sw_frequency_spinBox.setMinimum(8)
+        self.sw_frequency_spinBox.setMaximum(150000)
+        self.sw_frequency_spinBox.setKeyboardTracking(False)
+        self.sw_frequency_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+
+        self.sw_voltage_spinBox.setValue(5)
+        self.sw_voltage_spinBox.setMinimum(0)
+        self.sw_voltage_spinBox.setMaximum(33)
+        self.sw_voltage_spinBox.setKeyboardTracking(False)
+        self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+
+        self.sw_current_spinBox.setValue(1)
+        self.sw_current_spinBox.setMinimum(0)
+        self.sw_current_spinBox.setMaximum(12)
+        self.sw_current_spinBox.setKeyboardTracking(False)
+        self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+
+        # Set standard parameters for spectral measurement
+        self.specw_voltage_spinBox.setValue(5)
+        self.specw_voltage_spinBox.setMinimum(0)
+        self.specw_voltage_spinBox.setMaximum(33)
+
+        self.specw_current_spinBox.setValue(1)
+        self.specw_current_spinBox.setMinimum(0)
+        self.specw_current_spinBox.setMaximum(12)
+
+        self.specw_minimum_frequency_spinBox.setValue(50)
+        self.specw_minimum_frequency_spinBox.setMinimum(8)
+        self.specw_minimum_frequency_spinBox.setMaximum(150000)
+
+        self.specw_maximum_frequency_spinBox.setValue(200)
+        self.specw_maximum_frequency_spinBox.setMinimum(8)
+        self.specw_maximum_frequency_spinBox.setMaximum(150000)
 
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
@@ -151,6 +195,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.source = source_object
 
+    @QtCore.Slot(Arduino)
+    def init_arduino(self, arduino_object):
+        """
+        Receives an arduino object from the init thread
+        """
+        self.arduino = arduino_object
+
     def open_file(self, path):
         """
         Opens a file on the machine with the standard program
@@ -188,30 +239,138 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return
 
     # -------------------------------------------------------------------- #
-    # ---------------------- Spectrum Measurement  ----------------------- #
+    # --------------------------- Setup Thread --------------------------- #
     # -------------------------------------------------------------------- #
-    def read_spectrum_parameters(self):
+    @QtCore.Slot(float, float, float)
+    def update_display(self, voltage, current, frequency):
         """
-        Function to read out the current fields entered in the spectrum tab
+        Function to update the readings of the LCD panels that serve as an
+        overview to yield the current value of voltage, current and frequency
         """
-        spectrum_parameters = {
-            "test_voltage": self.specw_voltage_spinBox.value(),
-            "selected_pixel": [
-                self.specw_pixel1_pushButton.isChecked(),
-                self.specw_pixel2_pushButton.isChecked(),
-                self.specw_pixel3_pushButton.isChecked(),
-                self.specw_pixel4_pushButton.isChecked(),
-                self.specw_pixel5_pushButton.isChecked(),
-                self.specw_pixel6_pushButton.isChecked(),
-                self.specw_pixel7_pushButton.isChecked(),
-                self.specw_pixel8_pushButton.isChecked(),
-            ],
+        self.sw_frequency_lcdNumber.display(frequency)
+        self.sw_voltage_lcdNumber.display(voltage)
+        self.sw_current_lcdNumber.display(current)
+
+    def voltage_changed(self):
+        """
+        Function that changes voltage on source when it is changed on spinbox
+        """
+        if self.t < 2:
+            self.t += 1
+            return
+        else:
+            voltage = self.sw_voltage_spinBox.value()
+            self.source.set_voltage(voltage)
+            self.source.output(True)
+            cf.log_message("Source voltage set to " + str(voltage) + " V")
+
+    def current_changed(self):
+        """
+        Function that changes current on source when it is changed on spinbox
+        """
+        if self.t < 2:
+            self.t += 1
+            return
+        else:
+            current = self.sw_current_spinBox.value()
+            self.source.set_current(current)
+            cf.log_message("Source current set to " + str(current) + " A")
+
+    def frequency_changed(self):
+        """
+        Function that changes frequency on arduino when it is changed on spinbox
+        """
+        frequency = self.sw_frequency_spinBox.value()
+        self.arduino.set_frequency(frequency)
+        cf.log_message("Arduino frequency set to " + str(frequency) + " kHz")
+
+    def safe_read_setup_parameters(self):
+        """
+        Read setup parameters and if any important field is missing, return a qmessagebox
+        """
+
+        # Read out measurement and setup parameters from GUI
+        setup_parameters = self.read_setup_parameters()
+
+        # Check if folder path exists
+        if (
+            setup_parameters["folder_path"] == ""
+            or setup_parameters["batch_name"] == ""
+        ):
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setText("Please set folder path and batch name first!")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.setStyleSheet(
+                "background-color: rgb(44, 49, 60);\n"
+                "color: rgb(255, 255, 255);\n"
+                'font: 63 bold 10pt "Segoe UI";\n'
+                ""
+            )
+            msgBox.exec()
+
+            self.specw_start_measurement_pushButton.setChecked(False)
+
+            cf.log_message("Folder path or batchname not defined")
+            raise UserWarning("Please set folder path and batchname first!")
+
+        # Now check if the folder path ends on a / otherwise try to add it
+        if not setup_parameters["folder_path"][-1] == "/":
+            setup_parameters["folder_path"] = setup_parameters["folder_path"] + "/"
+            self.sw_folder_path_lineEdit.setText(setup_parameters["folder_path"])
+
+        # Now check if the read out path is a valid path
+        if not os.path.isdir(setup_parameters["folder_path"]):
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setText("Please enter a valid folder path")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.setStyleSheet(
+                "background-color: rgb(44, 49, 60);\n"
+                "color: rgb(255, 255, 255);\n"
+                'font: 63 bold 10pt "Segoe UI";\n'
+                ""
+            )
+            msgBox.exec()
+
+            self.specw_start_measurement_pushButton.setChecked(False)
+
+            cf.log_message("Folder path not valid")
+            raise UserWarning("Please enter a valid folder path!")
+
+        return setup_parameters
+
+    def read_setup_parameters(self):
+        """
+        Function to read out the current fields entered in the setup tab
+        """
+        setup_parameters = {
+            "folder_path": self.sw_folder_path_lineEdit.text(),
+            "batch_name": self.sw_batch_name_lineEdit.text(),
+            "device_number": self.sw_device_number_spinBox.value(),
         }
 
         # Update statusbar
-        cf.log_message("Spectrum parameters read")
+        cf.log_message("Setup parameters read")
 
-        return spectrum_parameters
+        return setup_parameters
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Frequency Sweep ------------------------- #
+    # -------------------------------------------------------------------- #
+    def read_frequency_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        frequency_parameters = {
+            "voltage": self.specw_voltage_spinBox.value(),
+            "current_compliance": self.specw_current_spinBox.value(),
+            "minimum_frequency": self.specw_minimum_frequency_spinBox.value(),
+            "maximum_frequency": self.specw_maximum_frequency_spinBox.value(),
+        }
+
+        # Update statusbar
+        cf.log_message("Frequency sweep parameters read")
+
+        return frequency_sweep_parameters
 
     def save_spectrum(self):
         """
@@ -222,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Load in setup parameters and make sure that the parameters make sense
         setup_parameters = self.safe_read_setup_parameters()
-        spectrum_parameters = self.read_spectrum_parameters()
+        frequency_sweep_parameters = self.read_frequency_sweep_parameters()
 
         # Return only the pixel numbers of the selected pixels
         selected_pixels = [

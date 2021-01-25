@@ -2,8 +2,8 @@ from PySide2 import QtCore
 import core_functions as cf
 import time
 
-from hardware import RigolOscilloscope, VoltcraftSource
-from tests.tests import MockRigoOscilloscope, MockVoltcraftSource
+from hardware import RigolOscilloscope, VoltcraftSource, Arduino
+from tests.tests import MockRigoOscilloscope, MockVoltcraftSource, MockArduino
 
 
 class InitThread(QtCore.QThread):
@@ -16,8 +16,11 @@ class InitThread(QtCore.QThread):
     ask_retry = QtCore.Signal()
     emit_oscilloscope = QtCore.Signal(RigolOscilloscope)
     emit_source = QtCore.Signal(VoltcraftSource)
+    emit_arduino = QtCore.Signal(Arduino)
 
-    def __init__(self, oscilloscope_address, source_address, widget=None):
+    def __init__(
+        self, oscilloscope_address, source_address, arduino_address, widget=None
+    ):
         super(InitThread, self).__init__()
 
         # Connect signals
@@ -26,9 +29,11 @@ class InitThread(QtCore.QThread):
         self.ask_retry.connect(widget.ask_retry)
         self.emit_oscilloscope.connect(widget.parent.init_oscilloscope)
         self.emit_source.connect(widget.parent.init_source)
+        self.emit_arduino.connect(widget.parent.init_arduino)
 
         self.oscilloscope_address = oscilloscope_address
         self.source_address = source_address
+        self.arduino_address = arduino_address
 
         # Variable that checks if initialisation shall be repeated
         self.repeat = False
@@ -42,7 +47,7 @@ class InitThread(QtCore.QThread):
 
         self.update_loading_dialog.emit(0, "Initialising Oscilloscope")
 
-        # Try if Arduino can be initialised
+        # Try if Rigol Oscilloscope can be initialised
         try:
             osci = RigolOscilloscope(self.oscilloscope_address)
             cf.log_message("Rigol Oscilloscope successfully initialised")
@@ -59,11 +64,11 @@ class InitThread(QtCore.QThread):
 
         time.sleep(0.1)
 
-        self.update_loading_dialog.emit(50, "Initialising Source")
+        self.update_loading_dialog.emit(33, "Initialising Source")
 
-        # Check if Keithley multimeter is present
+        # Try if Voltcraft Source can be initialised
         try:
-            source = RigolOscilloscope(self.source_address)
+            source = VoltcraftSource(self.source_address)
             cf.log_message("Voltcraft Source successfully initialised")
             source_init = True
         except Exception as e:
@@ -74,8 +79,25 @@ class InitThread(QtCore.QThread):
             cf.log_message(e)
             source_init = False
 
-        time.sleep(0.1)
         self.emit_source.emit(source)
+        time.sleep(0.1)
+        self.update_loading_dialog.emit(66, "Initialising Arduino")
+
+        # Try if Arduino can be initialised
+        try:
+            arduino = Arduino(self.arduino_address)
+            cf.log_message("Arduino successfully initialised")
+            arduino_init = True
+        except Exception as e:
+            arduino = MockArduino(self.arduino_address)
+            cf.log_message(
+                "The Arduino could not be initialised! Please reconnect the device and check the serial number in the settings file!"
+            )
+            cf.log_message(e)
+            arduino_init = False
+
+        self.emit_arduino.emit(arduino)
+        time.sleep(0.1)
 
         # If one of the devices could not be initialised for whatever reason,
         # ask the user if she wants to retry after reconnecting the devices or

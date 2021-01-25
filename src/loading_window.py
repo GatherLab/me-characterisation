@@ -8,7 +8,9 @@ class LoadingWindow(QtWidgets.QDialog):
     Window that appears when program is loaded
     """
 
-    def __init__(self, oscilloscope_address, source_address, parent=None):
+    def __init__(
+        self, oscilloscope_address, source_address, arduino_address, parent=None
+    ):
         QtWidgets.QDialog.__init__(self)
         self.ui = Ui_LoadingWindow()
         self.ui.setupUi(self)
@@ -34,7 +36,9 @@ class LoadingWindow(QtWidgets.QDialog):
         self.ui.button_continue.clicked.connect(self.kill_dialog)
 
         self.show()
-        self.init_thread = InitThread(oscilloscope_address, source_address, self)
+        self.init_thread = InitThread(
+            oscilloscope_address, source_address, arduino_address, self
+        )
         self.init_thread.start()
 
     @QtCore.Slot(int, str)

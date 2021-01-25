@@ -183,11 +183,17 @@ class Ui_MainWindow(object):
         self.gridLayout_7 = QtWidgets.QGridLayout(self.setup_widget)
         self.gridLayout_7.setObjectName("gridLayout_7")
 
+        # Setup widget header 1
+        self.sw_header1_label = QtWidgets.QLabel(self.setup_widget)
+        self.sw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.sw_header1_label.setObjectName("sw_header1_label")
+        self.gridLayout_7.addWidget(self.sw_header1_label, 0, 0, 1, 1)
+
         # Setup widget header
-        self.sw_header2_label = QtWidgets.QLabel(self.setup_widget)
-        self.sw_header2_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.sw_header2_label.setObjectName("sw_header2_label")
-        self.gridLayout_7.addWidget(self.sw_header2_label, 5, 0, 1, 1)
+        # self.sw_header2_label = QtWidgets.QLabel(self.setup_widget)
+        # self.sw_header2_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        # self.sw_header2_label.setObjectName("sw_header2_label")
+        # self.gridLayout_7.addWidget(self.sw_header2_label, 5, 0, 1, 1)
 
         # Setup widget base folder path
         self.sw_folder_path_horizontalLayout = QtWidgets.QHBoxLayout()
@@ -241,11 +247,11 @@ class Ui_MainWindow(object):
         # self.sw_documentation_label.setObjectName("sw_documentation_label")
         # self.gridLayout_7.addWidget(self.sw_documentation_label, 12, 0, 1, 1)
 
-        # Setup widget header 1
-        self.sw_header1_label = QtWidgets.QLabel(self.setup_widget)
-        self.sw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.sw_header1_label.setObjectName("sw_header1_label")
-        self.gridLayout_7.addWidget(self.sw_header1_label, 0, 0, 1, 1)
+        # Header 2
+        self.sw_header2_label = QtWidgets.QLabel(self.setup_widget)
+        self.sw_header2_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.sw_header2_label.setObjectName("sw_header2_label")
+        self.gridLayout_7.addWidget(self.sw_header2_label, 5, 0, 1, 1)
 
         # Current LCD number widget
         self.sw_source_vc_horizonalLayout = QtWidgets.QHBoxLayout()
@@ -264,7 +270,7 @@ class Ui_MainWindow(object):
         self.sw_current_lcdNumber.setAutoFillBackground(False)
         self.sw_current_lcdNumber.setSmallDecimalPoint(False)
         self.sw_current_lcdNumber.setObjectName("sw_current_lcdNumber")
-        self.sw_current_lcdNumber.display("2 A")
+        # self.sw_current_lcdNumber.display("2 A")
 
         # Voltage LCD number widget
         self.sw_voltage_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
@@ -281,19 +287,38 @@ class Ui_MainWindow(object):
         self.sw_voltage_lcdNumber.setAutoFillBackground(False)
         self.sw_voltage_lcdNumber.setSmallDecimalPoint(False)
         self.sw_voltage_lcdNumber.setObjectName("sw_voltage_lcdNumber")
-        self.sw_voltage_lcdNumber.display("10 U")
+        # self.sw_voltage_lcdNumber.display("10 U")
+
+        # Frequency LCD number widget
+        self.sw_frequency_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.sw_frequency_lcdNumber.sizePolicy().hasHeightForWidth()
+        )
+        self.sw_frequency_lcdNumber.setSizePolicy(sizePolicy)
+        self.sw_frequency_lcdNumber.setDigitCount(10)
+        self.sw_frequency_lcdNumber.setAutoFillBackground(False)
+        self.sw_frequency_lcdNumber.setSmallDecimalPoint(False)
+        self.sw_frequency_lcdNumber.setObjectName("sw_frequency_lcdNumber")
+        # self.sw_frequency_lcdNumber.display("10 U")
 
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_voltage_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_current_lcdNumber)
+        self.sw_source_vc_horizonalLayout.addWidget(self.sw_frequency_lcdNumber)
 
-        self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 5, 1, 1, 2)
+        self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 6, 0, 1, 2)
 
         # Setup widget current tester voltage
-        self.sw_change_voltage_label = QtWidgets.QLabel(self.setup_widget)
-        self.sw_change_voltage_label.setObjectName("sw_change_voltage_label")
-        self.gridLayout_7.addWidget(self.sw_change_voltage_label, 6, 0, 1, 1)
+        # self.sw_change_voltage_label = QtWidgets.QLabel(self.setup_widget)
+        # self.sw_change_voltage_label.setObjectName("sw_change_voltage_label")
+        # self.gridLayout_7.addWidget(self.sw_change_voltage_label, 6, 0, 1, 1)
 
         self.sw_set_vc_horizontalLayout = QtWidgets.QHBoxLayout()
+
         self.sw_voltage_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
         self.sw_voltage_spinBox.setObjectName("sw_voltage_spinBox")
         self.sw_set_vc_horizontalLayout.addWidget(self.sw_voltage_spinBox)
@@ -302,7 +327,11 @@ class Ui_MainWindow(object):
         self.sw_current_spinBox.setObjectName("sw_current_spinBox")
         self.sw_set_vc_horizontalLayout.addWidget(self.sw_current_spinBox)
 
-        self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 6, 1, 1, 1)
+        self.sw_frequency_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        self.sw_frequency_spinBox.setObjectName("sw_frequency_spinBox")
+        self.sw_set_vc_horizontalLayout.addWidget(self.sw_frequency_spinBox)
+
+        self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
         self.tabWidget.addTab(self.setup_widget, "")
 
@@ -339,9 +368,9 @@ class Ui_MainWindow(object):
         self.specw_ax = self.specw_fig.figure.subplots()
         self.specw_ax.set_facecolor("#E0E0E0")
         self.specw_ax.grid(True)
-        self.specw_ax.set_xlabel("Wavelength (nm)", fontsize=14)
-        self.specw_ax.set_ylabel("Intensity (a.u.)", fontsize=14)
-        self.specw_ax.set_xlim([350, 830])
+        self.specw_ax.set_xlabel("Frequency (kHz)", fontsize=14)
+        self.specw_ax.set_ylabel("Current (A)", fontsize=14)
+        self.specw_ax.set_xlim([50, 600])
 
         self.specw_ax.axhline(linewidth=1, color="black")
         self.specw_ax.axvline(linewidth=1, color="black")
@@ -406,6 +435,65 @@ class Ui_MainWindow(object):
             self.specw_voltage_spinBox, 2, 0, 1, 1
         )
 
+        # Set current limit
+        self.specw_current_label = QtWidgets.QLabel(self.specw_scrollAreaWidgetContents)
+        self.specw_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.specw_current_label.setObjectName("specw_current_label")
+        self.specw_scrollArea_gridLayout.addWidget(self.specw_current_label, 3, 0, 1, 1)
+        self.specw_current_spinBox = QtWidgets.QDoubleSpinBox(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_current_spinBox.setObjectName("specw_current_spinBox")
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_current_spinBox, 4, 0, 1, 1
+        )
+
+        # Set minimum scan frequency
+        self.specw_minimum_frequency_label = QtWidgets.QLabel(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_minimum_frequency_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.specw_minimum_frequency_label.setObjectName(
+            "specw_minimum_frequency_label"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_minimum_frequency_label, 5, 0, 1, 1
+        )
+        self.specw_minimum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_minimum_frequency_spinBox.setObjectName(
+            "specw_minimum_frequency_spinBox"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_minimum_frequency_spinBox, 6, 0, 1, 1
+        )
+
+        # Set maximum scan frequency
+        self.specw_maximum_frequency_label = QtWidgets.QLabel(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_maximum_frequency_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.specw_maximum_frequency_label.setObjectName(
+            "specw_maximum_frequency_label"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_maximum_frequency_label, 7, 0, 1, 1
+        )
+        self.specw_maximum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_maximum_frequency_spinBox.setObjectName(
+            "specw_maximum_frequency_spinBox"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_maximum_frequency_spinBox, 8, 0, 1, 1
+        )
+
         # Save Spectrum button
         self.specw_save_spectrum_pushButton = QtWidgets.QPushButton(
             self.specw_scrollAreaWidgetContents
@@ -414,7 +502,7 @@ class Ui_MainWindow(object):
             "specw_save_spectrum_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_save_spectrum_pushButton, 5, 0, 1, 1
+            self.specw_save_spectrum_pushButton, 9, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
@@ -530,16 +618,17 @@ class Ui_MainWindow(object):
         """
 
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "OLED Benchmarker"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ME Device Benchmarker"))
         # self.gatherlab_label.setText(
         # _translate("MainWindow", "Gatherlab JVL Measurement")
         # )
-        self.sw_header2_label.setText(
-            _translate("MainWindow", "Source Voltage & Current")
-        )
+        # self.sw_header2_label.setText(
+        # _translate("MainWindow", "Source Voltage & Current")
+        # )
         self.sw_browse_pushButton.setText(_translate("MainWindow", "Browse"))
         self.sw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.sw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        self.sw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.sw_batch_name_label.setText(_translate("MainWindow", "Batch Name"))
         self.sw_device_number_label.setText(_translate("MainWindow", "Device Number"))
         self.sw_header1_label.setToolTip(
@@ -550,12 +639,19 @@ class Ui_MainWindow(object):
                 " yyyy-mm-dd_&lt;batch-name&gt;_d&lt;device-number&gt;_p&lt;pixel-number&gt;.csv.</p></body></html>",
             )
         )
+        self.sw_header1_label.setToolTip(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Dashboard that shows the current values of the important parameters.</p></body></html>",
+            )
+        )
         self.sw_header1_label.setText(
             _translate("MainWindow", "Batch Name and File Path")
         )
-        self.sw_change_voltage_label.setText(
-            _translate("MainWindow", "Change Voltage (V)")
-        )
+        self.sw_header2_label.setText(_translate("MainWindow", "Current Parameters"))
+        # self.sw_change_voltage_label.setText(
+        # _translate("MainWindow", "Change Voltage (V)")
+        # )
         # self.sw_documentation_label.setToolTip(
         # _translate(
         # "MainWindow",
@@ -574,8 +670,20 @@ class Ui_MainWindow(object):
         # self.specw_max_voltage_label.setText(
         # _translate("MainWindow", "Max Voltage (V)")
         # )
-        self.specw_voltage_label.setText(_translate("MainWindow", "Set Voltage (V)"))
+        self.specw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
+        self.specw_current_label.setText(
+            _translate("MainWindow", "Current Compliance (A)")
+        )
+        self.specw_minimum_frequency_label.setText(
+            _translate("MainWindow", "Min Frequency (kHz)")
+        )
+        self.specw_maximum_frequency_label.setText(
+            _translate("MainWindow", "Max Frequency (kHz)")
+        )
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.specw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         # self.specw_changeover_voltage_label.setText(
         # _translate("MainWindow", "Changeover Voltage (V)")
         # )
@@ -601,7 +709,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.spectrum_widget),
-            _translate("MainWindow", "Frequency Scan),
+            _translate("MainWindow", "Frequency Scan"),
         )
 
         self.menudfg.setTitle(_translate("MainWindow", "File"))

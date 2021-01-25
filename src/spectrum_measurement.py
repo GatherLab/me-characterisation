@@ -1,11 +1,9 @@
 from PySide2 import QtCore
 
-from hardware import RigolOscilloscope, VoltcraftSource
-
 import time
 
 
-class SpectrumMeasurement(QtCore.QThread):
+class FrequencyScan(QtCore.QThread):
     """
     Class thread that handles the spectrum measurement
     """
@@ -15,8 +13,15 @@ class SpectrumMeasurement(QtCore.QThread):
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
     update_spectrum_signal = QtCore.Signal(list, list)
 
-    def __init__(self, arduino, keithley_source, spectrometer, parent=None):
-        super(SpectrumMeasurement, self).__init__()
+    def __init__(
+        self,
+        arduino,
+        keithley_source,
+        spectrometer,
+        measurement_parameters,
+        parent=None,
+    ):
+        super(FrequencyScan, self).__init__()
         # Variable to kill thread
         self.is_killed = False
 
@@ -27,12 +32,14 @@ class SpectrumMeasurement(QtCore.QThread):
         self.keithley_source.as_voltage_source(1.05)
         self.spectrometer = spectrometer
 
+        self.measurement_parameters = measurement_parameters
+
         # Connect signal to the updater from the parent class
         self.update_spectrum_signal.connect(parent.update_spectrum)
 
     def run(self):
         """
-        Class that continuously measures the spectrum
+        Class that does a frequency sweep
         """
         while True:
             # Measure (data format is a list)
