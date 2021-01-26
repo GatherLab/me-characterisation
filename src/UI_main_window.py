@@ -494,21 +494,223 @@ class Ui_MainWindow(object):
             self.specw_maximum_frequency_spinBox, 8, 0, 1, 1
         )
 
-        # Save Spectrum button
-        self.specw_save_spectrum_pushButton = QtWidgets.QPushButton(
+        # Set frequency step
+        self.specw_frequency_step_label = QtWidgets.QLabel(
             self.specw_scrollAreaWidgetContents
         )
-        self.specw_save_spectrum_pushButton.setObjectName(
-            "specw_save_spectrum_pushButton"
+        self.specw_frequency_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.specw_frequency_step_label.setObjectName("specw_frequency_step_label")
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_frequency_step_label, 9, 0, 1, 1
+        )
+        self.specw_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_frequency_step_spinBox.setObjectName("specw_frequency_step_spinBox")
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_frequency_step_spinBox, 10, 0, 1, 1
+        )
+
+        # Save Spectrum button
+        self.specw_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_start_measurement_pushButton.setObjectName(
+            "specw_start_measurement_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_save_spectrum_pushButton, 9, 0, 1, 1
+            self.specw_start_measurement_pushButton, 11, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
 
-        self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
+        # -------------------------------------------------------------------- #
+        # ----------------------- Define Osci Widget-------------------------- #
+        # -------------------------------------------------------------------- #
+        self.osci_widget = QtWidgets.QWidget()
+        self.osci_widget.setObjectName("osci_widget")
+        self.osci_widget_gridLayout = QtWidgets.QGridLayout(self.osci_widget)
+        self.osci_widget_gridLayout.setObjectName("osci_widget_gridLayout")
 
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.ow_graph_widget = QtWidgets.QWidget(self.osci_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ow_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.ow_graph_widget.setSizePolicy(sizePolicy)
+        self.ow_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.ow_graph_widget.setObjectName("ow_graph_widget")
+        self.ow_mpl_graph_gridLayout = QtWidgets.QGridLayout(self.ow_graph_widget)
+        self.ow_mpl_graph_gridLayout.setObjectName("ow_mpl_graph_gridLayout")
+        self.osci_widget_gridLayout.addWidget(self.ow_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.ow_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.ow_mpl_graph_gridLayout.addWidget(self.ow_fig)
+
+        self.ow_ax = self.ow_fig.figure.subplots()
+        self.ow_ax.set_facecolor("#E0E0E0")
+        self.ow_ax.grid(True)
+        self.ow_ax.set_xlabel("Time (s)", fontsize=14)
+        self.ow_ax.set_ylabel("Voltage (V)", fontsize=14)
+        self.ow_ax.set_xlim([50, 600])
+
+        self.ow_ax.axhline(linewidth=1, color="black")
+        self.ow_ax.axvline(linewidth=1, color="black")
+
+        self.ow_fig.figure.set_facecolor("#E0E0E0")
+        self.ow_mplToolbar = NavigationToolbar(self.ow_fig, self.ow_graph_widget)
+        self.ow_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        self.ow_mpl_graph_gridLayout.addWidget(self.ow_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.ow_scrollArea = QtWidgets.QScrollArea(self.osci_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ow_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.ow_scrollArea.setSizePolicy(sizePolicy)
+        self.ow_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.ow_scrollArea.setWidgetResizable(True)
+        self.ow_scrollArea.setObjectName("ow_scrollArea")
+        self.ow_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.ow_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ow_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.ow_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.ow_scrollAreaWidgetContents.setObjectName("ow_scrollAreaWidgetContents")
+        self.ow_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_scrollArea_gridLayout.setObjectName("ow_scrollArea_gridLayout")
+
+        self.ow_header1_label = QtWidgets.QLabel(self.ow_scrollAreaWidgetContents)
+        self.ow_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_header1_label.setObjectName("ow_header1_label")
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_header1_label, 0, 0, 1, 1)
+        self.ow_scrollArea.setWidget(self.ow_scrollAreaWidgetContents)
+        self.osci_widget_gridLayout.addWidget(self.ow_scrollArea, 0, 3, 1, 1)
+
+        # Set voltage
+        self.ow_voltage_label = QtWidgets.QLabel(self.ow_scrollAreaWidgetContents)
+        self.ow_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_voltage_label.setObjectName("ow_voltage_label")
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_voltage_label, 1, 0, 1, 1)
+        self.ow_voltage_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_voltage_spinBox.setObjectName("ow_voltage_spinBox")
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_voltage_spinBox, 2, 0, 1, 1)
+
+        # Set current limit
+        self.ow_current_label = QtWidgets.QLabel(self.ow_scrollAreaWidgetContents)
+        self.ow_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_current_label.setObjectName("ow_current_label")
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_current_label, 3, 0, 1, 1)
+        self.ow_current_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_current_spinBox.setObjectName("ow_current_spinBox")
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_current_spinBox, 4, 0, 1, 1)
+
+        # Set minimum scan frequency
+        self.ow_minimum_frequency_label = QtWidgets.QLabel(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_minimum_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_minimum_frequency_label.setObjectName("ow_minimum_frequency_label")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_minimum_frequency_label, 5, 0, 1, 1
+        )
+        self.ow_minimum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_minimum_frequency_spinBox.setObjectName("ow_minimum_frequency_spinBox")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_minimum_frequency_spinBox, 6, 0, 1, 1
+        )
+
+        # Set maximum scan frequency
+        self.ow_maximum_frequency_label = QtWidgets.QLabel(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_maximum_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_maximum_frequency_label.setObjectName("ow_maximum_frequency_label")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_maximum_frequency_label, 7, 0, 1, 1
+        )
+        self.ow_maximum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_maximum_frequency_spinBox.setObjectName("ow_maximum_frequency_spinBox")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_maximum_frequency_spinBox, 8, 0, 1, 1
+        )
+
+        # Set frequency step
+        self.ow_frequency_step_label = QtWidgets.QLabel(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_frequency_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ow_frequency_step_label.setObjectName("ow_frequency_step_label")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_frequency_step_label, 9, 0, 1, 1
+        )
+        self.ow_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_frequency_step_spinBox.setObjectName("ow_frequency_step_spinBox")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_frequency_step_spinBox, 10, 0, 1, 1
+        )
+
+        # Auto Scale
+        self.ow_auto_scale_pushButton = QtWidgets.QPushButton(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_auto_scale_pushButton.setObjectName("ow_auto_scale_pushButton")
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_auto_scale_pushButton, 11, 0, 1, 1
+        )
+
+        # Stop
+        self.ow_stop_pushButton = QtWidgets.QPushButton(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_stop_pushButton.setObjectName("ow_stop_pushButton")
+        self.ow_stop_pushButton.setCheckable(True)
+        self.ow_scrollArea_gridLayout.addWidget(self.ow_stop_pushButton, 12, 0, 1, 1)
+
+        # Save osci button
+        self.ow_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.ow_scrollAreaWidgetContents
+        )
+        self.ow_start_measurement_pushButton.setObjectName(
+            "ow_start_measurement_pushButton"
+        )
+        self.ow_scrollArea_gridLayout.addWidget(
+            self.ow_start_measurement_pushButton, 13, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.osci_widget, "")
+
+        self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         # -------------------------------------------------------------------- #
@@ -680,10 +882,34 @@ class Ui_MainWindow(object):
         self.specw_maximum_frequency_label.setText(
             _translate("MainWindow", "Max Frequency (kHz)")
         )
+        self.specw_frequency_step_label.setText(
+            _translate("MainWindow", "Frequency Step (kHz)")
+        )
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.specw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+
+        self.ow_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
+        self.ow_current_label.setText(
+            _translate("MainWindow", "Current Compliance (A)")
+        )
+        self.ow_minimum_frequency_label.setText(
+            _translate("MainWindow", "Min Frequency (kHz)")
+        )
+        self.ow_maximum_frequency_label.setText(
+            _translate("MainWindow", "Max Frequency (kHz)")
+        )
+        self.ow_frequency_step_label.setText(
+            _translate("MainWindow", "Frequency Step (kHz)")
+        )
+        self.ow_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.ow_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        self.ow_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.ow_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.ow_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+
         # self.specw_changeover_voltage_label.setText(
         # _translate("MainWindow", "Changeover Voltage (V)")
         # )
@@ -700,16 +926,27 @@ class Ui_MainWindow(object):
         # self.specw_bad_contact_checkBox.setText(
         # _translate("MainWindow", "Check fo Bad Contacts")
         # )
-        self.specw_save_spectrum_pushButton.setText(
+        self.specw_start_measurement_pushButton.setText(
             _translate("MainWindow", "Start Measurement")
         )
         self.specw_header1_label.setText(
             _translate("MainWindow", "Measurement Parameters")
         )
+        self.ow_stop_pushButton.setText(_translate("MainWindow", "Run/Stop"))
+        self.ow_auto_scale_pushButton.setText(_translate("MainWindow", "Auto Scale"))
+        self.ow_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Save Data")
+        )
+        self.ow_header1_label.setText(_translate("MainWindow", "Osci Parameters"))
 
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.spectrum_widget),
             _translate("MainWindow", "Frequency Scan"),
+        )
+
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.osci_widget),
+            _translate("MainWindow", "Oscilloscope"),
         )
 
         self.menudfg.setTitle(_translate("MainWindow", "File"))

@@ -2,8 +2,9 @@ from UI_main_window import Ui_MainWindow
 from settings import Settings
 from loading_window import LoadingWindow
 
-from spectrum_measurement import FrequencyScan
+from frequency_measurement import FrequencyScan
 from setup import SetupThread
+from oscilloscope_measurement import OscilloscopeThread
 
 from hardware import RigolOscilloscope, VoltcraftSource, Arduino
 
@@ -93,9 +94,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # and current of the source as well as the frequency of the Arduino
         self.setup_thread = SetupThread(self.source, self.arduino, self)
         self.setup_thread.start()
+
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
         self.sw_current_spinBox.valueChanged.connect(self.current_changed)
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
+
+        # -------------------------------------------------------------------- #
+        # -------------------- Frequency Sweep Widget ------------------------ #
+        # -------------------------------------------------------------------- #
+        self.specw_start_measurement_pushButton.clicked.connect(
+            self.start_frequency_sweep
+        )
+
+        # -------------------------------------------------------------------- #
+        # ----------------------- Osciloscope Widget ------------------------- #
+        # -------------------------------------------------------------------- #
+        self.oscilloscope_thread = OscilloscopeThread(self.oscilloscope, parent=self)
+        self.oscilloscope_thread.start()
+
+        self.ow_stop_pushButton.clicked.connect(self.stop_osci)
+        self.ow_auto_scale_pushButton.clicked.connect(self.auto_scale_osci)
 
         # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
@@ -136,6 +154,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_maximum_frequency_spinBox.setValue(200)
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
+
+        self.specw_frequency_step_spinBox.setValue(5)
+        self.specw_frequency_step_spinBox.setMinimum(0.05)
+        self.specw_frequency_step_spinBox.setMaximum(1000)
 
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
@@ -212,16 +234,59 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             os.startfile(path)
 
-    # @QtCore.Slot(str)
-    # def cf.log_message(self, message):
-    #     """
-    #     Function that manages the logging, in the sense that everything is
-    #     directly logged into statusbar and the log file at once as well as
-    #     printed to the console instead of having to call multiple functions.
-    #     """
-    #     self.statusbar.showMessage(message, 10000000)
-    #     logging.info(message)
-    #     print(message)
+    def closeEvent(self, event):
+        """
+        Function that shall allow for save closing of the program
+        """
+
+        cf.log_message("Program closed")
+
+        # Kill spectrometer thread
+        try:
+            self.spectrum_measurement.kill()
+        except Exception as e:
+            cf.log_message("Spectrometer thread could not be killed")
+            cf.log_message(e)
+
+        # Kill keithley thread savely
+        try:
+            self.current_tester.kill()
+        except Exception as e:
+            cf.log_message("Keithley thread could not be killed")
+            cf.log_message(e)
+
+        # Kill arduino connection
+        try:
+            self.arduino_uno.close()
+        except Exception as e:
+            cf.log_message("Arduino connection could not be savely killed")
+            cf.log_message(e)
+
+        # Kill motor savely
+        try:
+            self.motor.clean_up()
+        except Exception as e:
+            cf.log_message("Motor could not be turned off savely")
+            cf.log_message(e)
+
+        # Kill connection to spectrometer savely
+        try:
+            self.spectrometer.close_connection()
+        except Exception as e:
+            cf.log_message("Spectrometer could not be turned off savely")
+            cf.log_message(e)
+
+        # Kill connection to Keithleys
+        try:
+            pyvisa.ResourceManager().close()
+        except Exception as e:
+            cf.log_message("Connection to Keithleys could not be closed savely")
+            cf.log_message(e)
+
+        # if can_exit:
+        event.accept()  # let the window close
+        # else:
+        #     event.ignore()
 
     def changed_tab_widget(self):
         """
@@ -360,11 +425,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Function to read out the current fields entered in the frequency sweep tab
         """
-        frequency_parameters = {
+        frequency_sweep_parameters = {
             "voltage": self.specw_voltage_spinBox.value(),
             "current_compliance": self.specw_current_spinBox.value(),
             "minimum_frequency": self.specw_minimum_frequency_spinBox.value(),
             "maximum_frequency": self.specw_maximum_frequency_spinBox.value(),
+            "frequency_step": self.specw_frequency_step_spinBox.value(),
         }
 
         # Update statusbar
@@ -372,7 +438,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return frequency_sweep_parameters
 
-    def save_spectrum(self):
+    def start_frequency_sweep(self):
         """
         Function that saves the spectrum (probably by doing another
         measurement and shortly turning on the OLED for a background
@@ -383,99 +449,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         setup_parameters = self.safe_read_setup_parameters()
         frequency_sweep_parameters = self.read_frequency_sweep_parameters()
 
-        # Return only the pixel numbers of the selected pixels
-        selected_pixels = [
-            i + 1 for i, x in enumerate(spectrum_parameters["selected_pixel"]) if x
-        ]
-
-        # Ensure that only one pixel is selected (anything else does not really
-        # make sense)
-        if np.size(selected_pixels) == 0 or np.size(selected_pixels) > 1:
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setText("Please select exactly one pixel!")
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msgBox.setStyleSheet(
-                "background-color: rgb(44, 49, 60);\n"
-                "color: rgb(255, 255, 255);\n"
-                'font: 63 bold 10pt "Segoe UI";\n'
-                ""
-            )
-            msgBox.exec()
-
-            cf.log_message("More or less than one pixel selected")
-            raise UserWarning("Please select exactly one pixel!")
-
         self.progressBar.show()
 
-        # Store data in pd dataframe
-        df_spectrum_data = pd.DataFrame(
-            columns=["wavelength", "background", "intensity"]
+        self.frequency_sweep = FrequencyScan(
+            self.arduino,
+            self.source,
+            self.oscilloscope,
+            frequency_sweep_parameters,
+            setup_parameters,
+            parent=self,
         )
 
-        # Get wavelength and intensity of spectrum under light conditions
-        (
-            df_spectrum_data["wavelength"],
-            df_spectrum_data["intensity"],
-        ) = self.spectrometer.measure()
-
-        self.progressBar.setProperty("value", 50)
-
-        # Turn off all pixels wait two seconds to ensure that there is no light left and measure again
-        self.unselect_all_pixels()
-        time.sleep(2)
-        (
-            wavelength,
-            df_spectrum_data["background"],
-        ) = self.spectrometer.measure()
-
-        # Save data
-        file_path = (
-            setup_parameters["folder_path"]
-            + date.today().strftime("%Y-%m-%d_")
-            + setup_parameters["batch_name"]
-            + "_d"
-            + str(setup_parameters["device_number"])
-            + "_p"
-            + str(selected_pixels[0])
-            + "_spec"
-            + ".csv"
-        )
-
-        # Define header line with voltage and integration time
-        line01 = (
-            "Voltage: "
-            + str(self.specw_voltage_spinBox.value())
-            + " V\t"
-            + "Integration Time: "
-            + str(self.spectrum_measurement.spectrometer.integration_time)
-            + " ms"
-        )
-
-        line02 = "### Measurement data ###"
-        line03 = "Wavelength\t Background\t Intensity"
-        line04 = "nm\t counts\t counts\n"
-        header_lines = [
-            line01,
-            line02,
-            line03,
-            line04,
-        ]
-
-        # Write header lines to file
-        with open(file_path, "a") as the_file:
-            the_file.write("\n".join(header_lines))
-
-        # Now write pandas dataframe to file
-        df_spectrum_data.to_csv(
-            file_path, index=False, mode="a", header=False, sep="\t"
-        )
-
-        self.progressBar.setProperty("value", 100)
-        time.sleep(0.5)
-        self.progressBar.hide()
+        self.frequency_sweep.start()
 
     @QtCore.Slot(list, list)
-    def update_spectrum(self, wavelength, intensity):
+    def update_spectrum(self, frequency, current):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
@@ -484,69 +472,81 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         del self.specw_ax.lines[0]
 
+        # Set x and y limit
+        self.specw_ax.set_xlim([min(frequency), max(frequency)])
+        self.specw_ax.set_ylim([min(current) - 0.2, max(current) + 0.2])
+
         # Plot current
         self.specw_ax.plot(
-            wavelength,
-            intensity,
+            frequency,
+            current,
             color=(68 / 255, 188 / 255, 65 / 255),
             marker="o",
         )
 
         self.specw_fig.draw()
 
-    def closeEvent(self, event):
+    # -------------------------------------------------------------------- #
+    # -------------------------- Frequency Sweep ------------------------- #
+    # -------------------------------------------------------------------- #
+    @QtCore.Slot(list, list, list)
+    def plot_oscilloscope(self, time, voltage, measurements):
         """
-        Function that shall allow for save closing of the program
+        Function that plots the oscilloscope image
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        del self.ow_ax.lines[0]
+
+        # Set x and y limit
+        self.ow_ax.set_xlim([min(time), max(time)])
+        self.ow_ax.set_ylim([min(voltage) - 0.2, max(voltage) + 0.2])
+
+        # Plot current
+        self.ow_ax.plot(
+            time,
+            voltage,
+            color=(68 / 255, 188 / 255, 65 / 255),
+            # marker="o",
+        )
+
+        self.ow_ax.text(
+            0.2,
+            0.7,
+            "VPP: "
+            + str(measurements[0])
+            + "\nVmax: "
+            + str(measurements[1])
+            + "\nVmin: "
+            + str(measurements[2])
+            + "\nFrequency: "
+            + str(measurements[3]),
+            verticalalignment="bottom",
+            horizontalalignment="left",
+            transform=self.ow_ax.transAxes,
+            bbox={"facecolor": "white", "alpha": 0.5, "pad": 10},
+        )
+
+        self.ow_fig.draw()
+
+    def stop_osci(self):
+        """
+        Function to start and stop the oscilloscope
         """
 
-        cf.log_message("Program closed")
+        # Start and stop the oscilloscope
+        if self.ow_stop_pushButton.isChecked():
+            self.oscilloscope.stop()
+            # self.ow_stop_pushButton.setChecked(False)
+        else:
+            self.oscilloscope.run()
+            # self.ow_stop_pushButton.setChecked(True)
 
-        # Kill spectrometer thread
-        try:
-            self.spectrum_measurement.kill()
-        except Exception as e:
-            cf.log_message("Spectrometer thread could not be killed")
-            cf.log_message(e)
-
-        # Kill keithley thread savely
-        try:
-            self.current_tester.kill()
-        except Exception as e:
-            cf.log_message("Keithley thread could not be killed")
-            cf.log_message(e)
-
-        # Kill arduino connection
-        try:
-            self.arduino_uno.close()
-        except Exception as e:
-            cf.log_message("Arduino connection could not be savely killed")
-            cf.log_message(e)
-
-        # Kill motor savely
-        try:
-            self.motor.clean_up()
-        except Exception as e:
-            cf.log_message("Motor could not be turned off savely")
-            cf.log_message(e)
-
-        # Kill connection to spectrometer savely
-        try:
-            self.spectrometer.close_connection()
-        except Exception as e:
-            cf.log_message("Spectrometer could not be turned off savely")
-            cf.log_message(e)
-
-        # Kill connection to Keithleys
-        try:
-            pyvisa.ResourceManager().close()
-        except Exception as e:
-            cf.log_message("Connection to Keithleys could not be closed savely")
-            cf.log_message(e)
-
-        # if can_exit:
-        event.accept()  # let the window close
-        # else:
-        #     event.ignore()
+    def auto_scale_osci(self):
+        """
+        Function to call the autoscale function of the oscilloscope
+        """
+        self.oscilloscope.auto_scale()
 
 
 # Logging

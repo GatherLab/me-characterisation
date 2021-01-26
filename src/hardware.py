@@ -120,7 +120,72 @@ class RigolOscilloscope:
         # Run osci again
         # self.run()
 
-        return data, time_data
+        return time_data, data
+
+    def auto_scale(self):
+        """
+        I am not yet sure how to do it but this would be an important and
+        nice feature. The idea is to mimic the auto scale feature of the
+        oscilloscope
+        """
+        self.osci.write(":KEY:AUTO")
+        cf.log_message(self.osci.read())
+
+    def measure(self):
+        """
+        Measures a bunch of variables of the waveform. The possible commands are
+        :MEASure:CLEar
+        :MEASure:VPP?
+        :MEASure:VMAX?
+        :MEASure:VMIN?
+        :MEASure:VAMPlitude?
+        :MEASure:VTOP?
+        :MEASure:VBASe?
+        :MEASure:VAVerage?
+        :MEASure:VRMS?
+        :MEASure:OVERshoot?
+        :MEASure:PREShoot?
+        :MEASure:FREQuency?
+        :MEASure:RISetime?
+        :MEASure:FALLtime?
+        :MEASure:PERiod?
+        :MEASure:PWIDth?
+        :MEASure:NWIDth?
+        :MEASure:PDUTycycle?
+        :MEASure:NDUTycycle?
+        :MEASure:PDELay?
+        :MEASure:NDELay?
+        :MEASure:TOTal
+        :MEASure:SOURce
+        """
+        # Measre VPP
+        self.osci.write(":MEAS:VPP? CHAN1")
+        vpp = float(self.osci.read())
+
+        # Measure Vmax
+        self.osci.write(":MEAS:VMAX? CHAN1")
+        vmax = float(self.osci.read())
+
+        # # # Measure Vmin
+        self.osci.write(":MEAS:VMIN? CHAN1")
+        vmin = float(self.osci.read())
+
+        # # # Measure frequency
+        self.osci.write(":MEAS:FREQ? CHAN1")
+        frequency = float(self.osci.read())
+
+        # # # Measure rise time
+        # self.osci.write(":MEAS:RIS? CHAN1")
+        # rise_time = float(self.osci.read())
+
+        # cf.log_message("VPP: " + str(vpp) + " V")
+
+        return [
+            vpp,
+            vmax,
+            vmin,
+            frequency,
+        ]  # , vmax, vmin, frequency, rise_time]
 
     def close(self):
         """
