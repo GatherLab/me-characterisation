@@ -1,6 +1,8 @@
 import pyvisa
 import serial
 
+from PySide2 import QtCore
+
 import core_functions as cf
 
 import time
@@ -23,6 +25,9 @@ class RigolOscilloscope:
         """
         Init the oscilloscope
         """
+        # Define a mutex
+        self.mutex = QtCore.QMutex(QtCore.QMutex.NonRecursive)
+
         # Keithley Finding Device
         rm = pyvisa.ResourceManager()
         # The actual addresses for the Keithleys can be accessed via rm.list_resources()
@@ -47,13 +52,17 @@ class RigolOscilloscope:
         """
         Runs the oscilloscope
         """
+        self.mutex.lock()
         self.osci.write("RUN")
+        self.mutex.unlock()
 
     def stop(self):
         """
         Stops the oscilloscope
         """
+        self.mutex.lock()
         self.osci.write("STOP")
+        self.mutex.unlock()
 
     def get_data(self):
         """
@@ -67,6 +76,7 @@ class RigolOscilloscope:
         This obviously limits the number of pictures I can take per time unit.
         """
 
+        self.mutex.lock()
         # Stop osci so that the data is not altered on the fly
         # self.stop()
 
@@ -133,6 +143,7 @@ class RigolOscilloscope:
 
         # Run osci again
         # self.run()
+        self.mutex.unlock()
 
         return time_data, data_interp
 
@@ -142,8 +153,10 @@ class RigolOscilloscope:
         nice feature. The idea is to mimic the auto scale feature of the
         oscilloscope
         """
+        self.mutex.lock()
         self.osci.write(":KEY:AUTO")
-        cf.log_message(self.osci.read())
+        # cf.log_message(self.osci.read())
+        self.mutex.unlock()
 
     def measure(self):
         """
@@ -172,6 +185,7 @@ class RigolOscilloscope:
         :MEASure:TOTal
         :MEASure:SOURce
         """
+        self.mutex.lock()
         # Measre VPP
         self.osci.write(":MEAS:VPP? CHAN1")
         vpp = self.osci.read()
@@ -193,6 +207,7 @@ class RigolOscilloscope:
         # rise_time = float(self.osci.read())
 
         # cf.log_message("VPP: " + str(vpp) + " V")
+        self.mutex.unlock()
 
         return [
             vpp,
@@ -205,18 +220,23 @@ class RigolOscilloscope:
         """
         Measure VPP only
         """
+        self.mutex.lock()
+
         # Measre VPP
         self.osci.write(":MEAS:VPP? CHAN1")
         vpp = self.osci.read()
 
+        self.mutex.unlock()
         return vpp
 
     def close(self):
         """
         Closes connection to oscilloscope savely
         """
+        self.mutex.lock()
         self.osci.write(":KEY:FORCE")
         self.osci.close()
+        self.mutex.unlock()
 
 
 class VoltcraftSource:
@@ -235,6 +255,8 @@ class VoltcraftSource:
         """
         Initialise voltcraft source
         """
+        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+
         # Keithley Finding Device
         rm = pyvisa.ResourceManager()
         # The actual addresses for the Keithleys can be accessed via rm.list_resources()
@@ -263,12 +285,15 @@ class VoltcraftSource:
         self.output(False)
         self.set_voltage(5)
         self.set_current(1)
+
         cf.log_message("Source successfully initialised")
 
     def query(self, cmd):
         """
         Basic function that allows querying of the Voltcraft device
         """
+        self.mutex.lock()
+
         self.source.write((cmd + "\r").encode())
         b = []
         while True:
@@ -277,6 +302,7 @@ class VoltcraftSource:
                 raise serial.SerialTimeoutException()
             if b"".join(b[-3:]) == b"OK\r":
                 break
+        self.mutex.unlock()
         return (b"".join(b[:-4])).decode()
 
     def read_values(self):
@@ -284,10 +310,10 @@ class VoltcraftSource:
         Function that returns the display readings of the source in volt and
         ampere. This takes about 20 - 25 ms to run
         """
+        self.mutex.lock()
         # The source will return something liek 119700020 which translates to:
         # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
         raw_data = self.query("GETD")
-        print("Voltcraft values read")
 
         # Now disect this string
         voltage = float(raw_data[0:4]) / 100
@@ -301,12 +327,14 @@ class VoltcraftSource:
             # exceeded and the device now limits the voltage
             mode = "CC"
 
+        self.mutex.unlock()
         return voltage, current, mode
 
     def set_voltage(self, voltage):
         """
         Function to set the voltage of the device
         """
+        self.mutex.lock()
         # The voltcraft device, however can not deal with floats. Therefore, we
         # have to convert the input first
         voltage_int = int(np.round(voltage, 1) * 10)
@@ -325,11 +353,13 @@ class VoltcraftSource:
             voltage_int = 0
 
         self.query("VOLT%03d" % voltage_int)
+        self.mutex.unlock()
 
     def set_current(self, current):
         """
         Set current of the device
         """
+        self.mutex.lock()
         # The voltcraft device, however can not deal with floats. Therefore, we
         # have to convert the input first
         current_int = int(np.round(current, 1) * 10)
@@ -348,6 +378,7 @@ class VoltcraftSource:
             current_int = int(0)
 
         self.query("CURR%03d" % current_int)
+        self.mutex.unlock()
 
     def output(self, state):
         """
@@ -358,6 +389,7 @@ class VoltcraftSource:
         asks it to turn on. This possbile error must be checked for first
         (maybe class variable).
         """
+        self.mutex.lock()
 
         # The logic of the voltcraft source is just the other way around than
         # my logic (true means off)
@@ -365,6 +397,7 @@ class VoltcraftSource:
 
         # Set the state variable
         self.output_state = self.output_state
+        self.mutex.unlock()
 
 
 class Arduino:
@@ -373,6 +406,11 @@ class Arduino:
     """
 
     def __init__(self, com_address):
+        """
+        Init arduino
+        """
+        # Define a mutex
+        self.mutex = QtCore.QMutex(QtCore.QMutex.NonRecursive)
 
         # Check for devices on the pc
         rm = pyvisa.ResourceManager()
@@ -423,6 +461,8 @@ class Arduino:
             time in seconds to wait before collecting initialisation message.
         """
 
+        self.mutex.lock()
+
         # Open serial port
         try:
             self.arduino.open()
@@ -440,13 +480,16 @@ class Arduino:
         )
         # self.queue.put(com.readall())
         self.serial_connection_open = True
+        self.mutex.unlock()
 
     def close_serial_connection(self):
         """
         Close connection to arduino
         """
+        self.mutex.lock()
         self.arduino.close()
         self.serial_connection_open = False
+        self.mutex.unlock()
 
     def set_frequency(self, frequency):
         """
@@ -454,6 +497,7 @@ class Arduino:
         the Serial Connection interface)
         It is set in kHz
         """
+        self.mutex.lock()
         com = self.arduino
 
         # Check if serial connection was already established
@@ -466,11 +510,13 @@ class Arduino:
 
         # Read answer from Arduino
         cf.log_message(com.readall())
+        self.mutex.unlock()
 
     def read_frequency(self):
         """
         Function that asks the arduino to return the frequency
         """
+        self.mutex.lock()
         com = self.arduino
 
         # Check if serial connection was already established
@@ -487,5 +533,6 @@ class Arduino:
         except:
             cf.log_message("Could not convert frequency to float")
 
-        cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
+        # cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
+        self.mutex.unlock()
         return frequency

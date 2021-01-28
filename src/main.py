@@ -18,6 +18,7 @@ import json
 import sys
 import functools
 from datetime import date
+import datetime as dt
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -114,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.ow_stop_pushButton.clicked.connect(self.stop_osci)
         self.ow_auto_scale_pushButton.clicked.connect(self.auto_scale_osci)
-        self.ow_save_data_pushButton.clicked.connect(self.save_osci)
+        self.ow_start_measurement_pushButton.clicked.connect(self.save_osci)
 
         # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
@@ -242,46 +243,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         cf.log_message("Program closed")
 
-        # Kill spectrometer thread
+        # Kill Osci
         try:
-            self.spectrum_measurement.kill()
+            self.osci.close()
         except Exception as e:
-            cf.log_message("Spectrometer thread could not be killed")
+            cf.log_message("Oscilloscope thread could not be killed")
             cf.log_message(e)
 
-        # Kill keithley thread savely
+        # Kill Source
         try:
-            self.current_tester.kill()
+            self.source.kill()
         except Exception as e:
-            cf.log_message("Keithley thread could not be killed")
+            cf.log_message("I am not yet sure how to close the Rigol source correctly")
             cf.log_message(e)
 
         # Kill arduino connection
         try:
-            self.arduino_uno.close()
+            self.arduino.close_serial_connection()
         except Exception as e:
             cf.log_message("Arduino connection could not be savely killed")
-            cf.log_message(e)
-
-        # Kill motor savely
-        try:
-            self.motor.clean_up()
-        except Exception as e:
-            cf.log_message("Motor could not be turned off savely")
-            cf.log_message(e)
-
-        # Kill connection to spectrometer savely
-        try:
-            self.spectrometer.close_connection()
-        except Exception as e:
-            cf.log_message("Spectrometer could not be turned off savely")
-            cf.log_message(e)
-
-        # Kill connection to Keithleys
-        try:
-            pyvisa.ResourceManager().close()
-        except Exception as e:
-            cf.log_message("Connection to Keithleys could not be closed savely")
             cf.log_message(e)
 
         # if can_exit:
@@ -307,13 +287,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------------------------------------------------- #
     # --------------------------- Setup Thread --------------------------- #
     # -------------------------------------------------------------------- #
-    @QtCore.Slot(float, float)
-    def update_display(self, voltage, current):
+    @QtCore.Slot(float, float, float)
+    def update_display(self, voltage, current, frequency):
         """
         Function to update the readings of the LCD panels that serve as an
         overview to yield the current value of voltage, current and frequency
         """
-        # self.sw_frequency_lcdNumber.display(frequency)
+        self.sw_frequency_lcdNumber.display(frequency)
         self.sw_voltage_lcdNumber.display(voltage)
         self.sw_current_lcdNumber.display(current)
 
@@ -573,10 +553,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         setup_parameters = self.safe_read_setup_parameters()
 
         # Read data
-        time_data, data = self.osci.get_data()
+        time_data, data = self.oscilloscope.get_data()
         df = pd.DataFrame(columns=["time", "voltage"])
 
-        variables = self.osci.measure()
+        variables = self.oscilloscope.measure()
 
         # Define Header
         line01 = "VPP:   " + str(variables[0]) + " V \t"
@@ -594,10 +574,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Write header lines to file
         file_path = (
             setup_parameters["folder_path"]
-            + dt.date.today().strftime("%Y-%m-%d-%H-%M-%S_")
-            + self.setup_parameters["batch_name"]
+            + dt.date.today().strftime("%Y-%m-%d_")
+            + setup_parameters["batch_name"]
             + "_d"
-            + str(self.setup_parameters["device_number"])
+            + str(setup_parameters["device_number"])
             + "_osci"
             + ".csv"
         )

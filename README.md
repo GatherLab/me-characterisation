@@ -39,6 +39,13 @@ Coil driver control and read out of oscilloscope for benchmarking and automatise
 - Additionally, to characterise the ME film, the maximum voltage on the oscilloscope should be read out and also plotted in the very same diagram (second y-axis). I am not sure yet how to measure the power output on the ME device but I am probably still a little bit away (an easy way would be to simply attach a consumer to it, otherwise a current-meter must be used somehow). The ME film voltage should be optional and even without the oscilloscope the drawn current should be visible.
 - I am not sure yet but it could also come handy to simply replicate the oscilloscope image on the PC so that it would be easy to save an oscilloscope image (e.g. when measureing the frequency of a magnetic field or showing the time delay between magnetic field and stimulation signal).
 
+## Future Features
+
+- Button on the setup page that allows to turn on and off the source output
+- There should be another widget where the user enters the capacitance of the capacitor used and the inductance of the inductor used that automatically transforms this into a resonance frequency and tells the user where that one is.
+- Automatically fit the coil resonance and return q-factor, maximum and its frequency (With automatically I probably mean after setting a range and pressing the fit button)
+- Fill settings with life (last priority)
+
 ## Design Choices
 
 - To remain consist with my previous software for this group, I think a center graph with a scrollable side panel would be good, where all the parameters can be changed.

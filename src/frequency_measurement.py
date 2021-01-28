@@ -52,8 +52,8 @@ class FrequencyScan(QtCore.QThread):
         """
         Class that does a frequency sweep
         """
-        self.parent.setup_thread.pause = True
-        self.parent.oscilloscope_thread.pause = True
+        # self.parent.setup_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
 
         # First define the frequencies the program shall sweep over
         # self.df_data["frequency"] = np.arange(
@@ -136,8 +136,8 @@ class FrequencyScan(QtCore.QThread):
 
         self.source.output(False)
         self.save_data()
-        self.parent.setup_thread.pause = False
-        self.parent.oscilloscope_thread.pause = False
+        # self.parent.setup_thread.pause = False
+        # self.parent.oscilloscope_thread.pause = False
 
     def save_data(self):
         """
@@ -185,8 +185,10 @@ class FrequencyScan(QtCore.QThread):
             + str(self.setup_parameters["device_number"])
             + ".csv"
         )
-        with open(file_path, "a") as the_file:
-            the_file.write("\n".join(header_lines))
+        cf.save_file(self.df_data, file_path, header_lines)
 
-        # Now write pandas dataframe to file
-        self.df_data.to_csv(file_path, index=False, mode="a", header=False, sep="\t")
+        # with open(file_path, "a") as the_file:
+        #     the_file.write("\n".join(header_lines))
+
+        # # Now write pandas dataframe to file
+        # self.df_data.to_csv(file_path, index=False, mode="a", header=False, sep="\t")
