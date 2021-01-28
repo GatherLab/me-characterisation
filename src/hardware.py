@@ -91,36 +91,50 @@ class RigolOscilloscope:
 
         # Not exactly sure what this does
         data = np.frombuffer(raw_data, "B")
+        # data = data * 1
 
         # Walk through the data, and map it to actual voltages
         # This mapping is from Cibo Mahto
         # First invert the data
-        data = data * -1 + 255
+        # data = data * -1 + 255
 
         # Now, we know from experimentation that the scope display range is actually
         # 30-229.  So shift by 130 - the voltage offset in counts, then scale to
         # get the actual voltage.
-        data = (data - 130.0 - voltoffset / voltscale * 25) / 25 * voltscale
+        data_interp = (data[:-2] - 130.0 - voltoffset / voltscale * 25) / 25 * voltscale
+        # Measure Vmax
+        # self.osci.write(":MEAS:VMAX? CHAN1")
+        # vmax = self.osci.read()
+        #
+        # # Measure Vmin
+        # self.osci.write(":MEAS:VMIN? CHAN1")
+        # vmin = self.osci.read()
+        #
+        # data_interpolated = np.interp(
+        # data,
+        # [np.min(data), np.max(data)],
+        # [vmin, vmax],
+        # )
 
         # Now, generate a time axis.
         time_data = np.linspace(
-            timeoffset - 6 * timescale, timeoffset + 6 * timescale, num=len(data)
+            timeoffset - 6 * timescale, timeoffset + 6 * timescale, num=len(data_interp)
         )
 
         # See if we should use a different time axis
-        if time_data[-1] < 1e-3:
-            time_data = time_data * 1e6
-            tUnit = "uS"
-        elif time_data[-1] < 1:
-            time_data = time_data * 1e3
-            tUnit = "mS"
-        else:
-            tUnit = "S"
+        # if time_data[-1] < 1e-3:
+        #     time_data = time_data * 1e6
+        #     tUnit = "uS"
+        # elif time_data[-1] < 1:
+        #     time_data = time_data * 1e3
+        #     tUnit = "mS"
+        # else:
+        #     tUnit = "S"
 
         # Run osci again
         # self.run()
 
-        return time_data, data
+        return time_data, data_interp
 
     def auto_scale(self):
         """
@@ -160,19 +174,19 @@ class RigolOscilloscope:
         """
         # Measre VPP
         self.osci.write(":MEAS:VPP? CHAN1")
-        vpp = float(self.osci.read())
+        vpp = self.osci.read()
 
         # Measure Vmax
         self.osci.write(":MEAS:VMAX? CHAN1")
-        vmax = float(self.osci.read())
+        vmax = self.osci.read()
 
         # # # Measure Vmin
         self.osci.write(":MEAS:VMIN? CHAN1")
-        vmin = float(self.osci.read())
+        vmin = self.osci.read()
 
         # # # Measure frequency
         self.osci.write(":MEAS:FREQ? CHAN1")
-        frequency = float(self.osci.read())
+        frequency = self.osci.read()
 
         # # # Measure rise time
         # self.osci.write(":MEAS:RIS? CHAN1")
@@ -186,6 +200,16 @@ class RigolOscilloscope:
             vmin,
             frequency,
         ]  # , vmax, vmin, frequency, rise_time]
+
+    def measure_vpp(self):
+        """
+        Measure VPP only
+        """
+        # Measre VPP
+        self.osci.write(":MEAS:VPP? CHAN1")
+        vpp = self.osci.read()
+
+        return vpp
 
     def close(self):
         """
@@ -263,6 +287,7 @@ class VoltcraftSource:
         # The source will return something liek 119700020 which translates to:
         # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
         raw_data = self.query("GETD")
+        print("Voltcraft values read")
 
         # Now disect this string
         voltage = float(raw_data[0:4]) / 100

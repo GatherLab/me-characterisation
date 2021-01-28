@@ -50,7 +50,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Execute initialisation thread
         oscilloscope_address = "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR"
         source_address = "ASRL4::INSTR"
-        arduino_address = "ASRL5::INSTR"
+        arduino_address = "ASRL6::INSTR"
         loading_window = LoadingWindow(
             oscilloscope_address, source_address, arduino_address, self
         )
@@ -120,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
 
         # Set standard parameters for setup
-        self.sw_frequency_spinBox.setValue(10)
+        self.sw_frequency_spinBox.setValue(100)
         self.sw_frequency_spinBox.setMinimum(8)
         self.sw_frequency_spinBox.setMaximum(150000)
         self.sw_frequency_spinBox.setKeyboardTracking(False)
@@ -306,13 +306,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------------------------------------------------- #
     # --------------------------- Setup Thread --------------------------- #
     # -------------------------------------------------------------------- #
-    @QtCore.Slot(float, float, float)
-    def update_display(self, voltage, current, frequency):
+    @QtCore.Slot(float, float)
+    def update_display(self, voltage, current):
         """
         Function to update the readings of the LCD panels that serve as an
         overview to yield the current value of voltage, current and frequency
         """
-        self.sw_frequency_lcdNumber.display(frequency)
+        # self.sw_frequency_lcdNumber.display(frequency)
         self.sw_voltage_lcdNumber.display(voltage)
         self.sw_current_lcdNumber.display(current)
 
@@ -462,25 +462,38 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.frequency_sweep.start()
 
-    @QtCore.Slot(list, list)
-    def update_spectrum(self, frequency, current):
+    @QtCore.Slot(list, list, list)
+    def update_spectrum(self, frequency, current, vpp):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
         """
         # Clear plot
         # self.specw_ax.cla()
-        del self.specw_ax.lines[0]
+        try:
+            del self.specw_ax.lines[0]
+            del self.specw_ax2.lines[0]
+        except IndexError:
+            cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.specw_ax.set_xlim([min(frequency), max(frequency)])
         self.specw_ax.set_ylim([min(current) - 0.2, max(current) + 0.2])
+
+        self.specw_ax2.set_ylim([min(vpp) - 0.2, max(vpp) + 0.2])
 
         # Plot current
         self.specw_ax.plot(
             frequency,
             current,
             color=(68 / 255, 188 / 255, 65 / 255),
+            marker="o",
+        )
+
+        self.specw_ax2.plot(
+            frequency,
+            vpp,
+            color=(85 / 255, 170 / 255, 255 / 255),
             marker="o",
         )
 
@@ -496,11 +509,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         # Clear plot
         # self.specw_ax.cla()
-        del self.ow_ax.lines[0]
+        try:
+            del self.ow_ax.lines[0]
+        except IndexError:
+            cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.ow_ax.set_xlim([min(time), max(time)])
-        self.ow_ax.set_ylim([min(voltage) - 0.2, max(voltage) + 0.2])
+        self.ow_ax.set_ylim([min(voltage) - 2, max(voltage) + 5])
 
         # Plot current
         self.ow_ax.plot(
@@ -510,22 +526,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # marker="o",
         )
 
-        self.ow_ax.text(
-            0.2,
-            0.7,
-            "VPP: "
-            + str(measurements[0])
-            + "\nVmax: "
-            + str(measurements[1])
-            + "\nVmin: "
-            + str(measurements[2])
-            + "\nFrequency: "
-            + str(measurements[3]),
-            verticalalignment="bottom",
-            horizontalalignment="left",
-            transform=self.ow_ax.transAxes,
-            bbox={"facecolor": "white", "alpha": 0.5, "pad": 10},
-        )
+        # self.ow_ax.text(
+        #     0.2,
+        #     0.7,
+        #     "VPP: "
+        #     + str(measurements[0])
+        #     + "\nVmax: "
+        #     + str(measurements[1])
+        #     + "\nVmin: "
+        #     + str(measurements[2])
+        #     + "\nFrequency: "
+        #     + str(measurements[3]),
+        #     verticalalignment="bottom",
+        #     horizontalalignment="left",
+        #     transform=self.ow_ax.transAxes,
+        #     bbox={"facecolor": "white", "alpha": 0.5, "pad": 10},
+        # )
 
         self.ow_fig.draw()
 

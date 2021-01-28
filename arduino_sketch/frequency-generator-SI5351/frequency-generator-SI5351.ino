@@ -20,7 +20,7 @@
 #include "si5351.h"
 #include "Wire.h"
 
-double frequency = 10000;
+unsigned long frequency = 10000000ULL;
 String command;
 
 Si5351 si5351;
@@ -31,7 +31,7 @@ void setup()
 
   // Start serial and initialize the Si5351
   Serial.begin(9600);
-  i2c_found = si5351.init(SI5351_CRYSTAL_LOAD_10PF, 0, 0);
+  i2c_found = si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
   if (!i2c_found)
   {
     Serial.print("si5351 not found");
@@ -42,7 +42,7 @@ void setup()
   }
 
   // Set CLK0 to output 600 kHz (600 000.00)
-  // si5351.set_freq(minimum * 100, SI5351_CLK0);
+  si5351.set_freq(frequency, SI5351_CLK0);
 
   // Query a status update and wait a bit to let the Si5351 populate the
   // status flags correctly.
@@ -88,11 +88,11 @@ void loop()
     else if (check_numeric(command)) {
       // If it is in the range the SI5351 can handle, change the frequency to the value of the number
       if (command.toFloat() >= 8000 && command.toFloat() <= 150000000) {
-        si5351.set_freq(command.toFloat(), SI5351_CLK0);
+        frequency = (unsigned long) command.toFloat() * 100;
+        si5351.set_freq(frequency, SI5351_CLK0);
         Serial.print("Frequency set to: ");
         Serial.print(command);
         Serial.println(" Hz");
-        frequency = command.toFloat();
       }
       // If not return an error
       else

@@ -3,14 +3,14 @@
         {
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "voltcraft_source_address": "ASRL4::INSTR",
-            "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data"
+            "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices"
         }
     ],
     "default": [
         {
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "voltcraft_source_address": "ASRL4::INSTR",
-            "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data"
+            "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices"
         }
     ]
 }

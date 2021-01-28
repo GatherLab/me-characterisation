@@ -16,7 +16,7 @@ class FrequencyScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_spectrum_signal = QtCore.Signal(list, list)
+    update_spectrum_signal = QtCore.Signal(list, list, list)
     update_progress_bar = QtCore.Signal(str, float)
 
     def __init__(
@@ -30,13 +30,13 @@ class FrequencyScan(QtCore.QThread):
     ):
         super(FrequencyScan, self).__init__()
         # Variable to kill thread
-        self.is_killed = False
 
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
         self.source = source
         self.oscilloscope = oscilloscope
+        self.parent = parent
 
         self.measurement_parameters = measurement_parameters
         self.setup_parameters = setup_parameters
@@ -46,31 +46,34 @@ class FrequencyScan(QtCore.QThread):
         self.update_progress_bar.connect(parent.progressBar.setProperty)
 
         # Define dataframe to store data in
-        self.df_data = pd.DataFrame(columns=["frequency", "voltage", "current"])
+        self.df_data = pd.DataFrame(columns=["frequency", "voltage", "current", "vpp"])
 
     def run(self):
         """
         Class that does a frequency sweep
         """
-        print("blub1")
+        self.parent.setup_thread.pause = True
+        self.parent.oscilloscope_thread.pause = True
 
         # First define the frequencies the program shall sweep over
-        self.df_data["frequency"] = np.arange(
-            self.measurement_parameters["minimum_frequency"],
-            self.measurement_parameters["maximum_frequency"],
-            self.measurement_parameters["frequency_step"],
-        )
+        # self.df_data["frequency"] = np.arange(
+        # self.measurement_parameters["minimum_frequency"],
+        # self.measurement_parameters["maximum_frequency"],
+        # self.measurement_parameters["frequency_step"],
+        # )
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"])
         self.source.set_current(self.measurement_parameters["current_compliance"])
+        self.source.output(True)
 
         # Define arrays in which the data shall be stored in
         i = 0
-        print("blub2")
 
         # Sweep over all frequencies
-        for frequency in self.df_data["frequency"]:
+        frequency = self.measurement_parameters["minimum_frequency"]
+        while frequency < self.measurement_parameters["maximum_frequency"]:
+            # for frequency in self.df_data["frequency"]:
             cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set frequency
@@ -82,9 +85,14 @@ class FrequencyScan(QtCore.QThread):
             # Measure the voltage and current (and posssibly paramters on the osci)
             voltage, current, mode = self.source.read_values()
 
+            # Now measure Vpp from channel one on the oscilloscope
+            vpp = float(self.oscilloscope.measure_vpp())
+
             # Set the variables in the dataframe
             self.df_data.loc[i, "voltage"] = voltage
             self.df_data.loc[i, "current"] = current
+            self.df_data.loc[i, "frequency"] = frequency
+            self.df_data.loc[i, "vpp"] = vpp
 
             # Update progress bar
             self.update_progress_bar.emit(
@@ -92,12 +100,44 @@ class FrequencyScan(QtCore.QThread):
             )
 
             self.update_spectrum_signal.emit(
-                self.df_data["frequency"], self.df_data["current"]
+                self.df_data["frequency"], self.df_data["current"], self.df_data["vpp"]
             )
+
+            # Now compute the slope to adjust the step hight on the fly
+            if i > 0:
+                slope = abs(
+                    (
+                        self.df_data.loc[i, "current"]
+                        - self.df_data.loc[i - 1, "current"]
+                    )
+                    / (
+                        self.df_data.loc[i, "frequency"]
+                        - self.df_data.loc[i - 1, "frequency"]
+                    )
+                )
+
+                # The higher the slope, the smaller the step
+                # if slope > 0:
+                #     frequency = frequency + max(
+                #         [
+                #             self.measurement_parameters["frequency_step"]
+                #             / (slope * 100 * 2),
+                #             0.2,
+                #         ]
+                #     )
+                # else:
+                #     frequency = (
+                #         frequency + self.measurement_parameters["frequency_step"]
+                #     )
+
+            frequency = frequency + self.measurement_parameters["frequency_step"]
 
             i += 1
 
+        self.source.output(False)
         self.save_data()
+        self.parent.setup_thread.pause = False
+        self.parent.oscilloscope_thread.pause = False
 
     def save_data(self):
         """

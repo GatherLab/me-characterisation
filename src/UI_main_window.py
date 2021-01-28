@@ -375,6 +375,12 @@ class Ui_MainWindow(object):
         self.specw_ax.axhline(linewidth=1, color="black")
         self.specw_ax.axvline(linewidth=1, color="black")
 
+        self.specw_ax2 = self.specw_ax.twinx()
+        self.specw_ax2.set_ylabel(
+            "VPP (V)",
+            fontsize=14,
+        )
+
         self.specw_fig.figure.set_facecolor("#E0E0E0")
         self.specw_mplToolbar = NavigationToolbar(
             self.specw_fig, self.specw_graph_widget
