@@ -114,6 +114,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.ow_stop_pushButton.clicked.connect(self.stop_osci)
         self.ow_auto_scale_pushButton.clicked.connect(self.auto_scale_osci)
+        self.ow_save_data_pushButton.clicked.connect(self.save_osci)
 
         # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
@@ -563,6 +564,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Function to call the autoscale function of the oscilloscope
         """
         self.oscilloscope.auto_scale()
+
+    def save_osci(self):
+        """
+        Save Data that is currently visible on oscilloscope to file
+        """
+        # Read parameters
+        setup_parameters = self.safe_read_setup_parameters()
+
+        # Read data
+        time_data, data = self.osci.get_data()
+        df = pd.DataFrame(columns=["time", "voltage"])
+
+        variables = self.osci.measure()
+
+        # Define Header
+        line01 = "VPP:   " + str(variables[0]) + " V \t"
+        line02 = "### Measurement data ###"
+        line03 = "Time\t Voltage"
+        line04 = "s\t V\n"
+
+        header_lines = [
+            line01,
+            line02,
+            line03,
+            line04,
+        ]
+
+        # Write header lines to file
+        file_path = (
+            setup_parameters["folder_path"]
+            + dt.date.today().strftime("%Y-%m-%d-%H-%M-%S_")
+            + self.setup_parameters["batch_name"]
+            + "_d"
+            + str(self.setup_parameters["device_number"])
+            + "_osci"
+            + ".csv"
+        )
+
+        cf.save_file(df, file_path, header_lines)
 
 
 # Logging
