@@ -49,6 +49,22 @@ void setup()
   si5351.update_status();
   delay(500);
 
+  // Now define the cap controlling pins
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+
+  // Set all but 3 high (all but cap 3 off)
+  digitalWrite(2, LOW);
+  digitalWrite(3, LOW);
+  digitalWrite(4, LOW);
+  digitalWrite(5, LOW);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+
   // Read the Status Register and print it only at the beginning
   //  si5351.update_status();
   //  if (si5351.dev_status.SYS_INIT && si5351.dev_status.LOL_A && si5351.dev_status.LOL_B && i5351.dev_status.LOS && i5351.dev_status.REVID){
@@ -83,6 +99,67 @@ void loop()
     // Return current frequency if freq is typed in by user
     if (command.equals("freq")) {
       Serial.print(frequency);
+    }
+    //
+    else if (command.equals("cap2")) {
+      if (digitalRead(2)== 1) {
+        digitalWrite(2, LOW);
+        Serial.println("Cap 2 off");
+      }
+      else {
+        digitalWrite(2, HIGH);
+        Serial.println("Cap 2 on");
+      }
+    }
+    else if (command.equals("cap3")) {
+      if (digitalRead(3)== 1) {
+        digitalWrite(3, LOW);
+        Serial.println("Cap 3 off");
+      }
+      else {
+        digitalWrite(3, HIGH);
+        Serial.println("Cap 3 on");
+      }
+    }
+    else if (command.equals("cap4")) {
+      if (digitalRead(4)== 1) {
+        digitalWrite(4, LOW);
+        Serial.println("Cap 4 off");
+      }
+      else {
+        digitalWrite(4, HIGH);
+        Serial.println("Cap 4 on");
+      }
+    }
+    else if (command.equals("cap5")) {
+      if (digitalRead(5)== 1) {
+        digitalWrite(5, LOW);
+        Serial.println("Cap 5 off");
+      }
+      else {
+        digitalWrite(5, HIGH);
+        Serial.println("Cap 5 on");
+      }
+    }
+    else if (command.equals("cap6")) {
+      if (digitalRead(6)== 1) {
+        digitalWrite(6, LOW);
+        Serial.println("Cap 6 off");
+      }
+      else {
+        digitalWrite(6, HIGH);
+        Serial.println("Cap 6 on");
+      }
+    }
+    else if (command.equals("cap7")) {
+      if (digitalRead(7)== 1) {
+        digitalWrite(7, LOW);
+        Serial.println("Cap 7 off");
+      }
+      else {
+        digitalWrite(7, HIGH);
+        Serial.println("Cap 7 on");
+      }
     }
     // Check if user enters a number
     else if (check_numeric(command)) {

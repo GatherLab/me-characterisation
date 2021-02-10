@@ -11,6 +11,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+from itertools import chain, combinations
 
 
 class RigolOscilloscope:
@@ -397,6 +398,10 @@ class VoltcraftSource:
 
         # Set the state variable
         self.output_state = self.output_state
+
+        # Wait shortly because the source needs a bit until the final voltage is reached
+        time.sleep(2)
+
         self.mutex.unlock()
 
 
@@ -410,7 +415,7 @@ class Arduino:
         Init arduino
         """
         # Define a mutex
-        self.mutex = QtCore.QMutex(QtCore.QMutex.NonRecursive)
+        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 
         # Check for devices on the pc
         rm = pyvisa.ResourceManager()
@@ -431,6 +436,8 @@ class Arduino:
         # assign name to Arduino and assign short timeout to be able to do things fast
         self.arduino = serial.Serial(arduino_port, timeout=0.01)
 
+        self.init_caps()
+
         # Try to open the serial connection
         try:
             self.init_serial_connection()
@@ -446,6 +453,49 @@ class Arduino:
                 sys.exit()
 
         # cf.log_message("Arduino successfully initiated")
+
+    def init_caps(self):
+        """
+        Function to initialise caps
+        """
+        # In pF
+        self.base_capacitance = 3300
+        capacitances = [150, 330, 680, 1000, 2200, 3300]
+        self.arduino_pins = np.array([7, 6, 5, 4, 3, 2])
+        self.cap_states = np.repeat(False, np.size(self.arduino_pins))
+
+        def powerset(iterable):
+            "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+            s = list(iterable)
+            return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+        combinations_list = list(powerset(capacitances))
+        combinations_pins = list(powerset(self.arduino_pins))
+
+        # Define pandas dataframe that contains the capacitance constituents, the corresponding arduino pins and the sum of the capacitances
+        # Drop if there exists more than one
+        self.combinations_df = (
+            pd.DataFrame(
+                np.array(
+                    [
+                        [list(elem) for elem in combinations_list],
+                        [list(elem) for elem in combinations_pins],
+                        np.array([np.sum(list(elem)) for elem in combinations_list])
+                        + self.base_capacitance,
+                    ],
+                    dtype=object,
+                ).T,
+                columns=["constituents", "arduino_pins", "sum"],
+            )
+            .sort_values("sum", ignore_index=True)
+            .drop_duplicates(subset=["sum"], keep="first")
+        )
+
+        self.combinations_df[
+            "resonance_frequency"
+        ] = self.capacitance_to_resonance_frequency(
+            self.combinations_df["sum"].astype(np.float64).to_numpy()
+        )
 
     def init_serial_connection(self, wait=1):
         """
@@ -510,6 +560,10 @@ class Arduino:
 
         # Read answer from Arduino
         cf.log_message(com.readall())
+
+        # Set capacity accordingly
+        # self.set_capacitance(frequency)
+
         self.mutex.unlock()
 
     def read_frequency(self):
@@ -536,3 +590,73 @@ class Arduino:
         # cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
         self.mutex.unlock()
         return frequency
+
+    def switch_cap(self, cap_no, state):
+        """
+        Function that shall allow to set the capacitance of the LCR circuit
+        """
+        self.mutex.lock()
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        if (
+            self.cap_states[np.where(np.array(self.arduino_pins) == cap_no)[0]][0]
+            != state
+        ):
+            # Write the capacitance to the arduino
+            com.write(str.encode("cap" + str(cap_no) + "\n"))
+
+            print(com.readall())
+            time.sleep(0.5)
+            self.cap_states[np.where(np.array(self.arduino_pins) == cap_no)] = state
+        else:
+            print("Cap " + str(cap_no) + " was already in state " + str(state))
+
+        self.mutex.unlock()
+
+    def set_capacitance(self, capacitance):
+        """
+        Sets right capacitance according to the capacitance set
+        """
+        self.mutex.lock()
+
+        # Now convert resonance frequency to capacitance and find nearest in combinations array
+        # resonance_capacitance = resonance_frequency_to_capacitance(frequency)
+        # resonance_capacitance = frequency
+
+        # Find closest capacitor available and convert again to resonance frequency
+        self.real_capacity, idx = cf.find_nearest(
+            self.combinations_df["sum"], capacitance
+        )
+
+        # Turn off all pins that are not in the above array
+        for arduino_port in self.arduino_pins[
+            ~np.isin(self.arduino_pins, self.combinations_df["arduino_pins"].iloc[idx])
+        ]:
+            self.switch_cap(arduino_port, False)
+
+        # Turn on all pins that are in the above array
+        for arduino_port in self.combinations_df["arduino_pins"].iloc[idx]:
+            self.switch_cap(arduino_port, True)
+
+        cf.log_message("Capacitance set to " + str(capacitance) + " pF")
+        self.mutex.unlock()
+
+    # The capacitances can now be matched to resonance frequencies using a fit of capacitance over resonance frequency
+    def capacitance_to_resonance_frequency(self, capacitance):
+        """
+        Function that calculates for a given capacitance the resonance frequency (current coil with 41 windings etc.)
+        Input value in pF, output value in kHz
+        """
+        A = 7.50279e-9
+        return 1 / np.sqrt(capacitance * A)
+
+    def resonance_frequency_to_capacitance(self, frequency):
+        """
+        Convert frequency to capacitance
+        """
+        A = 7.50279e-9
+        return 1 / (frequency ** 2 * A)

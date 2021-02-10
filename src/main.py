@@ -3,6 +3,7 @@ from settings import Settings
 from loading_window import LoadingWindow
 
 from frequency_measurement import FrequencyScan
+from capacitance_measurement import CapacitanceScan
 from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
 
@@ -26,6 +27,7 @@ import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 import math
+import matplotlib as mpl
 
 import webbrowser
 
@@ -99,6 +101,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
         self.sw_current_spinBox.valueChanged.connect(self.current_changed)
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
+        self.sw_capacitance_spinBox.valueChanged.connect(self.capacity_changed)
 
         # -------------------------------------------------------------------- #
         # -------------------- Frequency Sweep Widget ------------------------ #
@@ -106,6 +109,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_start_measurement_pushButton.clicked.connect(
             self.start_frequency_sweep
         )
+        self.specw_start_measurement_pushButton.setCheckable(True)
+
+        # -------------------------------------------------------------------- #
+        # ------------------ Capacitance Sweep Widget ------------------------ #
+        # -------------------------------------------------------------------- #
+        self.capw_start_measurement_pushButton.clicked.connect(
+            self.start_capacitance_sweep
+        )
+        self.capw_start_measurement_pushButton.setCheckable(True)
 
         # -------------------------------------------------------------------- #
         # ----------------------- Osciloscope Widget ------------------------- #
@@ -122,44 +134,81 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
 
         # Set standard parameters for setup
-        self.sw_frequency_spinBox.setValue(100)
         self.sw_frequency_spinBox.setMinimum(8)
         self.sw_frequency_spinBox.setMaximum(150000)
         self.sw_frequency_spinBox.setKeyboardTracking(False)
         self.sw_frequency_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.sw_frequency_spinBox.setValue(100)
 
-        self.sw_voltage_spinBox.setValue(5)
+        self.sw_capacitance_spinBox.setMinimum(0)
+        self.sw_capacitance_spinBox.setMaximum(20000)
+        self.sw_capacitance_spinBox.setKeyboardTracking(False)
+        self.sw_capacitance_spinBox.setButtonSymbols(
+            QtWidgets.QAbstractSpinBox.NoButtons
+        )
+        self.sw_capacitance_spinBox.setValue(3000)
+
         self.sw_voltage_spinBox.setMinimum(0)
         self.sw_voltage_spinBox.setMaximum(33)
         self.sw_voltage_spinBox.setKeyboardTracking(False)
         self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.sw_voltage_spinBox.setValue(5)
 
-        self.sw_current_spinBox.setValue(1)
         self.sw_current_spinBox.setMinimum(0)
         self.sw_current_spinBox.setMaximum(12)
         self.sw_current_spinBox.setKeyboardTracking(False)
         self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.sw_current_spinBox.setValue(1)
 
         # Set standard parameters for spectral measurement
-        self.specw_voltage_spinBox.setValue(5)
         self.specw_voltage_spinBox.setMinimum(0)
         self.specw_voltage_spinBox.setMaximum(33)
+        self.specw_voltage_spinBox.setValue(5)
 
-        self.specw_current_spinBox.setValue(1)
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
+        self.specw_current_spinBox.setValue(1)
 
-        self.specw_minimum_frequency_spinBox.setValue(50)
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
+        self.specw_minimum_frequency_spinBox.setValue(50)
 
-        self.specw_maximum_frequency_spinBox.setValue(200)
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
+        self.specw_maximum_frequency_spinBox.setValue(200)
 
-        self.specw_frequency_step_spinBox.setValue(5)
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
+        self.specw_frequency_step_spinBox.setValue(5)
+
+        # Set standard parameters for capacitance measurement
+        self.capw_voltage_spinBox.setMinimum(0)
+        self.capw_voltage_spinBox.setMaximum(33)
+        self.capw_voltage_spinBox.setValue(5)
+
+        self.capw_current_spinBox.setMinimum(0)
+        self.capw_current_spinBox.setMaximum(12)
+        self.capw_current_spinBox.setValue(1)
+
+        self.capw_minimum_frequency_spinBox.setMinimum(8)
+        self.capw_minimum_frequency_spinBox.setMaximum(150000)
+        self.capw_minimum_frequency_spinBox.setValue(150)
+
+        self.capw_maximum_frequency_spinBox.setMinimum(8)
+        self.capw_maximum_frequency_spinBox.setMaximum(150000)
+        self.capw_maximum_frequency_spinBox.setValue(210)
+
+        self.capw_frequency_step_spinBox.setMinimum(0.05)
+        self.capw_frequency_step_spinBox.setMaximum(1000)
+        self.capw_frequency_step_spinBox.setValue(5)
+
+        self.capw_minimum_capacitance_spinBox.setMinimum(0)
+        self.capw_minimum_capacitance_spinBox.setMaximum(50000)
+        self.capw_minimum_capacitance_spinBox.setValue(3300)
+
+        self.capw_maximum_capacitance_spinBox.setMinimum(0)
+        self.capw_maximum_capacitance_spinBox.setMaximum(50000)
+        self.capw_maximum_capacitance_spinBox.setValue(4000)
 
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
@@ -287,13 +336,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------------------------------------------------- #
     # --------------------------- Setup Thread --------------------------- #
     # -------------------------------------------------------------------- #
-    @QtCore.Slot(float, float, float)
-    def update_display(self, voltage, current, frequency):
+    @QtCore.Slot(float, float)
+    def update_display(self, voltage, current):
         """
         Function to update the readings of the LCD panels that serve as an
         overview to yield the current value of voltage, current and frequency
         """
-        self.sw_frequency_lcdNumber.display(frequency)
+        # self.sw_frequency_lcdNumber.display(frequency)
         self.sw_voltage_lcdNumber.display(voltage)
         self.sw_current_lcdNumber.display(current)
 
@@ -329,6 +378,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         frequency = self.sw_frequency_spinBox.value()
         self.arduino.set_frequency(frequency)
         cf.log_message("Arduino frequency set to " + str(frequency) + " kHz")
+
+    def capacity_changed(self):
+        """
+        Function that changes frequency on arduino when it is changed on spinbox
+        """
+        capacity = self.sw_capacitance_spinBox.value()
+        self.arduino.set_capacitance(capacity)
+
+        self.sw_capacitance_lcdNumber.display(self.arduino.real_capacity)
+
+        cf.log_message("Capacity set to " + str(self.arduino.real_capacity) + " pF")
 
     def safe_read_setup_parameters(self):
         """
@@ -425,12 +485,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         measurement and shortly turning on the OLED for a background
         measurement and then saving this into a single file)
         """
+        if not self.specw_start_measurement_pushButton.isChecked():
+            self.frequency_sweep.kill()
+            return
 
         # Load in setup parameters and make sure that the parameters make sense
         setup_parameters = self.safe_read_setup_parameters()
         frequency_sweep_parameters = self.read_frequency_sweep_parameters()
 
         self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
 
         self.frequency_sweep = FrequencyScan(
             self.arduino,
@@ -481,7 +547,96 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_fig.draw()
 
     # -------------------------------------------------------------------- #
-    # -------------------------- Frequency Sweep ------------------------- #
+    # -------------------------- Capacitor Sweep ------------------------- #
+    # -------------------------------------------------------------------- #
+    def read_capacitance_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the capacitance sweep tab
+        """
+        capacitance_sweep_parameters = {
+            "voltage": self.capw_voltage_spinBox.value(),
+            "current_compliance": self.capw_current_spinBox.value(),
+            "minimum_frequency": self.capw_minimum_frequency_spinBox.value(),
+            "maximum_frequency": self.capw_maximum_frequency_spinBox.value(),
+            "frequency_step": self.capw_frequency_step_spinBox.value(),
+            "minimum_capacitance": self.capw_minimum_capacitance_spinBox.value(),
+            "maximum_capacitance": self.capw_maximum_capacitance_spinBox.value(),
+        }
+
+        # Update statusbar
+        cf.log_message("Capacitance sweep parameters read")
+
+        return capacitance_sweep_parameters
+
+    def start_capacitance_sweep(self):
+        """
+        Function that saves the spectrum (probably by doing another
+        measurement and shortly turning on the OLED for a background
+        measurement and then saving this into a single file)
+        """
+        if not self.capw_start_measurement_pushButton.isChecked():
+            self.capacitance_sweep.kill()
+            return
+
+        # Load in setup parameters and make sure that the parameters make sense
+        setup_parameters = self.safe_read_setup_parameters()
+        capacitance_sweep_parameters = self.read_capacitance_sweep_parameters()
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        self.capacitance_sweep = CapacitanceScan(
+            self.arduino,
+            self.source,
+            # self.oscilloscope,
+            capacitance_sweep_parameters,
+            setup_parameters,
+            parent=self,
+        )
+
+        self.capacitance_sweep.start()
+
+    @QtCore.Slot(list, list, list, str, bool, str)
+    def update_spectrum(self, frequency, current, limits, label, first_bool, color):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        # Always delete the last line except when first_bool = True which is
+        # the case, for the first time a new capacitor is introduced
+        if not first_bool:
+            try:
+                lines = self.capw_ax.get_lines()
+                lines[-1].remove()
+                # del self.specw_ax.lines[0]
+            except IndexError:
+                cf.log_message("Spectrum line can not be deleted")
+
+        # Set x and y limit
+        self.capw_ax.set_xlim([limits[0], limits[1]])
+        # self.capw_ax.set_ylim([min(current) - 0.2, max(current) + 0.2])
+
+        # self.specw_ax2.set_ylim([min(vpp) - 0.2, max(vpp) + 0.2])
+
+        # Plot current
+        self.capw_ax.plot(frequency, current, marker="o", color=color, label=label)
+        self.capw_ax.legend()
+
+        # self.specw_ax2.plot(
+        #     frequency,
+        #     vpp,
+        #     color=(85 / 255, 170 / 255, 255 / 255),
+        #     marker="o",
+        # )
+
+        self.capw_fig.draw()
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Oscilloscope ---------------------------- #
     # -------------------------------------------------------------------- #
     @QtCore.Slot(list, list, list)
     def plot_oscilloscope(self, time, voltage, measurements):
@@ -555,6 +710,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Read data
         time_data, data = self.oscilloscope.get_data()
         df = pd.DataFrame(columns=["time", "voltage"])
+        df.time = time_data
+        df.voltage = data
 
         variables = self.oscilloscope.measure()
 

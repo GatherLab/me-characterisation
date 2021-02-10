@@ -304,11 +304,27 @@ class Ui_MainWindow(object):
         self.sw_frequency_lcdNumber.setAutoFillBackground(False)
         self.sw_frequency_lcdNumber.setSmallDecimalPoint(False)
         self.sw_frequency_lcdNumber.setObjectName("sw_frequency_lcdNumber")
-        # self.sw_frequency_lcdNumber.display("10 U")
+
+        # capacitance LCD number widget
+        self.sw_capacitance_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.sw_capacitance_lcdNumber.sizePolicy().hasHeightForWidth()
+        )
+        self.sw_capacitance_lcdNumber.setSizePolicy(sizePolicy)
+        self.sw_capacitance_lcdNumber.setDigitCount(10)
+        self.sw_capacitance_lcdNumber.setAutoFillBackground(False)
+        self.sw_capacitance_lcdNumber.setSmallDecimalPoint(False)
+        self.sw_capacitance_lcdNumber.setObjectName("sw_capacitance_lcdNumber")
 
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_voltage_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_current_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_frequency_lcdNumber)
+        self.sw_source_vc_horizonalLayout.addWidget(self.sw_capacitance_lcdNumber)
 
         self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 6, 0, 1, 2)
 
@@ -330,6 +346,10 @@ class Ui_MainWindow(object):
         self.sw_frequency_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
         self.sw_frequency_spinBox.setObjectName("sw_frequency_spinBox")
         self.sw_set_vc_horizontalLayout.addWidget(self.sw_frequency_spinBox)
+
+        self.sw_capacitance_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        self.sw_capacitance_spinBox.setObjectName("sw_capacitance_spinBox")
+        self.sw_set_vc_horizontalLayout.addWidget(self.sw_capacitance_spinBox)
 
         self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
@@ -529,6 +549,235 @@ class Ui_MainWindow(object):
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
+
+        # -------------------------------------------------------------------- #
+        # ------------------- Define capacitance Tester Widget ------------------ #
+        # -------------------------------------------------------------------- #
+        self.capacitance_tester_widget = QtWidgets.QWidget()
+        self.capacitance_tester_widget.setObjectName("capacitance_tester_widget")
+        self.capacitance_tester_gridLayout = QtWidgets.QGridLayout(
+            self.capacitance_tester_widget
+        )
+        self.capacitance_tester_gridLayout.setObjectName(
+            "capacitance_tester_gridLayout"
+        )
+
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.capw_graph_widget = QtWidgets.QWidget(self.capacitance_tester_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.capw_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.capw_graph_widget.setSizePolicy(sizePolicy)
+        self.capw_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.capw_graph_widget.setObjectName("capw_graph_widget")
+        self.capw_mpl_graph_gridLayout = QtWidgets.QGridLayout(self.capw_graph_widget)
+        self.capw_mpl_graph_gridLayout.setObjectName("capw_mpl_graph_gridLayout")
+        self.capacitance_tester_gridLayout.addWidget(self.capw_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.capw_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.capw_mpl_graph_gridLayout.addWidget(self.capw_fig)
+
+        self.capw_ax = self.capw_fig.figure.subplots()
+        self.capw_ax.set_facecolor("#E0E0E0")
+        self.capw_ax.grid(True)
+        self.capw_ax.set_xlabel("Frequency (kHz)", fontsize=14)
+        self.capw_ax.set_ylabel("Current (A)", fontsize=14)
+        self.capw_ax.set_xlim([50, 600])
+
+        self.capw_ax.axhline(linewidth=1, color="black")
+        self.capw_ax.axvline(linewidth=1, color="black")
+
+        self.capw_fig.figure.set_facecolor("#E0E0E0")
+        self.capw_mplToolbar = NavigationToolbar(self.capw_fig, self.capw_graph_widget)
+        self.capw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        self.capw_mpl_graph_gridLayout.addWidget(self.capw_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.capw_scrollArea = QtWidgets.QScrollArea(self.capacitance_tester_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.capw_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.capw_scrollArea.setSizePolicy(sizePolicy)
+        self.capw_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.capw_scrollArea.setWidgetResizable(True)
+        self.capw_scrollArea.setObjectName("capw_scrollArea")
+        self.capw_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.capw_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.capw_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.capw_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.capw_scrollAreaWidgetContents.setObjectName(
+            "capw_scrollAreaWidgetContents"
+        )
+        self.capw_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_scrollArea_gridLayout.setObjectName("capw_scrollArea_gridLayout")
+
+        self.capw_header1_label = QtWidgets.QLabel(self.capw_scrollAreaWidgetContents)
+        self.capw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.capw_header1_label.setObjectName("capw_header1_label")
+        self.capw_scrollArea_gridLayout.addWidget(self.capw_header1_label, 0, 0, 1, 1)
+        self.capw_scrollArea.setWidget(self.capw_scrollAreaWidgetContents)
+        self.capacitance_tester_gridLayout.addWidget(self.capw_scrollArea, 0, 3, 1, 1)
+
+        # Set voltage
+        self.capw_voltage_label = QtWidgets.QLabel(self.capw_scrollAreaWidgetContents)
+        self.capw_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.capw_voltage_label.setObjectName("capw_voltage_label")
+        self.capw_scrollArea_gridLayout.addWidget(self.capw_voltage_label, 1, 0, 1, 1)
+        self.capw_voltage_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_voltage_spinBox.setObjectName("capw_voltage_spinBox")
+        self.capw_scrollArea_gridLayout.addWidget(self.capw_voltage_spinBox, 2, 0, 1, 1)
+
+        # Set current limit
+        self.capw_current_label = QtWidgets.QLabel(self.capw_scrollAreaWidgetContents)
+        self.capw_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.capw_current_label.setObjectName("capw_current_label")
+        self.capw_scrollArea_gridLayout.addWidget(self.capw_current_label, 3, 0, 1, 1)
+        self.capw_current_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_current_spinBox.setObjectName("capw_current_spinBox")
+        self.capw_scrollArea_gridLayout.addWidget(self.capw_current_spinBox, 4, 0, 1, 1)
+
+        # Set minimum scan frequency
+        self.capw_minimum_frequency_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_minimum_frequency_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.capw_minimum_frequency_label.setObjectName("capw_minimum_frequency_label")
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_minimum_frequency_label, 5, 0, 1, 1
+        )
+        self.capw_minimum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_minimum_frequency_spinBox.setObjectName(
+            "capw_minimum_frequency_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_minimum_frequency_spinBox, 6, 0, 1, 1
+        )
+
+        # Set maximum scan frequency
+        self.capw_maximum_frequency_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_maximum_frequency_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.capw_maximum_frequency_label.setObjectName("capw_maximum_frequency_label")
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_maximum_frequency_label, 7, 0, 1, 1
+        )
+        self.capw_maximum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_maximum_frequency_spinBox.setObjectName(
+            "capw_maximum_frequency_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_maximum_frequency_spinBox, 8, 0, 1, 1
+        )
+
+        # Set frequency step
+        self.capw_frequency_step_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.capw_frequency_step_label.setObjectName("capw_frequency_step_label")
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_step_label, 9, 0, 1, 1
+        )
+        self.capw_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_step_spinBox.setObjectName("capw_frequency_step_spinBox")
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_step_spinBox, 10, 0, 1, 1
+        )
+
+        # Set minimum capacitance
+        self.capw_minimum_capacitance_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_minimum_capacitance_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.capw_minimum_capacitance_label.setObjectName(
+            "capw_minimum_capacitance_label"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_minimum_capacitance_label, 11, 0, 1, 1
+        )
+        self.capw_minimum_capacitance_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_minimum_capacitance_spinBox.setObjectName(
+            "capw_minimum_capacitance_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_minimum_capacitance_spinBox, 12, 0, 1, 1
+        )
+
+        # Set maximum scan capacitance
+        self.capw_maximum_capacitance_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_maximum_capacitance_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.capw_maximum_capacitance_label.setObjectName(
+            "capw_maximum_capacitance_label"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_maximum_capacitance_label, 13, 0, 1, 1
+        )
+        self.capw_maximum_capacitance_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_maximum_capacitance_spinBox.setObjectName(
+            "capw_maximum_capacitance_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_maximum_capacitance_spinBox, 14, 0, 1, 1
+        )
+
+        # Save Spectrum button
+        self.capw_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_start_measurement_pushButton.setObjectName(
+            "capw_start_measurement_pushButton"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_start_measurement_pushButton, 15, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.capacitance_tester_widget, "")
 
         # -------------------------------------------------------------------- #
         # ----------------------- Define Osci Widget-------------------------- #
@@ -837,6 +1086,7 @@ class Ui_MainWindow(object):
         self.sw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.sw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.sw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.sw_capacitance_spinBox.setSuffix(_translate("MainWindow", " pF"))
         self.sw_batch_name_label.setText(_translate("MainWindow", "Batch Name"))
         self.sw_device_number_label.setText(_translate("MainWindow", "Device Number"))
         self.sw_header1_label.setToolTip(
@@ -896,6 +1146,43 @@ class Ui_MainWindow(object):
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.specw_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
+        self.specw_header1_label.setText(
+            _translate("MainWindow", "Measurement Parameters")
+        )
+
+        self.capw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
+        self.capw_current_label.setText(
+            _translate("MainWindow", "Current Compliance (A)")
+        )
+        self.capw_minimum_frequency_label.setText(
+            _translate("MainWindow", "Min Frequency (kHz)")
+        )
+        self.capw_maximum_frequency_label.setText(
+            _translate("MainWindow", "Max Frequency (kHz)")
+        )
+        self.capw_frequency_step_label.setText(
+            _translate("MainWindow", "Frequency Step (kHz)")
+        )
+        self.capw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.capw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        self.capw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.capw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.capw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.capw_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
+        self.capw_header1_label.setText(
+            _translate("MainWindow", "Measurement Parameters")
+        )
+        self.capw_minimum_capacitance_label.setText(
+            _translate("MainWindow", "Min Capacitance (pF)")
+        )
+        self.capw_maximum_capacitance_label.setText(
+            _translate("MainWindow", "Max Capacitance (pF)")
+        )
 
         self.ow_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.ow_current_label.setText(
@@ -932,12 +1219,7 @@ class Ui_MainWindow(object):
         # self.specw_bad_contact_checkBox.setText(
         # _translate("MainWindow", "Check fo Bad Contacts")
         # )
-        self.specw_start_measurement_pushButton.setText(
-            _translate("MainWindow", "Start Measurement")
-        )
-        self.specw_header1_label.setText(
-            _translate("MainWindow", "Measurement Parameters")
-        )
+
         self.ow_stop_pushButton.setText(_translate("MainWindow", "Run/Stop"))
         self.ow_auto_scale_pushButton.setText(_translate("MainWindow", "Auto Scale"))
         self.ow_start_measurement_pushButton.setText(
@@ -948,6 +1230,10 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.spectrum_widget),
             _translate("MainWindow", "Frequency Scan"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.capacitance_tester_widget),
+            _translate("MainWindow", "Capacitance Scan"),
         )
 
         self.tabWidget.setTabText(

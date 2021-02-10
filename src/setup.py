@@ -13,7 +13,7 @@ class SetupThread(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_display = QtCore.Signal(float, float, float)
+    update_display = QtCore.Signal(float, float)
 
     def __init__(self, source, arduino, parent=None):
         super(SetupThread, self).__init__()
@@ -37,9 +37,9 @@ class SetupThread(QtCore.QThread):
         while True:
             # Measure
             voltage, current, mode = self.source.read_values()
-            frequency = self.arduino.read_frequency()
+            # frequency = self.arduino.read_frequency()
 
-            self.update_display.emit(voltage, current, frequency)
+            self.update_display.emit(voltage, current)
 
             # The sleep time here is very important because if it is chosen to
             # short, the program may crash. Currently 1 s seems to be save (one can at least go down to 0.5s)

@@ -48,6 +48,8 @@ class FrequencyScan(QtCore.QThread):
         # Define dataframe to store data in
         self.df_data = pd.DataFrame(columns=["frequency", "voltage", "current", "vpp"])
 
+        self.is_killed = False
+
     def run(self):
         """
         Class that does a frequency sweep
@@ -72,7 +74,7 @@ class FrequencyScan(QtCore.QThread):
 
         # Sweep over all frequencies
         frequency = self.measurement_parameters["minimum_frequency"]
-        while frequency < self.measurement_parameters["maximum_frequency"]:
+        while frequency <= self.measurement_parameters["maximum_frequency"]:
             # for frequency in self.df_data["frequency"]:
             cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
@@ -134,10 +136,24 @@ class FrequencyScan(QtCore.QThread):
 
             i += 1
 
+            if self.is_killed:
+                # Close the connection to the spectrometer
+                self.source.output(False)
+                self.source.set_voltage(5)
+                self.quit()
+                return
+
         self.source.output(False)
         self.save_data()
+        self.parent.specw_start_measurement_pushButton.setChecked(False)
         # self.parent.setup_thread.pause = False
         # self.parent.oscilloscope_thread.pause = False
+
+    def kill(self):
+        """
+        Kill thread while running
+        """
+        self.is_killed = True
 
     def save_data(self):
         """
