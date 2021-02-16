@@ -211,6 +211,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_maximum_capacitance_spinBox.setMaximum(50000)
         self.capw_maximum_capacitance_spinBox.setValue(4000)
 
+        self.capw_frequency_margin_spinBox.setMinimum(0)
+        self.capw_frequency_margin_spinBox.setMaximum(1000)
+        self.capw_frequency_margin_spinBox.setValue(15)
+
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
     # -------------------------------------------------------------------- #

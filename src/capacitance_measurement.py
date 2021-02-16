@@ -117,7 +117,11 @@ class CapacitanceScan(QtCore.QThread):
             # Counter for data storage
             i = 0
 
-            # Sweep over all frequencies within a range around the predicted resonance frequency
+            # Sweep over all frequencies within a range around the predicted
+            # resonance frequency. It is calculated from inductance and set
+            # capacitance. It is recommended to provide an effective inductance
+            # from experimental parameters in the settings to obtain good
+            # results
             predicted_resonance_frequency = np.round(
                 calculate_resonance_frequency(
                     capacitance * 1e-12, self.global_settings["coil_inductance"] * 1e-3
@@ -125,15 +129,15 @@ class CapacitanceScan(QtCore.QThread):
                 / 1e3,
                 1,
             )
-            print(predicted_resonance_frequency)
 
-            margin = 15
             min_frequency = max(
-                predicted_resonance_frequency - margin,
+                predicted_resonance_frequency
+                - self.measurement_parameters["frequency_margin"],
                 self.measurement_parameters["minimum_frequency"],
             )
             max_frequency = min(
-                predicted_resonance_frequency + margin,
+                predicted_resonance_frequency
+                + self.measurement_parameters["frequency_margin"],
                 self.measurement_parameters["maximum_frequency"],
             )
 
@@ -142,9 +146,6 @@ class CapacitanceScan(QtCore.QThread):
                 max_frequency,
                 self.measurement_parameters["frequency_step"],
             )
-            print(min_frequency)
-            print(max_frequency)
-            print(self.measurement_parameters["frequency_step"])
 
             # frequency = self.measurement_parameters["minimum_frequency"]
             for frequency in frequencies:

@@ -772,6 +772,25 @@ class Ui_MainWindow(object):
             self.capw_maximum_capacitance_spinBox, 14, 0, 1, 1
         )
 
+        # Set Frequency Margin around the resonance frequency
+        self.capw_frequency_margin_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_margin_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.capw_frequency_margin_label.setObjectName("capw_frequency_margin_label")
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_margin_label, 15, 0, 1, 1
+        )
+        self.capw_frequency_margin_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_margin_spinBox.setObjectName(
+            "capw_frequency_margin_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_margin_spinBox, 16, 0, 1, 1
+        )
+
         # Save Spectrum button
         self.capw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.capw_scrollAreaWidgetContents
@@ -780,7 +799,7 @@ class Ui_MainWindow(object):
             "capw_start_measurement_pushButton"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_start_measurement_pushButton, 15, 0, 1, 1
+            self.capw_start_measurement_pushButton, 17, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.capacitance_tester_widget, "")
@@ -1191,6 +1210,9 @@ class Ui_MainWindow(object):
         )
         self.capw_maximum_capacitance_label.setText(
             _translate("MainWindow", "Max Capacitance (pF)")
+        )
+        self.capw_frequency_margin_label.setText(
+            _translate("MainWindow", "Frequency Margin (kHz)")
         )
 
         self.ow_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
