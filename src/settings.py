@@ -35,6 +35,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         self.base_capacitance_lineEdit.setText(default_settings["base_capacitance"])
         self.capacitances_lineEdit.setText(default_settings["capacitances"])
         self.coil_inductance_lineEdit.setText(default_settings["coil_inductance"])
+        self.circuit_resistance_lineEdit.setText(default_settings["circuit_resistance"])
         self.arduino_pins_lineEdit.setText(default_settings["arduino_pins"])
 
         # Connect buttons to functions
@@ -57,6 +58,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
                 "default_saving_path": self.default_saving_path_lineEdit.text(),
                 "base_capacitance": self.base_capacitance_lineEdit.text(),
                 "coil_inductance": self.coil_inductance_lineEdit.text(),
+                "circuit_resistance": self.circuit_resistance_lineEdit.text(),
                 "capacitances": self.capacitances_lineEdit.text(),
                 "arduino_pins": self.arduino_pins_lineEdit.text(),
             }
@@ -117,4 +119,5 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         self.capacitances_lineEdit.setText(default_settings["capacitances"])
 
         self.coil_inductance_lineEdit.setText(default_settings["coil_inductance"])
+        self.circuit_resistance_lineEdit.setText(default_settings["circuit_resistance"])
         self.arduino_pins_lineEdit.setText(default_settings["arduino_pins"])

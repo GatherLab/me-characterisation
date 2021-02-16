@@ -39,7 +39,39 @@ def read_global_settings():
         # Update statusbar
         log_message("Default device parameters taken")
 
+    for key in settings[0].keys():
+        try:
+            settings[0][key] = float(settings[0][key])
+        except:
+            # This here does not have to be typecast explicitly but the except
+            # statement needs something
+            settings[0][key] = str(settings[0][key])
+
     return settings[0]
+
+
+# def read_global_settings():
+#     """
+#     Read in global settings from file. The file can be changed using the
+#     settings window.
+#     """
+#     # Load from file to fill the lines
+#     with open(
+#         os.path.join(Path(__file__).parent.parent, "usr", "global_settings.json")
+#     ) as json_file:
+#         data = json.load(json_file)
+#     try:
+#         settings = data["overwrite"]
+
+#         # Update statusbar
+#         log_message("Global Settings Read from File")
+#     except:
+#         settings = data["default"]
+
+#         # Update statusbar
+#         log_message("Default device parameters taken")
+
+#     return settings[0]
 
 
 def save_file(df, file_path, header_lines):

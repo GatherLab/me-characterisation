@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import core_functions as cf
+from physics_functions import ResonanceFit, calculate_resonance_frequency
 
 import matplotlib as mpl
 from scipy.optimize import curve_fit
@@ -19,7 +20,7 @@ class CapacitanceScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_spectrum_signal = QtCore.Signal(list, list, list, str, bool, str)
+    update_spectrum_signal = QtCore.Signal(list, list, list, str, bool, str, bool)
     update_progress_bar = QtCore.Signal(str, float)
 
     def __init__(
@@ -48,7 +49,18 @@ class CapacitanceScan(QtCore.QThread):
         self.update_spectrum_signal.connect(parent.update_spectrum)
         self.update_progress_bar.connect(parent.progressBar.setProperty)
 
+        # Read global paramters
+        self.global_settings = cf.read_global_settings()
+
         self.df_data = pd.DataFrame(columns=["frequency", "voltage", "current"])
+        self.df_resonance_fit = pd.DataFrame(
+            columns=[
+                "capacitance",
+                "resonance_frequency",
+                "maximum_current",
+                "quality_factor",
+            ]
+        )
         self.is_killed = False
 
     def run(self):
@@ -89,16 +101,14 @@ class CapacitanceScan(QtCore.QThread):
 
         # Count up the colors
         color_counter = 0
+        # Helper variable for correct plotting
+        first_bool = True
 
         # Sweep over all selected capacitances
         for capacitance in selected_available_cap:
             # Now set the capacitance
             self.arduino.set_capacitance(capacitance)
             self.source.output(True)
-
-            # In the future: If selected by the user, do a fit of the data
-            # around the expected range, get all resonance frequencies and save
-            # to file
 
             # Define dataframe to store data in
             del self.df_data
@@ -107,12 +117,38 @@ class CapacitanceScan(QtCore.QThread):
             # Counter for data storage
             i = 0
 
-            # Helper variable for correct plotting
-            first_bool = True
+            # Sweep over all frequencies within a range around the predicted resonance frequency
+            predicted_resonance_frequency = np.round(
+                calculate_resonance_frequency(
+                    capacitance * 1e-12, self.global_settings["coil_inductance"] * 1e-3
+                )
+                / 1e3,
+                1,
+            )
+            print(predicted_resonance_frequency)
 
-            # Sweep over all frequencies
-            frequency = self.measurement_parameters["minimum_frequency"]
-            while frequency <= self.measurement_parameters["maximum_frequency"]:
+            margin = 15
+            min_frequency = max(
+                predicted_resonance_frequency - margin,
+                self.measurement_parameters["minimum_frequency"],
+            )
+            max_frequency = min(
+                predicted_resonance_frequency + margin,
+                self.measurement_parameters["maximum_frequency"],
+            )
+
+            frequencies = np.arange(
+                min_frequency,
+                max_frequency,
+                self.measurement_parameters["frequency_step"],
+            )
+            print(min_frequency)
+            print(max_frequency)
+            print(self.measurement_parameters["frequency_step"])
+
+            # frequency = self.measurement_parameters["minimum_frequency"]
+            for frequency in frequencies:
+                # while frequency <= self.measurement_parameters["maximum_frequency"]:
                 # for frequency in self.df_data["frequency"]:
                 # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
@@ -136,8 +172,18 @@ class CapacitanceScan(QtCore.QThread):
 
                 # Update progress bar
                 self.update_progress_bar.emit(
-                    "value", int((i + 1) / len(self.df_data["frequency"]) * 100)
+                    "value",
+                    int(
+                        (color_counter + (i + 1) / len(frequencies))
+                        / len(selected_available_cap)
+                        * 100
+                    ),
                 )
+
+                # print(color_counter)
+                # print(i)
+                # print(len(self.df_data["frequency"]))
+                # print(len(selected_available_cap))
 
                 self.update_spectrum_signal.emit(
                     self.df_data["frequency"],
@@ -146,26 +192,27 @@ class CapacitanceScan(QtCore.QThread):
                         self.measurement_parameters["minimum_frequency"],
                         self.measurement_parameters["maximum_frequency"],
                     ],
-                    str(capacitance) + "pF",
+                    str(capacitance) + " pF",
                     first_bool,
-                    device_color[color_counter]
+                    device_color[color_counter],
+                    False
                     # self.df_data["vpp"],
                 )
 
                 # Now compute the slope to adjust the step hight on the fly
-                if i > 0:
-                    slope = abs(
-                        (
-                            self.df_data.loc[i, "current"]
-                            - self.df_data.loc[i - 1, "current"]
-                        )
-                        / (
-                            self.df_data.loc[i, "frequency"]
-                            - self.df_data.loc[i - 1, "frequency"]
-                        )
-                    )
+                # if i > 0:
+                #     slope = abs(
+                #         (
+                #             self.df_data.loc[i, "current"]
+                #             - self.df_data.loc[i - 1, "current"]
+                #         )
+                #         / (
+                #             self.df_data.loc[i, "frequency"]
+                #             - self.df_data.loc[i - 1, "frequency"]
+                #         )
+                #     )
 
-                frequency = frequency + self.measurement_parameters["frequency_step"]
+                # frequency = frequency + self.measurement_parameters["frequency_step"]
 
                 i += 1
                 first_bool = False
@@ -179,8 +226,51 @@ class CapacitanceScan(QtCore.QThread):
 
             self.source.output(False)
             self.save_data(str(capacitance) + "pF")
+
+            # Helper variable for correct plotting
+            first_bool = True
+
+            # If selected by the user, do a fit of the data
+            # around the expected range, get all resonance frequencies and save
+            # to file
+            fit_class = ResonanceFit(
+                resistance=self.global_settings["circuit_resistance"],
+                voltage=self.measurement_parameters["voltage"],
+            )
+            popt, pcov = fit_class.fit(
+                self.df_data["frequency"].to_numpy(), self.df_data["current"].to_numpy()
+            )
+
+            self.df_resonance_fit.loc[color_counter, "capacitance"] = capacitance
+            self.df_resonance_fit.loc[color_counter, "resonance_frequency"] = popt[0]
+            self.df_resonance_fit.loc[color_counter, "maximum_current"] = self.df_data[
+                "current"
+            ].max()
+            self.df_resonance_fit.loc[color_counter, "quality_factor"] = popt[1]
+
+            # Extend the plotted range
+            x_fit = np.linspace(
+                self.df_data["frequency"].min(), self.df_data["frequency"].max(), 500
+            )
+
+            # Plot Fit
+            self.update_spectrum_signal.emit(
+                x_fit,
+                fit_class.func(x_fit, *popt),
+                [
+                    self.measurement_parameters["minimum_frequency"],
+                    self.measurement_parameters["maximum_frequency"],
+                ],
+                str(capacitance) + "pF fit",
+                first_bool,
+                device_color[color_counter],
+                True
+                # self.df_data["vpp"],
+            )
+
             color_counter += 1
 
+        self.save_resonance_data()
         self.parent.capw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_capacitance(self.arduino.base_capacitance)
         # self.parent.setup_thread.pause = False
@@ -194,8 +284,7 @@ class CapacitanceScan(QtCore.QThread):
 
     def save_data(self, suffix):
         """
-        Function to save the measured data to file. This should probably be
-        integrated into the AutotubeMeasurement class
+        Function to save the measured data to file.
         """
 
         # Define Header
@@ -209,13 +298,13 @@ class CapacitanceScan(QtCore.QThread):
             + suffix
         )
         line04 = (
-            "Min. Capacitance:   "
+            "Min. Frequency:   "
             + str(self.measurement_parameters["minimum_frequency"])
             + " kHz \t"
-            + "Max. Capacitance:   "
+            + "Max. Frequency:   "
             + str(self.measurement_parameters["maximum_frequency"])
             + " kHz \t"
-            + "Capacitance Step:   "
+            + "Frequency Step:   "
             + str(self.measurement_parameters["frequency_step"])
             + " kHz \t"
         )
@@ -249,3 +338,52 @@ class CapacitanceScan(QtCore.QThread):
 
         # # Now write pandas dataframe to file
         # self.df_data.to_csv(file_path, index=False, mode="a", header=False, sep="\t")
+
+    def save_resonance_data(self):
+        """
+        Function to save the fitted data of the resonances
+        """
+
+        # Define Header
+        line03 = (
+            "Voltage:   "
+            + str(self.measurement_parameters["voltage"])
+            + " V   "
+            + "Current:   "
+            + str(self.measurement_parameters["current_compliance"])
+            + " A   "
+        )
+        line04 = (
+            "Min. Frequency:   "
+            + str(self.measurement_parameters["minimum_frequency"])
+            + " kHz \t"
+            + "Max. Frequency:   "
+            + str(self.measurement_parameters["maximum_frequency"])
+            + " kHz \t"
+            + "Circuit Resistance:   "
+            + str(self.global_settings["circuit_resistance"])
+            + " Ohm \t"
+        )
+        line05 = "### Measurement data ###"
+        line06 = "Capacitance\t Resonance Frequency\t Maximum Current\t Quality Factor"
+        line07 = "pF\t kHz\t A\t\n"
+
+        header_lines = [
+            line03,
+            line04,
+            line05,
+            line06,
+            line07,
+        ]
+
+        # Write header lines to file
+        file_path = (
+            self.setup_parameters["folder_path"]
+            + dt.date.today().strftime("%Y-%m-%d_")
+            + self.setup_parameters["batch_name"]
+            + "_resonances"
+            + ".csv"
+        )
+        cf.save_file(self.df_resonance_fit, file_path, header_lines)
+        print(self.df_resonance_fit)
+        cf.log_message("Resonance frequencies saved")

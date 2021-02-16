@@ -295,6 +295,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Kill threads here
         self.setup_thread.kill()
+        self.oscilloscope_measurement.kill()
 
         # Kill Osci
         try:
@@ -615,8 +616,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capacitance_sweep.start()
 
-    @QtCore.Slot(list, list, list, str, bool, str)
-    def update_spectrum(self, frequency, current, limits, label, first_bool, color):
+    @QtCore.Slot(list, list, list, str, bool, str, bool)
+    def update_spectrum(
+        self, frequency, current, limits, label, first_bool, color, fit
+    ):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
@@ -640,7 +643,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax2.set_ylim([min(vpp) - 0.2, max(vpp) + 0.2])
 
         # Plot current
-        self.capw_ax.plot(frequency, current, marker="o", color=color, label=label)
+        if fit == True:
+            self.capw_ax.plot(frequency, current, color=color)
+        else:
+            # Plot with linewidth zero is chosen instead of scatter to ensure that lines can be deleted correctly
+            self.capw_ax.plot(
+                frequency, current, marker="o", linewidth=0, color=color, label=label
+            )
+
         self.capw_ax.legend()
 
         # self.specw_ax2.plot(

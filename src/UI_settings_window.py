@@ -161,29 +161,37 @@ class Ui_Settings(object):
         self.coil_inductance_lineEdit.setObjectName("coil_inductance_lineEdit")
         self.gridLayout.addWidget(self.coil_inductance_lineEdit, 10, 1, 1, 1)
 
+        # Circuit Resistance
+        self.circuit_resistance_label = QtWidgets.QLabel(Settings)
+        self.circuit_resistance_label.setObjectName("circuit_resistance_label")
+        self.gridLayout.addWidget(self.circuit_resistance_label, 11, 0, 1, 1)
+        self.circuit_resistance_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.circuit_resistance_lineEdit.setObjectName("circuit_resistance_lineEdit")
+        self.gridLayout.addWidget(self.circuit_resistance_lineEdit, 11, 1, 1, 1)
+
         # Base capacitance
         self.base_capacitance_label = QtWidgets.QLabel(Settings)
         self.base_capacitance_label.setObjectName("base_capacitance_label")
-        self.gridLayout.addWidget(self.base_capacitance_label, 11, 0, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_label, 12, 0, 1, 1)
         self.base_capacitance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.base_capacitance_lineEdit.setObjectName("base_capacitance_lineEdit")
-        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 11, 1, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 12, 1, 1, 1)
 
         # Capacitances
         self.capacitances_label = QtWidgets.QLabel(Settings)
         self.capacitances_label.setObjectName("capacitances_label")
-        self.gridLayout.addWidget(self.capacitances_label, 12, 0, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_label, 13, 0, 1, 1)
         self.capacitances_lineEdit = QtWidgets.QLineEdit(Settings)
         self.capacitances_lineEdit.setObjectName("capacitances_lineEdit")
-        self.gridLayout.addWidget(self.capacitances_lineEdit, 12, 1, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_lineEdit, 13, 1, 1, 1)
 
         # Arduino Pins (matching the capacitances)
         self.arduino_pins_label = QtWidgets.QLabel(Settings)
         self.arduino_pins_label.setObjectName("arduino_pins_label")
-        self.gridLayout.addWidget(self.arduino_pins_label, 13, 0, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_label, 14, 0, 1, 1)
         self.arduino_pins_lineEdit = QtWidgets.QLineEdit(Settings)
         self.arduino_pins_lineEdit.setObjectName("arduino_pins_lineEdit")
-        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 13, 1, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 14, 1, 1, 1)
 
         # # Transimpedance Amplifier Resistance
         # self.amplifier_resistance_label = QtWidgets.QLabel(Settings)
@@ -225,7 +233,7 @@ class Ui_Settings(object):
         self.save_settings_pushButton.setObjectName("save_settings_pushButton")
         self.buttons_HBoxLayout.addWidget(self.save_settings_pushButton)
 
-        self.gridLayout.addLayout(self.buttons_HBoxLayout, 14, 0, 1, 2)
+        self.gridLayout.addLayout(self.buttons_HBoxLayout, 15, 0, 1, 2)
 
         self.retranslateUi(Settings)
         QtCore.QMetaObject.connectSlotsByName(Settings)
@@ -267,6 +275,9 @@ class Ui_Settings(object):
         )
         self.coil_inductance_label.setText(
             _translate("Settings", "Coil Inductance (mH)")
+        )
+        self.circuit_resistance_label.setText(
+            _translate("Settings", "Circuit Resistance (Ohm)")
         )
         # self.amplifier_resistance_label.setText(
         #     _translate("Settings", "Transimpedance Amplifier Resistance (Ohm)")

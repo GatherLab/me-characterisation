@@ -6,9 +6,10 @@
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
             "base_capacitance": "3300",
-            "coil_inductance": "0.159",
+            "coil_inductance": "0.2022",
+            "circuit_resistance": "13",
             "capacitances": "3300, 2200, 1000, 680, 330, 150",
-            "arduino_pins": "7,6,5,4,3,2"
+            "arduino_pins": "2,3,4,5,6,7"
         }
     ],
     "default": [
@@ -17,10 +18,11 @@
             "source_address": "ASRL4::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
+            "coil_inductance": "0.2022",
+            "circuit_resistance": "13",
             "base_capacitance": "3300",
             "capacitances": "3300, 2200, 1000, 680, 330, 150",
-            "arduino_pins": "7,6,5,4,3,2",
-            "coil_inductance": "0.159"
+            "arduino_pins": "2,3,4,5,6,7"
         }
     ]
 }

@@ -487,7 +487,7 @@ class Arduino:
         # capacitances = [150, 330, 680, 1000, 2200, 3300]
         # self.arduino_pins = np.array([7, 6, 5, 4, 3, 2])
         self.arduino_pins = np.array(
-            global_settings["arduino_pins"].split(","), dtype=float
+            global_settings["arduino_pins"].split(","), dtype=int
         )
         self.cap_states = np.repeat(False, np.size(self.arduino_pins))
 
