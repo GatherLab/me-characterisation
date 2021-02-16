@@ -46,7 +46,7 @@ class CapacitanceScan(QtCore.QThread):
         self.setup_parameters = setup_parameters
 
         # Connect signal to the updater from the parent class
-        self.update_spectrum_signal.connect(parent.update_spectrum)
+        self.update_spectrum_signal.connect(parent.update_capacitance_spectrum)
         self.update_progress_bar.connect(parent.progressBar.setProperty)
 
         # Read global paramters

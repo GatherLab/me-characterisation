@@ -566,6 +566,20 @@ class Ui_MainWindow(object):
             self.specw_frequency_settling_time_spinBox, 12, 0, 1, 1
         )
 
+        # Auto set capacitance?
+        self.specw_autoset_capacitance_HLayout = QtWidgets.QHBoxLayout()
+        self.specw_autoset_capacitance_toggleSwitch = ToggleSwitch()
+        self.specw_autoset_capacitance_label = QtWidgets.QLabel("Autoset Capacitance")
+        self.specw_autoset_capacitance_HLayout.addWidget(
+            self.specw_autoset_capacitance_toggleSwitch
+        )
+        self.specw_autoset_capacitance_HLayout.addWidget(
+            self.specw_autoset_capacitance_label
+        )
+        self.specw_scrollArea_gridLayout.addLayout(
+            self.specw_autoset_capacitance_HLayout, 13, 0, 1, 1
+        )
+
         # Save Spectrum button
         self.specw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.specw_scrollAreaWidgetContents
@@ -574,7 +588,7 @@ class Ui_MainWindow(object):
             "specw_start_measurement_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_start_measurement_pushButton, 13, 0, 1, 1
+            self.specw_start_measurement_pushButton, 14, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
@@ -1218,11 +1232,16 @@ class Ui_MainWindow(object):
         self.specw_frequency_settling_time_label.setText(
             _translate("MainWindow", "Settling Time (s)")
         )
+        self.specw_autoset_capacitance_toggleSwitch.setText(
+            _translate("MainWindow", "Autoset Capacitance")
+        )
+
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+
         self.specw_start_measurement_pushButton.setText(
             _translate("MainWindow", "Start Measurement")
         )

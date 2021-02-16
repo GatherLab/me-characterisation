@@ -168,23 +168,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
-        self.specw_current_spinBox.setValue(1)
+        self.specw_current_spinBox.setValue(0.2)
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
-        self.specw_minimum_frequency_spinBox.setValue(50)
+        self.specw_minimum_frequency_spinBox.setValue(120)
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
-        self.specw_maximum_frequency_spinBox.setValue(200)
+        self.specw_maximum_frequency_spinBox.setValue(180)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
-        self.specw_frequency_step_spinBox.setValue(5)
+        self.specw_frequency_step_spinBox.setValue(1)
 
         self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
         self.specw_frequency_settling_time_spinBox.setMaximum(10)
-        self.specw_frequency_settling_time_spinBox.setValue(0.5)
+        self.specw_frequency_settling_time_spinBox.setValue(1)
 
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
@@ -503,6 +503,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "maximum_frequency": self.specw_maximum_frequency_spinBox.value(),
             "frequency_step": self.specw_frequency_step_spinBox.value(),
             "frequency_settling_time": self.specw_frequency_settling_time_spinBox.value(),
+            "autoset_capacitance": self.specw_autoset_capacitance_toggleSwitch.isChecked(),
         }
 
         # Update statusbar
@@ -632,7 +633,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capacitance_sweep.start()
 
     @QtCore.Slot(list, list, list, str, bool, str, bool)
-    def update_spectrum(
+    def update_capacitance_spectrum(
         self, frequency, current, limits, label, first_bool, color, fit
     ):
         """

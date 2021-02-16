@@ -79,7 +79,9 @@ class FrequencyScan(QtCore.QThread):
             cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set frequency
-            self.arduino.set_frequency(frequency)
+            self.arduino.set_frequency(
+                frequency, self.measurement_parameters["autoset_capacitance"]
+            )
 
             # Wait a bit
             time.sleep(self.measurement_parameters["frequency_settling_time"])

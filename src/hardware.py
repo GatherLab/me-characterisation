@@ -724,8 +724,8 @@ class Arduino:
             # Write the capacitance to the arduino
             com.write(str.encode("cap" + str(cap_no) + "\n"))
 
-            print(com.readall())
-            time.sleep(0.5)
+            # print(com.readall())
+            # time.sleep(0.5)
             self.cap_states[np.where(np.array(self.arduino_pins) == cap_no)] = state
         else:
             print("Cap " + str(cap_no) + " was already in state " + str(state))
