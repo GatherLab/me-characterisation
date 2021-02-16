@@ -157,7 +157,7 @@ class CapacitanceScan(QtCore.QThread):
                 self.arduino.set_frequency(frequency)
 
                 # Wait a bit
-                time.sleep(0.5)
+                time.sleep(self.measurement_parameters["frequency_settling_time"])
 
                 # Measure the voltage and current (and posssibly paramters on the osci)
                 voltage, current, mode = self.source.read_values()
@@ -222,6 +222,8 @@ class CapacitanceScan(QtCore.QThread):
                     # Close the connection to the spectrometer
                     self.source.output(False)
                     self.source.set_voltage(5)
+                    # Save all resonance data you have
+                    self.save_resonance_data()
                     self.quit()
                     return
 
@@ -364,6 +366,9 @@ class CapacitanceScan(QtCore.QThread):
             + "Circuit Resistance:   "
             + str(self.global_settings["circuit_resistance"])
             + " Ohm \t"
+            + "Settling Time:   "
+            + str(self.global_settings["frequency_settling_time"])
+            + " s \t"
         )
         line05 = "### Measurement data ###"
         line06 = "Capacitance\t Resonance Frequency\t Maximum Current\t Quality Factor"

@@ -543,6 +543,29 @@ class Ui_MainWindow(object):
             self.specw_frequency_step_spinBox, 10, 0, 1, 1
         )
 
+        # Set frequency settling time
+        self.specw_frequency_settling_time_label = QtWidgets.QLabel(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_frequency_settling_time_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.specw_frequency_settling_time_label.setObjectName(
+            "specw_frequency_settling_time_label"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_frequency_settling_time_label, 11, 0, 1, 1
+        )
+        self.specw_frequency_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
+            self.specw_scrollAreaWidgetContents
+        )
+        self.specw_frequency_settling_time_spinBox.setObjectName(
+            "specw_frequency_settling_time_spinBox"
+        )
+        self.specw_scrollArea_gridLayout.addWidget(
+            self.specw_frequency_settling_time_spinBox, 12, 0, 1, 1
+        )
+
         # Save Spectrum button
         self.specw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.specw_scrollAreaWidgetContents
@@ -551,7 +574,7 @@ class Ui_MainWindow(object):
             "specw_start_measurement_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_start_measurement_pushButton, 11, 0, 1, 1
+            self.specw_start_measurement_pushButton, 13, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
@@ -791,6 +814,29 @@ class Ui_MainWindow(object):
             self.capw_frequency_margin_spinBox, 16, 0, 1, 1
         )
 
+        # Set frequency settling time (time to wait until we measure)
+        self.capw_frequency_settling_time_label = QtWidgets.QLabel(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_settling_time_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.capw_frequency_settling_time_label.setObjectName(
+            "capw_frequency_settling_time_label"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_settling_time_label, 17, 0, 1, 1
+        )
+        self.capw_frequency_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
+            self.capw_scrollAreaWidgetContents
+        )
+        self.capw_frequency_settling_time_spinBox.setObjectName(
+            "capw_frequency_settling_time_spinBox"
+        )
+        self.capw_scrollArea_gridLayout.addWidget(
+            self.capw_frequency_settling_time_spinBox, 18, 0, 1, 1
+        )
+
         # Save Spectrum button
         self.capw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.capw_scrollAreaWidgetContents
@@ -799,7 +845,7 @@ class Ui_MainWindow(object):
             "capw_start_measurement_pushButton"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_start_measurement_pushButton, 17, 0, 1, 1
+            self.capw_start_measurement_pushButton, 19, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.capacitance_tester_widget, "")
@@ -1169,6 +1215,9 @@ class Ui_MainWindow(object):
         self.specw_frequency_step_label.setText(
             _translate("MainWindow", "Frequency Step (kHz)")
         )
+        self.specw_frequency_settling_time_label.setText(
+            _translate("MainWindow", "Settling Time (s)")
+        )
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
@@ -1213,6 +1262,9 @@ class Ui_MainWindow(object):
         )
         self.capw_frequency_margin_label.setText(
             _translate("MainWindow", "Frequency Margin (kHz)")
+        )
+        self.capw_frequency_settling_time_label.setText(
+            _translate("MainWindow", "Settling Time (s)")
         )
 
         self.ow_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))

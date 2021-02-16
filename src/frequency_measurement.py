@@ -82,7 +82,7 @@ class FrequencyScan(QtCore.QThread):
             self.arduino.set_frequency(frequency)
 
             # Wait a bit
-            time.sleep(0.5)
+            time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and posssibly paramters on the osci)
             voltage, current, mode = self.source.read_values()

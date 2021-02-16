@@ -3,11 +3,25 @@ import pandas as pd
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
 
+from pathlib import Path
+
 data = pd.read_csv(
     "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\ME-Devices\\2021-02-10_Capacitance-Sweep\\2021-02-10_test_d0_3300.0pF_03.csv",
     sep="\t",
     skiprows=5,
     names=["frequency", "voltage", "current"],
+)
+
+calibration = pd.read_csv(
+    "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/2021-02-16_Capacitance-calibration/2021-02-16_settling-time-01-freq-step-02_resonances_02.csv",
+    sep="\t",
+    skiprows=6,
+    names=[
+        "capacitance",
+        "resonance_frequency",
+        "quality_factor",
+        "maximum_current",
+    ],
 )
 
 

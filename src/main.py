@@ -182,6 +182,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_frequency_step_spinBox.setMaximum(1000)
         self.specw_frequency_step_spinBox.setValue(5)
 
+        self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
+        self.specw_frequency_settling_time_spinBox.setMaximum(10)
+        self.specw_frequency_settling_time_spinBox.setValue(0.5)
+
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
         self.capw_voltage_spinBox.setMaximum(33)
@@ -201,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capw_frequency_step_spinBox.setMinimum(0.05)
         self.capw_frequency_step_spinBox.setMaximum(1000)
-        self.capw_frequency_step_spinBox.setValue(5)
+        self.capw_frequency_step_spinBox.setValue(1)
 
         self.capw_minimum_capacitance_spinBox.setMinimum(0)
         self.capw_minimum_capacitance_spinBox.setMaximum(50000)
@@ -214,6 +218,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_frequency_margin_spinBox.setMinimum(0)
         self.capw_frequency_margin_spinBox.setMaximum(1000)
         self.capw_frequency_margin_spinBox.setValue(15)
+
+        self.capw_frequency_settling_time_spinBox.setMinimum(0.01)
+        self.capw_frequency_settling_time_spinBox.setMaximum(10)
+        self.capw_frequency_settling_time_spinBox.setValue(0.5)
 
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
@@ -494,6 +502,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "minimum_frequency": self.specw_minimum_frequency_spinBox.value(),
             "maximum_frequency": self.specw_maximum_frequency_spinBox.value(),
             "frequency_step": self.specw_frequency_step_spinBox.value(),
+            "frequency_settling_time": self.specw_frequency_settling_time_spinBox.value(),
         }
 
         # Update statusbar
@@ -583,6 +592,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "frequency_step": self.capw_frequency_step_spinBox.value(),
             "minimum_capacitance": self.capw_minimum_capacitance_spinBox.value(),
             "maximum_capacitance": self.capw_maximum_capacitance_spinBox.value(),
+            "frequency_margin": self.capw_frequency_margin_spinBox.value(),
+            "frequency_settling_time": self.capw_frequency_settling_time_spinBox.value(),
         }
 
         # Update statusbar
@@ -655,7 +666,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 frequency, current, marker="o", linewidth=0, color=color, label=label
             )
 
-        self.capw_ax.legend()
+        # Only regenerate the legend if the line is the first
+        if first_bool:
+            legend = self.capw_ax.legend()
+            legend.set_draggable(True)
 
         # self.specw_ax2.plot(
         #     frequency,

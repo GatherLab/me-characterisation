@@ -49,6 +49,10 @@ class InitThread(QtCore.QThread):
         # self.update_loading_dialog.emit("Test")
         # Read global settings first (what if they are not correct yet?)
 
+        import pydevd
+
+        pydevd.settrace(suspend=False)
+
         self.update_loading_dialog.emit(0, "Initialising Oscilloscope")
 
         # Try if Rigol Oscilloscope can be initialised

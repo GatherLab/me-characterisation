@@ -4,6 +4,7 @@ import serial
 from PySide2 import QtCore
 
 import core_functions as cf
+from physics_functions import calculate_resonance_frequency
 
 import time
 import re
@@ -12,6 +13,9 @@ import sys
 import numpy as np
 import pandas as pd
 from itertools import chain, combinations
+import debugpy
+
+debugpy.debug_this_thread()
 
 
 class RigolOscilloscope:
@@ -431,6 +435,7 @@ class Arduino:
         """
         Init arduino
         """
+
         # Define a mutex
         self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 
@@ -518,11 +523,86 @@ class Arduino:
             .drop_duplicates(subset=["sum"], keep="first")
         )
 
-        self.combinations_df[
-            "resonance_frequency"
-        ] = self.capacitance_to_resonance_frequency(
-            self.combinations_df["sum"].astype(np.float64).to_numpy()
+        # Add additional column with resonance frequency
+
+        self.combinations_df["resonance_frequency"] = np.empty(
+            len(self.combinations_df)
         )
+
+        # try:
+        # Read in capacitor calibration file
+        calibration = pd.read_csv(
+            global_settings["calibration_file_path"],
+            sep="\t",
+            skiprows=5,
+            names=[
+                "capacitance",
+                "resonance_frequency",
+                "quality_factor",
+                "maximum_current",
+            ],
+        )
+        # except:
+        #     calibration = pd.DataFrame(
+        #         columns=[
+        #             "capacitance",
+        #             "resonance_frequency",
+        #             "quality_factor",
+        #             "maximum_current",
+        #         ],
+        #     )
+
+        # If capacitance exists in calibration file, set it to that resonance
+        # frequency. Otherwise, estimate resonance frequency from coil
+        # inductance given in settings.
+        for index, capacitance in self.combinations_df["sum"].items():
+            # Check if there is an entry in the calibration list
+            if (
+                len(
+                    calibration.loc[
+                        calibration["capacitance"] == capacitance, "capacitance"
+                    ].to_numpy()
+                )
+                == 1
+            ):
+                # print(self.combinations_df.loc[index, "resonance_frequency"])
+                self.combinations_df.loc[
+                    index, "resonance_frequency"
+                ] = calibration.loc[
+                    calibration["capacitance"] == capacitance, "resonance_frequency"
+                ].to_list()[
+                    0
+                ]
+
+            # If not, calculate the resonance frequency by ourselfs
+            elif (
+                len(
+                    calibration.loc[
+                        calibration["capacitance"] == capacitance, "capacitance"
+                    ].to_numpy()
+                )
+                == 0
+            ):
+                cf.log_message(
+                    "Capacitance "
+                    + str(capacitance)
+                    + " pF not found in calibration file"
+                )
+                self.combinations_df.loc[index, "resonance_frequency"] = (
+                    calculate_resonance_frequency(
+                        capacitance * 1e-12, global_settings["coil_inductance"] * 1e-3
+                    )
+                    / 1e3
+                )
+            # Else, something is wrong
+            else:
+                cf.log_message("Could not calculate the resonance frequency")
+
+        # self.combinations_df[
+        # "resonance_frequency"
+        # ] = self.capacitance_to_resonance_frequency(
+        # self.combinations_df["sum"].astype(np.float64).to_numpy()
+        # )
 
     def init_serial_connection(self, wait=1):
         """
@@ -568,7 +648,7 @@ class Arduino:
         self.serial_connection_open = False
         self.mutex.unlock()
 
-    def set_frequency(self, frequency):
+    def set_frequency(self, frequency, set_capacitance=False):
         """
         Function that allows to set the frequency on the Arduino (by using
         the Serial Connection interface)
@@ -587,6 +667,14 @@ class Arduino:
 
         # Read answer from Arduino
         cf.log_message(com.readall())
+
+        if set_capacitance:
+            closest_resonance_frequency, idx = cf.find_nearest(
+                self.combinations_df["resonance_frequency"].to_numpy(), frequency
+            )
+
+            closest_capacitance = self.combinations_df.at[idx, "sum"]
+            self.set_capacitance(closest_capacitance)
 
         # Set capacity accordingly
         # self.set_capacitance(frequency)
@@ -673,20 +761,20 @@ class Arduino:
         self.mutex.unlock()
 
     # The capacitances can now be matched to resonance frequencies using a fit of capacitance over resonance frequency
-    def capacitance_to_resonance_frequency(self, capacitance):
-        """
-        Function that calculates for a given capacitance the resonance frequency (current coil with 41 windings etc.)
-        Input value in pF, output value in kHz
-        """
-        A = 7.50279e-9
-        return 1 / np.sqrt(capacitance * A)
+    # def capacitance_to_resonance_frequency(self, capacitance):
+    # """
+    # Function that calculates for a given capacitance the resonance frequency (current coil with 41 windings etc.)
+    # Input value in pF, output value in kHz
+    # """
+    # A = 7.50279e-9
+    # return 1 / np.sqrt(capacitance * A)
 
-    def resonance_frequency_to_capacitance(self, frequency):
-        """
-        Convert frequency to capacitance
-        """
-        A = 7.50279e-9
-        return 1 / (frequency ** 2 * A)
+    # def resonance_frequency_to_capacitance(self, frequency):
+    # """
+    # Convert frequency to capacitance
+    # """
+    # A = 7.50279e-9
+    # return 1 / (frequency ** 2 * A)
 
     def close(self):
         """

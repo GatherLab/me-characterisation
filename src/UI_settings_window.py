@@ -193,6 +193,24 @@ class Ui_Settings(object):
         self.arduino_pins_lineEdit.setObjectName("arduino_pins_lineEdit")
         self.gridLayout.addWidget(self.arduino_pins_lineEdit, 14, 1, 1, 1)
 
+        # Resonance Frequency calibration file
+        self.resonance_frequency_calibration_path_label = QtWidgets.QLabel(Settings)
+        self.resonance_frequency_calibration_path_label.setObjectName(
+            "resonance_frequency_calibration_path_label"
+        )
+        self.gridLayout.addWidget(
+            self.resonance_frequency_calibration_path_label, 15, 0, 1, 1
+        )
+        self.resonance_frequency_calibration_path_lineEdit = QtWidgets.QLineEdit(
+            Settings
+        )
+        self.resonance_frequency_calibration_path_lineEdit.setObjectName(
+            "resonance_frequency_calibration_path_lineEdit"
+        )
+        self.gridLayout.addWidget(
+            self.resonance_frequency_calibration_path_lineEdit, 15, 1, 1, 1
+        )
+
         # # Transimpedance Amplifier Resistance
         # self.amplifier_resistance_label = QtWidgets.QLabel(Settings)
         # self.amplifier_resistance_label.setObjectName("amplifier_resistance_label")
@@ -233,7 +251,7 @@ class Ui_Settings(object):
         self.save_settings_pushButton.setObjectName("save_settings_pushButton")
         self.buttons_HBoxLayout.addWidget(self.save_settings_pushButton)
 
-        self.gridLayout.addLayout(self.buttons_HBoxLayout, 15, 0, 1, 2)
+        self.gridLayout.addLayout(self.buttons_HBoxLayout, 16, 0, 1, 2)
 
         self.retranslateUi(Settings)
         QtCore.QMetaObject.connectSlotsByName(Settings)
@@ -278,6 +296,9 @@ class Ui_Settings(object):
         )
         self.circuit_resistance_label.setText(
             _translate("Settings", "Circuit Resistance (Ohm)")
+        )
+        self.resonance_frequency_calibration_path_label.setText(
+            _translate("Settings", "Calibration File Path")
         )
         # self.amplifier_resistance_label.setText(
         #     _translate("Settings", "Transimpedance Amplifier Resistance (Ohm)")
