@@ -353,6 +353,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
+        self.sw_set_buttons_gridLayout = QtWidgets.QGridLayout()
+
+        self.sw_source_output_pushButton = QtWidgets.QPushButton(self.setup_widget)
+        self.sw_source_output_pushButton.setObjectName("sw_source_output_pushButton")
+        self.gridLayout_7.addWidget(self.sw_source_output_pushButton, 8, 0, 1, 2)
+
         self.tabWidget.addTab(self.setup_widget, "")
 
         # -------------------------------------------------------------------- #
@@ -1087,6 +1093,9 @@ class Ui_MainWindow(object):
         self.sw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.sw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.sw_capacitance_spinBox.setSuffix(_translate("MainWindow", " pF"))
+        self.sw_source_output_pushButton.setText(
+            _translate("MainWindow", "Output On/Off")
+        )
         self.sw_batch_name_label.setText(_translate("MainWindow", "Batch Name"))
         self.sw_device_number_label.setText(_translate("MainWindow", "Device Number"))
         self.sw_header1_label.setToolTip(

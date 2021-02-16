@@ -4,6 +4,7 @@ import os.path
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 
 
 def log_message(message):
@@ -68,10 +69,11 @@ def save_file(df, file_path, header_lines):
     # Now write pandas dataframe to file
     df.to_csv(file_path, index=False, mode="a", header=False, sep="\t")
 
-    def find_nearest(array, value):
-        """
-        Function to find the closest value in a list
-        """
-        array = np.asarray(array)
-        idx = (np.abs(array - value)).argmin()
-        return array[idx], idx
+
+def find_nearest(array, value):
+    """
+    Function to find the closest value in a list
+    """
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx], idx

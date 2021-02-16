@@ -397,10 +397,27 @@ class VoltcraftSource:
         self.query("SOUT%d" % int(not state))
 
         # Set the state variable
-        self.output_state = self.output_state
+        self.output_state = state
 
         # Wait shortly because the source needs a bit until the final voltage is reached
         time.sleep(2)
+
+        self.mutex.unlock()
+
+    def close(self):
+        """
+        Savely close the source
+        """
+        self.mutex.lock()
+
+        # Deactivate output
+        self.output(False)
+
+        # Close serial connection
+        self.source.close()
+
+        # Wait shortly to make sure the connection is closed
+        time.sleep(1)
 
         self.mutex.unlock()
 
@@ -458,10 +475,20 @@ class Arduino:
         """
         Function to initialise caps
         """
-        # In pF
-        self.base_capacitance = 3300
-        capacitances = [150, 330, 680, 1000, 2200, 3300]
-        self.arduino_pins = np.array([7, 6, 5, 4, 3, 2])
+        # Read in global settings
+        global_settings = cf.read_global_settings()
+
+        # Capacitances in pF
+        self.base_capacitance = float(global_settings["base_capacitance"])
+        # self.base_capacitance = 3300
+        self.capacitances = np.array(
+            global_settings["capacitances"].split(","), dtype=float
+        )
+        # capacitances = [150, 330, 680, 1000, 2200, 3300]
+        # self.arduino_pins = np.array([7, 6, 5, 4, 3, 2])
+        self.arduino_pins = np.array(
+            global_settings["arduino_pins"].split(","), dtype=float
+        )
         self.cap_states = np.repeat(False, np.size(self.arduino_pins))
 
         def powerset(iterable):
@@ -469,7 +496,7 @@ class Arduino:
             s = list(iterable)
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
-        combinations_list = list(powerset(capacitances))
+        combinations_list = list(powerset(self.capacitances))
         combinations_pins = list(powerset(self.arduino_pins))
 
         # Define pandas dataframe that contains the capacitance constituents, the corresponding arduino pins and the sum of the capacitances
@@ -660,3 +687,12 @@ class Arduino:
         """
         A = 7.50279e-9
         return 1 / (frequency ** 2 * A)
+
+    def close(self):
+        """
+        Function that is called before program is closed to make sure that
+        all relays are closed
+        """
+        self.mutex.lock()
+        self.close_serial_connection()
+        self.mutex.unlock()

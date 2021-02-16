@@ -2,15 +2,15 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from init_thread import InitThread
 from UI_loading_window import Ui_LoadingWindow
 
+import core_functions as cf
+
 
 class LoadingWindow(QtWidgets.QDialog):
     """
     Window that appears when program is loaded
     """
 
-    def __init__(
-        self, oscilloscope_address, source_address, arduino_address, parent=None
-    ):
+    def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self)
         self.ui = Ui_LoadingWindow()
         self.ui.setupUi(self)
@@ -36,8 +36,9 @@ class LoadingWindow(QtWidgets.QDialog):
         self.ui.button_continue.clicked.connect(self.kill_dialog)
 
         self.show()
+
         self.init_thread = InitThread(
-            oscilloscope_address, source_address, arduino_address, self
+            self,
         )
         self.init_thread.start()
 

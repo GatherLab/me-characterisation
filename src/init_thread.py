@@ -18,10 +18,11 @@ class InitThread(QtCore.QThread):
     emit_source = QtCore.Signal(VoltcraftSource)
     emit_arduino = QtCore.Signal(Arduino)
 
-    def __init__(
-        self, oscilloscope_address, source_address, arduino_address, widget=None
-    ):
+    def __init__(self, widget=None):
         super(InitThread, self).__init__()
+
+        # Read global settings
+        settings = cf.read_global_settings()
 
         # Connect signals
         self.update_loading_dialog.connect(widget.update_loading_dialog)
@@ -31,9 +32,12 @@ class InitThread(QtCore.QThread):
         self.emit_source.connect(widget.parent.init_source)
         self.emit_arduino.connect(widget.parent.init_arduino)
 
-        self.oscilloscope_address = oscilloscope_address
-        self.source_address = source_address
-        self.arduino_address = arduino_address
+        self.oscilloscope_address = settings["rigol_oscilloscope_address"]
+        self.source_address = settings["source_address"]
+        self.arduino_address = settings["arduino_address"]
+
+        # Now set widget
+        self.widget = widget
 
         # Variable that checks if initialisation shall be repeated
         self.repeat = False
@@ -68,9 +72,20 @@ class InitThread(QtCore.QThread):
 
         # Try if Voltcraft Source can be initialised
         try:
-            source = VoltcraftSource(self.source_address)
-            cf.log_message("Voltcraft Source successfully initialised")
-            source_init = True
+            try:
+                source = VoltcraftSource(self.source_address)
+                cf.log_message("Voltcraft Source successfully initialised")
+                source_init = True
+            except:
+                # In the case that there was already a connection established,
+                # it could happen that the source does not allow to establish
+                # a new one. Therefore, close the old one first.
+                self.widget.parent.source.close()
+
+                source = VoltcraftSource(self.source_address)
+                cf.log_message("Voltcraft Source successfully initialised")
+                source_init = True
+
         except Exception as e:
             source = MockVoltcraftSource(self.source_address)
             cf.log_message(
@@ -85,10 +100,23 @@ class InitThread(QtCore.QThread):
 
         # Try if Arduino can be initialised
         try:
-            arduino = Arduino(self.arduino_address)
-            cf.log_message("Arduino successfully initialised")
-            arduino_init = True
+            try:
+                arduino = Arduino(self.arduino_address)
+                cf.log_message("Arduino successfully initialised")
+                arduino_init = True
+            except:
+                # In the case that there was already a connection established,
+                # it could happen that the arduino does not allow to establish
+                # a new one. Therefore, close the old one first.
+                self.widget.parent.arduino.close()
+
+                arduino = Arduino(self.arduino_address)
+                cf.log_message("Arduino successfully initialised")
+                arduino_init = True
+
+            # motor.move_to(-45)
         except Exception as e:
+
             arduino = MockArduino(self.arduino_address)
             cf.log_message(
                 "The Arduino could not be initialised! Please reconnect the device and check the serial number in the settings file!"

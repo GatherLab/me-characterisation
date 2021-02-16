@@ -52,11 +52,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Execute initialisation thread
         oscilloscope_address = "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR"
-        source_address = "ASRL4::INSTR"
-        arduino_address = "ASRL6::INSTR"
-        loading_window = LoadingWindow(
-            oscilloscope_address, source_address, arduino_address, self
-        )
+        # source_address = "ASRL4::INSTR"
+        # arduino_address = "ASRL6::INSTR"
+        loading_window = LoadingWindow(self)
 
         # Execute loading dialog
         loading_window.exec()
@@ -86,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             )
         )
 
-        self.actionOpen_Log.triggered.connect(lambda: self.open_file("log.out"))
+        self.actionOpen_Log.triggered.connect(lambda: self.open_file("./usr/log.out"))
 
         # -------------------------------------------------------------------- #
         # --------------------------- Setup Widget --------------------------- #
@@ -102,6 +100,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_current_spinBox.valueChanged.connect(self.current_changed)
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
         self.sw_capacitance_spinBox.valueChanged.connect(self.capacity_changed)
+
+        self.sw_source_output_pushButton.clicked.connect(self.toggle_source_output)
+        self.sw_source_output_pushButton.setCheckable(True)
 
         # -------------------------------------------------------------------- #
         # -------------------- Frequency Sweep Widget ------------------------ #
@@ -294,21 +295,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Kill Osci
         try:
-            self.osci.close()
+            self.oscilloscope.close()
         except Exception as e:
             cf.log_message("Oscilloscope thread could not be killed")
             cf.log_message(e)
 
         # Kill Source
         try:
-            self.source.kill()
+            self.source.close()
         except Exception as e:
             cf.log_message("I am not yet sure how to close the Rigol source correctly")
             cf.log_message(e)
 
         # Kill arduino connection
         try:
-            self.arduino.close_serial_connection()
+            self.arduino.close()
         except Exception as e:
             cf.log_message("Arduino connection could not be savely killed")
             cf.log_message(e)
@@ -458,6 +459,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         cf.log_message("Setup parameters read")
 
         return setup_parameters
+
+    def toggle_source_output(self):
+        """
+        Function to toggle source output on or off
+        """
+        # Currently this only works independently of other functions but it
+        # checks for the true state of the source
+        if self.source.output_state:
+            self.source.output(False)
+            self.specw_start_measurement_pushButton.setChecked(False)
+        else:
+            self.source.output(True)
+            self.specw_start_measurement_pushButton.setChecked(True)
 
     # -------------------------------------------------------------------- #
     # -------------------------- Frequency Sweep ------------------------- #
