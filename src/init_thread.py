@@ -80,6 +80,7 @@ class InitThread(QtCore.QThread):
                 # In the case that there was already a connection established,
                 # it could happen that the source does not allow to establish
                 # a new one. Therefore, close the old one first.
+                self.widget.parent.setup_thread.pause = True
                 self.widget.parent.source.close()
 
                 source = VoltcraftSource(self.source_address)

@@ -293,6 +293,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         cf.log_message("Program closed")
 
+        # Kill threads here
+        self.setup_thread.kill()
+
         # Kill Osci
         try:
             self.oscilloscope.close()
