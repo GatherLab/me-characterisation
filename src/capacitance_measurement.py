@@ -367,7 +367,7 @@ class CapacitanceScan(QtCore.QThread):
             + str(self.global_settings["circuit_resistance"])
             + " Ohm \t"
             + "Settling Time:   "
-            + str(self.global_settings["frequency_settling_time"])
+            + str(self.measurement_parameters["frequency_settling_time"])
             + " s \t"
         )
         line05 = "### Measurement data ###"
