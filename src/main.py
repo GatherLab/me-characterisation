@@ -164,19 +164,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for spectral measurement
         self.specw_voltage_spinBox.setMinimum(0)
         self.specw_voltage_spinBox.setMaximum(33)
-        self.specw_voltage_spinBox.setValue(5)
+        self.specw_voltage_spinBox.setValue(8)
 
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
-        self.specw_current_spinBox.setValue(0.2)
+        self.specw_current_spinBox.setValue(0.3)
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
-        self.specw_minimum_frequency_spinBox.setValue(120)
+        self.specw_minimum_frequency_spinBox.setValue(180)
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
-        self.specw_maximum_frequency_spinBox.setValue(180)
+        self.specw_maximum_frequency_spinBox.setValue(320)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
@@ -189,19 +189,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
         self.capw_voltage_spinBox.setMaximum(33)
-        self.capw_voltage_spinBox.setValue(5)
+        self.capw_voltage_spinBox.setValue(3)
 
         self.capw_current_spinBox.setMinimum(0)
         self.capw_current_spinBox.setMaximum(12)
-        self.capw_current_spinBox.setValue(1)
+        self.capw_current_spinBox.setValue(0.3)
 
         self.capw_minimum_frequency_spinBox.setMinimum(8)
         self.capw_minimum_frequency_spinBox.setMaximum(150000)
-        self.capw_minimum_frequency_spinBox.setValue(150)
+        self.capw_minimum_frequency_spinBox.setValue(180)
 
         self.capw_maximum_frequency_spinBox.setMinimum(8)
         self.capw_maximum_frequency_spinBox.setMaximum(150000)
-        self.capw_maximum_frequency_spinBox.setValue(210)
+        self.capw_maximum_frequency_spinBox.setValue(310)
 
         self.capw_frequency_step_spinBox.setMinimum(0.05)
         self.capw_frequency_step_spinBox.setMaximum(1000)

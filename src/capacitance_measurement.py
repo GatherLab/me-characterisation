@@ -68,6 +68,10 @@ class CapacitanceScan(QtCore.QThread):
         Class that does a frequency sweep
         """
 
+        import pydevd
+
+        pydevd.settrace(suspend=False)
+
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"])
         self.source.set_current(self.measurement_parameters["current_compliance"])

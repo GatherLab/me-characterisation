@@ -531,26 +531,27 @@ class Arduino:
 
         # try:
         # Read in capacitor calibration file
-        calibration = pd.read_csv(
-            global_settings["calibration_file_path"],
-            sep="\t",
-            skiprows=5,
-            names=[
-                "capacitance",
-                "resonance_frequency",
-                "quality_factor",
-                "maximum_current",
-            ],
-        )
-        # except:
-        #     calibration = pd.DataFrame(
-        #         columns=[
-        #             "capacitance",
-        #             "resonance_frequency",
-        #             "quality_factor",
-        #             "maximum_current",
-        #         ],
-        #     )
+        try:
+            calibration = pd.read_csv(
+                global_settings["calibration_file_path"],
+                sep="\t",
+                skiprows=5,
+                names=[
+                    "capacitance",
+                    "resonance_frequency",
+                    "quality_factor",
+                    "maximum_current",
+                ],
+            )
+        except:
+            calibration = pd.DataFrame(
+                columns=[
+                    "capacitance",
+                    "resonance_frequency",
+                    "quality_factor",
+                    "maximum_current",
+                ],
+            )
 
         # If capacitance exists in calibration file, set it to that resonance
         # frequency. Otherwise, estimate resonance frequency from coil

@@ -135,7 +135,7 @@ class InitThread(QtCore.QThread):
         # If one of the devices could not be initialised for whatever reason,
         # ask the user if she wants to retry after reconnecting the devices or
         # continue without some of the devices
-        if oscilloscope_init == False or source_init == False:
+        if oscilloscope_init == False or source_init == False or arduino_init == False:
             self.update_loading_dialog.emit(
                 100,
                 "Some of the devices could not be initialised.",

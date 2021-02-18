@@ -6,11 +6,11 @@
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
             "base_capacitance": "3300.0",
-            "coil_inductance": "0.2022",
-            "circuit_resistance": "13.5",
+            "coil_inductance": "0.783",
+            "circuit_resistance": "12.0",
             "capacitances": "3300, 2200, 1000, 680, 330, 150",
             "arduino_pins": "2,3,4,5,6,7",
-            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/2021-02-16_Capacitance-calibration/2021-02-16_settling-time-01-freq-step-02_resonances_02.csv"
+            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/calibration/2021-02-17_3300pF-0075mH_resonances.csv"
         }
     ],
     "default": [

@@ -41,6 +41,8 @@ class FrequencyScan(QtCore.QThread):
         self.measurement_parameters = measurement_parameters
         self.setup_parameters = setup_parameters
 
+        self.global_parameters = cf.read_global_settings()
+
         # Connect signal to the updater from the parent class
         self.update_spectrum_signal.connect(parent.update_spectrum)
         self.update_progress_bar.connect(parent.progressBar.setProperty)
@@ -164,6 +166,13 @@ class FrequencyScan(QtCore.QThread):
         """
 
         # Define Header
+        line02 = (
+            "Base Capacitance:"
+            + str(self.global_parameters["base_capacitance"])
+            + " pF\t Coil Inductance:"
+            + str(self.global_parameters["coil_inductance"])
+            + " mH"
+        )
         line03 = (
             "Voltage:   "
             + str(self.measurement_parameters["voltage"])
@@ -187,6 +196,7 @@ class FrequencyScan(QtCore.QThread):
         line07 = "Hz\t V\t A\n"
 
         header_lines = [
+            line02,
             line03,
             line04,
             line05,
