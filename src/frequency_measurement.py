@@ -75,8 +75,12 @@ class FrequencyScan(QtCore.QThread):
         i = 0
 
         # Sweep over all frequencies
-        frequency = self.measurement_parameters["minimum_frequency"]
-        while frequency <= self.measurement_parameters["maximum_frequency"]:
+        frequencies = np.arange(
+            self.measurement_parameters["minimum_frequency"],
+            self.measurement_parameters["maximum_frequency"],
+            self.measurement_parameters["frequency_step"],
+        )
+        for frequency in frequencies:
             # for frequency in self.df_data["frequency"]:
             cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
@@ -102,7 +106,7 @@ class FrequencyScan(QtCore.QThread):
 
             # Update progress bar
             self.update_progress_bar.emit(
-                "value", int((i + 1) / len(self.df_data["frequency"]) * 100)
+                "value", int((i + 1) / len(frequencies) * 100)
             )
 
             self.update_spectrum_signal.emit(

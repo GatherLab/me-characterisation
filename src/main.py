@@ -193,15 +193,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capw_current_spinBox.setMinimum(0)
         self.capw_current_spinBox.setMaximum(12)
-        self.capw_current_spinBox.setValue(0.3)
+        self.capw_current_spinBox.setValue(1)
 
         self.capw_minimum_frequency_spinBox.setMinimum(8)
         self.capw_minimum_frequency_spinBox.setMaximum(150000)
-        self.capw_minimum_frequency_spinBox.setValue(180)
+        self.capw_minimum_frequency_spinBox.setValue(120)
 
         self.capw_maximum_frequency_spinBox.setMinimum(8)
         self.capw_maximum_frequency_spinBox.setMaximum(150000)
-        self.capw_maximum_frequency_spinBox.setValue(310)
+        self.capw_maximum_frequency_spinBox.setValue(350)
 
         self.capw_frequency_step_spinBox.setMinimum(0.05)
         self.capw_frequency_step_spinBox.setMaximum(1000)
@@ -307,7 +307,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Kill threads here
         self.setup_thread.kill()
-        self.oscilloscope_measurement.kill()
+        self.oscilloscope_thread.kill()
 
         # Kill Osci
         try:

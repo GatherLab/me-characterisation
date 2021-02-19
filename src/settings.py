@@ -37,6 +37,8 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         )
         self.capacitances_lineEdit.setText(str(default_settings["capacitances"]))
         self.coil_inductance_lineEdit.setText(str(default_settings["coil_inductance"]))
+        self.coil_windings_lineEdit.setText(str(default_settings["coil_windings"]))
+        self.coil_radius_lineEdit.setText(str(default_settings["coil_radius"]))
         self.circuit_resistance_lineEdit.setText(
             str(default_settings["circuit_resistance"])
         )
@@ -65,6 +67,8 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
                 "default_saving_path": self.default_saving_path_lineEdit.text(),
                 "base_capacitance": self.base_capacitance_lineEdit.text(),
                 "coil_inductance": self.coil_inductance_lineEdit.text(),
+                "coil_windings": self.coil_windings_lineEdit.text(),
+                "coil_radius": self.coil_radius_lineEdit.text(),
                 "circuit_resistance": self.circuit_resistance_lineEdit.text(),
                 "capacitances": self.capacitances_lineEdit.text(),
                 "arduino_pins": self.arduino_pins_lineEdit.text(),
@@ -127,6 +131,8 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         self.capacitances_lineEdit.setText(default_settings["capacitances"])
 
         self.coil_inductance_lineEdit.setText(default_settings["coil_inductance"])
+        self.coil_windings_lineEdit.setText(default_settings["coil_windings"])
+        self.coil_radius_lineEdit.setText(default_settings["coil_radius"])
         self.circuit_resistance_lineEdit.setText(default_settings["circuit_resistance"])
         self.arduino_pins_lineEdit.setText(default_settings["arduino_pins"])
         self.resonance_frequency_calibration_path_lineEdit.setText(

@@ -161,37 +161,53 @@ class Ui_Settings(object):
         self.coil_inductance_lineEdit.setObjectName("coil_inductance_lineEdit")
         self.gridLayout.addWidget(self.coil_inductance_lineEdit, 10, 1, 1, 1)
 
+        # Coil windings
+        self.coil_windings_label = QtWidgets.QLabel(Settings)
+        self.coil_windings_label.setObjectName("coil_windings_label")
+        self.gridLayout.addWidget(self.coil_windings_label, 11, 0, 1, 1)
+        self.coil_windings_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.coil_windings_lineEdit.setObjectName("coil_windings_lineEdit")
+        self.gridLayout.addWidget(self.coil_windings_lineEdit, 11, 1, 1, 1)
+
+        # Coil radius
+        self.coil_radius_label = QtWidgets.QLabel(Settings)
+        self.coil_radius_label.setObjectName("coil_radius_label")
+        self.gridLayout.addWidget(self.coil_radius_label, 12, 0, 1, 1)
+        self.coil_radius_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.coil_radius_lineEdit.setObjectName("coil_radius_lineEdit")
+        self.gridLayout.addWidget(self.coil_radius_lineEdit, 12, 1, 1, 1)
+
         # Circuit Resistance
         self.circuit_resistance_label = QtWidgets.QLabel(Settings)
         self.circuit_resistance_label.setObjectName("circuit_resistance_label")
-        self.gridLayout.addWidget(self.circuit_resistance_label, 11, 0, 1, 1)
+        self.gridLayout.addWidget(self.circuit_resistance_label, 13, 0, 1, 1)
         self.circuit_resistance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.circuit_resistance_lineEdit.setObjectName("circuit_resistance_lineEdit")
-        self.gridLayout.addWidget(self.circuit_resistance_lineEdit, 11, 1, 1, 1)
+        self.gridLayout.addWidget(self.circuit_resistance_lineEdit, 13, 1, 1, 1)
 
         # Base capacitance
         self.base_capacitance_label = QtWidgets.QLabel(Settings)
         self.base_capacitance_label.setObjectName("base_capacitance_label")
-        self.gridLayout.addWidget(self.base_capacitance_label, 12, 0, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_label, 14, 0, 1, 1)
         self.base_capacitance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.base_capacitance_lineEdit.setObjectName("base_capacitance_lineEdit")
-        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 12, 1, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 14, 1, 1, 1)
 
         # Capacitances
         self.capacitances_label = QtWidgets.QLabel(Settings)
         self.capacitances_label.setObjectName("capacitances_label")
-        self.gridLayout.addWidget(self.capacitances_label, 13, 0, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_label, 15, 0, 1, 1)
         self.capacitances_lineEdit = QtWidgets.QLineEdit(Settings)
         self.capacitances_lineEdit.setObjectName("capacitances_lineEdit")
-        self.gridLayout.addWidget(self.capacitances_lineEdit, 13, 1, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_lineEdit, 15, 1, 1, 1)
 
         # Arduino Pins (matching the capacitances)
         self.arduino_pins_label = QtWidgets.QLabel(Settings)
         self.arduino_pins_label.setObjectName("arduino_pins_label")
-        self.gridLayout.addWidget(self.arduino_pins_label, 14, 0, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_label, 16, 0, 1, 1)
         self.arduino_pins_lineEdit = QtWidgets.QLineEdit(Settings)
         self.arduino_pins_lineEdit.setObjectName("arduino_pins_lineEdit")
-        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 14, 1, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 16, 1, 1, 1)
 
         # Resonance Frequency calibration file
         self.resonance_frequency_calibration_path_label = QtWidgets.QLabel(Settings)
@@ -199,7 +215,7 @@ class Ui_Settings(object):
             "resonance_frequency_calibration_path_label"
         )
         self.gridLayout.addWidget(
-            self.resonance_frequency_calibration_path_label, 15, 0, 1, 1
+            self.resonance_frequency_calibration_path_label, 17, 0, 1, 1
         )
         self.resonance_frequency_calibration_path_lineEdit = QtWidgets.QLineEdit(
             Settings
@@ -208,7 +224,7 @@ class Ui_Settings(object):
             "resonance_frequency_calibration_path_lineEdit"
         )
         self.gridLayout.addWidget(
-            self.resonance_frequency_calibration_path_lineEdit, 15, 1, 1, 1
+            self.resonance_frequency_calibration_path_lineEdit, 17, 1, 1, 1
         )
 
         # # Transimpedance Amplifier Resistance
@@ -251,7 +267,7 @@ class Ui_Settings(object):
         self.save_settings_pushButton.setObjectName("save_settings_pushButton")
         self.buttons_HBoxLayout.addWidget(self.save_settings_pushButton)
 
-        self.gridLayout.addLayout(self.buttons_HBoxLayout, 16, 0, 1, 2)
+        self.gridLayout.addLayout(self.buttons_HBoxLayout, 18, 0, 1, 2)
 
         self.retranslateUi(Settings)
         QtCore.QMetaObject.connectSlotsByName(Settings)
@@ -294,6 +310,8 @@ class Ui_Settings(object):
         self.coil_inductance_label.setText(
             _translate("Settings", "Coil Inductance (mH)")
         )
+        self.coil_windings_label.setText(_translate("Settings", "Coil Windings"))
+        self.coil_radius_label.setText(_translate("Settings", "Coil Radius (mm)"))
         self.circuit_resistance_label.setText(
             _translate("Settings", "Circuit Resistance (Ohm)")
         )

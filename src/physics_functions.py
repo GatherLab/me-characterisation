@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
+from scipy import constants
 
 # data = pd.read_csv(
 #     "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\ME-Devices\\2021-02-10_Capacitance-Sweep\\2021-02-10_test_d0_3300.0pF_03.csv",
@@ -58,6 +59,13 @@ def calculate_resonance_frequency(capacity, inductance):
     For a given capacity and inductance, calculate the resonance frequency
     """
     return np.sqrt(1 / (capacity * inductance)) / 2 / np.pi
+
+
+def calculate_magnetic_field(current, inductance, windings, coil_radius):
+    """
+    Calculate magnetic field from current in SI units (tesla)
+    """
+    return current * inductance / (windings * np.pi * coil_radius ** 2)
 
 
 # fit_class = ResonanceFit(resistance=12, voltage=5)
