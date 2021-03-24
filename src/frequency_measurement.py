@@ -4,6 +4,7 @@ import time
 import datetime as dt
 import numpy as np
 import pandas as pd
+import math
 
 import core_functions as cf
 
@@ -16,7 +17,7 @@ class FrequencyScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_spectrum_signal = QtCore.Signal(list, list, list)
+    update_spectrum_signal = QtCore.Signal(list, list, list, list)
     update_progress_bar = QtCore.Signal(str, float)
 
     def __init__(
@@ -48,7 +49,9 @@ class FrequencyScan(QtCore.QThread):
         self.update_progress_bar.connect(parent.progressBar.setProperty)
 
         # Define dataframe to store data in
-        self.df_data = pd.DataFrame(columns=["frequency", "voltage", "current", "vpp"])
+        self.df_data = pd.DataFrame(
+            columns=["frequency", "voltage", "current", "vpp", "vmax"]
+        )
 
         self.is_killed = False
 
@@ -89,20 +92,26 @@ class FrequencyScan(QtCore.QThread):
                 frequency, self.measurement_parameters["autoset_capacitance"]
             )
 
-            # Wait a bit
-            time.sleep(self.measurement_parameters["frequency_settling_time"])
+            # Wait a bit (wait longer for the first frequency, so that the PID
+            # of the source can adjust to ensure the set current output)
+            if math.isclose(frequency, frequencies[0]):
+                time.sleep(4)
+            else:
+                time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and posssibly paramters on the osci)
             voltage, current, mode = self.source.read_values()
 
             # Now measure Vpp from channel one on the oscilloscope
             vpp = float(self.oscilloscope.measure_vpp())
+            vmax = float(self.oscilloscope.measure_vmax())
 
             # Set the variables in the dataframe
             self.df_data.loc[i, "voltage"] = voltage
             self.df_data.loc[i, "current"] = current
             self.df_data.loc[i, "frequency"] = frequency
             self.df_data.loc[i, "vpp"] = vpp
+            self.df_data.loc[i, "vmax"] = vmax
 
             # Update progress bar
             self.update_progress_bar.emit(
@@ -110,7 +119,10 @@ class FrequencyScan(QtCore.QThread):
             )
 
             self.update_spectrum_signal.emit(
-                self.df_data["frequency"], self.df_data["current"], self.df_data["vpp"]
+                self.df_data["frequency"],
+                self.df_data["current"],
+                self.df_data["vpp"],
+                self.df_data["vmax"],
             )
 
             # Now compute the slope to adjust the step hight on the fly

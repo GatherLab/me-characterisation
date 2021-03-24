@@ -234,6 +234,20 @@ class RigolOscilloscope:
         self.mutex.unlock()
         return vpp
 
+    def measure_vmax(self):
+        """
+        Measure Vavg only
+        """
+        self.mutex.lock()
+
+        # Measre vavg
+        self.osci.write(":MEAS:VMAX? CHAN1")
+
+        vmax = self.osci.read()
+
+        self.mutex.unlock()
+        return vmax
+
     def close(self):
         """
         Closes connection to oscilloscope savely

@@ -176,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
-        self.specw_maximum_frequency_spinBox.setValue(320)
+        self.specw_maximum_frequency_spinBox.setValue(280)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
@@ -541,8 +541,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.frequency_sweep.start()
 
-    @QtCore.Slot(list, list, list)
-    def update_spectrum(self, frequency, current, vpp):
+    @QtCore.Slot(list, list, list, list)
+    def update_spectrum(self, frequency, current, vpp, vavg):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
@@ -552,14 +552,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             del self.specw_ax.lines[0]
             del self.specw_ax2.lines[0]
+            del self.specw_ax2.lines[1]
         except IndexError:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.specw_ax.set_xlim([min(frequency), max(frequency)])
-        self.specw_ax.set_ylim([min(current) - 0.2, max(current) + 0.2])
+        self.specw_ax.set_ylim([min(current) - 0.05, max(current) + 0.05])
 
-        self.specw_ax2.set_ylim([min(vpp) - 0.2, max(vpp) + 0.2])
+        self.specw_ax2.set_ylim(
+            [
+                min(np.concatenate([vpp, vavg])) - 0.05,
+                max(np.concatenate([vpp, vavg])) + 0.05,
+            ]
+        )
 
         # Plot current
         self.specw_ax.plot(
@@ -573,6 +579,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             frequency,
             vpp,
             color=(85 / 255, 170 / 255, 255 / 255),
+            marker="o",
+        )
+
+        self.specw_ax2.plot(
+            frequency,
+            vavg,
+            color="red",
             marker="o",
         )
 

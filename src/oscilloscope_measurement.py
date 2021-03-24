@@ -58,7 +58,7 @@ class OscilloscopeThread(QtCore.QThread):
         """
         Kill this thread by stopping the loop
         """
-        self.oscilloscope.close()
+        self.osci.close()
 
         # Trigger interruption of run sequence
         self.is_killed = True
