@@ -12,7 +12,7 @@
             "circuit_resistance": "13.0",
             "capacitances": "3300, 2200, 1000, 680, 330, 150",
             "arduino_pins": "2,3,4,5,6,7",
-            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/calibration/"
+            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/calibration/2021-03-24_3300pF-0.075mH_resonances.csv"
         }
     ],
     "default": [

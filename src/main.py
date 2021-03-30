@@ -698,7 +698,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------- Oscilloscope ---------------------------- #
     # -------------------------------------------------------------------- #
     @QtCore.Slot(list, list, list)
-    def plot_oscilloscope(self, time, voltage, measurements):
+    def plot_oscilloscope(self, time, voltage, time2, voltage2, measurements):
         """
         Function that plots the oscilloscope image
         """
@@ -706,18 +706,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             del self.ow_ax.lines[0]
+            del self.ow_ax.lines[1]
         except IndexError:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.ow_ax.set_xlim([min(time), max(time)])
-        self.ow_ax.set_ylim([min(voltage) - 2, max(voltage) + 5])
+        self.ow_ax.set_ylim(
+            [
+                min(np.append(voltage, voltage2)) * 1.05,
+                max(np.append(voltage, voltage2)) * 1.05,
+            ]
+        )
 
         # Plot current
         self.ow_ax.plot(
             time,
             voltage,
-            color=(68 / 255, 188 / 255, 65 / 255),
+            color="yellow",
+            # marker="o",
+        )
+
+        self.ow_ax.plot(
+            time2,
+            voltage2,
+            color="blue",
             # marker="o",
         )
 
@@ -748,9 +761,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Start and stop the oscilloscope
         if self.ow_stop_pushButton.isChecked():
             self.oscilloscope.stop()
+            self.oscilloscope_thread.pause = True
             # self.ow_stop_pushButton.setChecked(False)
         else:
             self.oscilloscope.run()
+            self.oscilloscope_thread.pause = False
             # self.ow_stop_pushButton.setChecked(True)
 
     def auto_scale_osci(self):
@@ -767,18 +782,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         setup_parameters = self.safe_read_setup_parameters()
 
         # Read data
-        time_data, data = self.oscilloscope.get_data()
-        df = pd.DataFrame(columns=["time", "voltage"])
-        df.time = time_data
-        df.voltage = data
+        time_data, data = self.oscilloscope.get_data("CHAN1")
+        time_data2, data2 = self.oscilloscope.get_data("CHAN2")
+        df = pd.DataFrame(
+            columns=["time_chan1", "voltage_chan1", "time_chan2", "voltage_chan2"]
+        )
+        df.time_chan1 = time_data
+        df.voltage_chan1 = data
+        df.time_chan2 = time_data2
+        df.voltage_chan2 = data2
 
         variables = self.oscilloscope.measure()
 
         # Define Header
         line01 = "VPP:   " + str(variables[0]) + " V \t"
         line02 = "### Measurement data ###"
-        line03 = "Time\t Voltage"
-        line04 = "s\t V\n"
+        line03 = (
+            "Time Channel 1\t Voltage Channel 1\t Time Channel 2\t Voltage Channel 2"
+        )
+        line04 = "s\t V\t s\t V\n"
 
         header_lines = [
             line01,

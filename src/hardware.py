@@ -69,7 +69,7 @@ class RigolOscilloscope:
         self.osci.write("STOP")
         self.mutex.unlock()
 
-    def get_data(self):
+    def get_data(self, channel="CHAN1"):
         """
         Read data from oscilloscope display
         See: https://gist.github.com/pklaus/7e4cbac1009b668eafab
@@ -91,17 +91,28 @@ class RigolOscilloscope:
         self.osci.write(":TIM:OFFS?")
         timeoffset = float(self.osci.read())
 
+        # Measure Vmax
+        self.osci.write(":MEAS:VMAX? " + channel)
+        vmax = float(self.osci.read())
+
+        # # # Measure Vmin
+        self.osci.write(":MEAS:VMIN? " + channel)
+        vmin = float(self.osci.read())
+
         # And the voltage scale and offset
-        self.osci.write(":CHAN1:SCAL?")
+        self.osci.write(":" + channel + ":SCAL?")
         voltscale = float(self.osci.read())
-        self.osci.write(":CHAN1:OFFS?")
+        self.osci.write(":" + channel + ":OFFS?")
         voltoffset = float(self.osci.read())
+
+        # Set channel source
+        self.osci.write("WAV:SOUR " + channel)
 
         # Sets the mode in which the data is returned
         self.osci.write(":WAV:POIN:MODE RAW")
 
         # Read data
-        self.osci.write(":WAV:DATA? CHAN1")
+        self.osci.write(":WAV:DATA?")
         raw_data = self.osci.read_raw()[10:]
 
         # Not exactly sure what this does
@@ -116,7 +127,7 @@ class RigolOscilloscope:
         # Now, we know from experimentation that the scope display range is actually
         # 30-229.  So shift by 130 - the voltage offset in counts, then scale to
         # get the actual voltage.
-        data_interp = (data[:-2] - 130.0 - voltoffset / voltscale * 25) / 25 * voltscale
+        # data_interp = (data[:-2] - 130.0 - voltoffset / voltscale * 25) / 25 * voltscale
         # Measure Vmax
         # self.osci.write(":MEAS:VMAX? CHAN1")
         # vmax = self.osci.read()
@@ -130,10 +141,15 @@ class RigolOscilloscope:
         # [np.min(data), np.max(data)],
         # [vmin, vmax],
         # )
+        data_mapped = np.interp(
+            data[1:-2],
+            [np.min(data[1:-2]), np.max(data[1:-2])],
+            [float(vmin), float(vmax)],
+        )
 
         # Now, generate a time axis.
         time_data = np.linspace(
-            timeoffset - 6 * timescale, timeoffset + 6 * timescale, num=len(data_interp)
+            timeoffset - 6 * timescale, timeoffset + 6 * timescale, num=len(data_mapped)
         )
 
         # See if we should use a different time axis
@@ -150,7 +166,7 @@ class RigolOscilloscope:
         # self.run()
         self.mutex.unlock()
 
-        return time_data, data_interp
+        return time_data, data_mapped
 
     def auto_scale(self):
         """
@@ -163,7 +179,7 @@ class RigolOscilloscope:
         # cf.log_message(self.osci.read())
         self.mutex.unlock()
 
-    def measure(self):
+    def measure(self, channel="CHAN1"):
         """
         Measures a bunch of variables of the waveform. The possible commands are
         :MEASure:CLEar
@@ -192,19 +208,19 @@ class RigolOscilloscope:
         """
         self.mutex.lock()
         # Measre VPP
-        self.osci.write(":MEAS:VPP? CHAN1")
+        self.osci.write(":MEAS:VPP? " + channel)
         vpp = self.osci.read()
 
         # Measure Vmax
-        self.osci.write(":MEAS:VMAX? CHAN1")
+        self.osci.write(":MEAS:VMAX? " + channel)
         vmax = self.osci.read()
 
         # # # Measure Vmin
-        self.osci.write(":MEAS:VMIN? CHAN1")
+        self.osci.write(":MEAS:VMIN? " + channel)
         vmin = self.osci.read()
 
         # # # Measure frequency
-        self.osci.write(":MEAS:FREQ? CHAN1")
+        self.osci.write(":MEAS:FREQ? " + channel)
         frequency = self.osci.read()
 
         # # # Measure rise time
@@ -221,27 +237,27 @@ class RigolOscilloscope:
             frequency,
         ]  # , vmax, vmin, frequency, rise_time]
 
-    def measure_vpp(self):
+    def measure_vpp(self, channel="CHAN1"):
         """
         Measure VPP only
         """
         self.mutex.lock()
 
         # Measre VPP
-        self.osci.write(":MEAS:VPP? CHAN1")
+        self.osci.write(":MEAS:VPP? " + channel)
         vpp = self.osci.read()
 
         self.mutex.unlock()
         return vpp
 
-    def measure_vmax(self):
+    def measure_vmax(self, channel="CHAN1"):
         """
         Measure Vavg only
         """
         self.mutex.lock()
 
         # Measre vavg
-        self.osci.write(":MEAS:VMAX? CHAN1")
+        self.osci.write(":MEAS:VMAX? " + channel)
 
         vmax = self.osci.read()
 
