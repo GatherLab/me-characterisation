@@ -7,6 +7,7 @@ import pandas as pd
 import math
 
 import core_functions as cf
+import physics_functions as pf
 
 
 class FrequencyScan(QtCore.QThread):
@@ -50,7 +51,7 @@ class FrequencyScan(QtCore.QThread):
 
         # Define dataframe to store data in
         self.df_data = pd.DataFrame(
-            columns=["frequency", "voltage", "current", "vpp", "vmax"]
+            columns=["frequency", "voltage", "current", "magnetic_field", "vmax"]
         )
 
         self.is_killed = False
@@ -68,6 +69,11 @@ class FrequencyScan(QtCore.QThread):
         # self.measurement_parameters["maximum_frequency"],
         # self.measurement_parameters["frequency_step"],
         # )
+        import pydevd
+
+        pydevd.settrace(suspend=False)
+
+        self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"])
@@ -102,15 +108,23 @@ class FrequencyScan(QtCore.QThread):
             # Measure the voltage and current (and posssibly paramters on the osci)
             voltage, current, mode = self.source.read_values()
 
-            # Now measure Vpp from channel one on the oscilloscope
-            vpp = float(self.oscilloscope.measure_vpp())
-            vmax = float(self.oscilloscope.measure_vmax())
+            # Now measure Vpp from channel one on the oscilloscope (and save in mT)
+            magnetic_field = (
+                pf.calculate_magnetic_field_from_Vind(
+                    4,
+                    20e-3,
+                    float(self.oscilloscope.measure_vmax("CHAN1")),
+                    frequency * 1e3,
+                )
+                * 1e3
+            )
+            vmax = float(self.oscilloscope.measure_vmax("CHAN2"))
 
             # Set the variables in the dataframe
             self.df_data.loc[i, "voltage"] = voltage
             self.df_data.loc[i, "current"] = current
             self.df_data.loc[i, "frequency"] = frequency
-            self.df_data.loc[i, "vpp"] = vpp
+            self.df_data.loc[i, "magnetic_field"] = magnetic_field
             self.df_data.loc[i, "vmax"] = vmax
 
             # Update progress bar
@@ -121,7 +135,7 @@ class FrequencyScan(QtCore.QThread):
             self.update_spectrum_signal.emit(
                 self.df_data["frequency"],
                 self.df_data["current"],
-                self.df_data["vpp"],
+                self.df_data["magnetic_field"],
                 self.df_data["vmax"],
             )
 
@@ -160,12 +174,15 @@ class FrequencyScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.source.output(False)
                 self.source.set_voltage(5)
+                self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
 
         self.source.output(False)
         self.save_data()
         self.parent.specw_start_measurement_pushButton.setChecked(False)
+
+        self.parent.oscilloscope_thread.pause = False
         # self.parent.setup_thread.pause = False
         # self.parent.oscilloscope_thread.pause = False
 
@@ -208,8 +225,8 @@ class FrequencyScan(QtCore.QThread):
             + " kHz \t"
         )
         line05 = "### Measurement data ###"
-        line06 = "Frequency\t Voltage\t Current"
-        line07 = "Hz\t V\t A\n"
+        line06 = "Frequency\t Voltage\t Current\t Magnetic Field\t Vmax_ind"
+        line07 = "Hz\t V\t A\t mT\t V\n"
 
         header_lines = [
             line02,

@@ -392,10 +392,10 @@ class Ui_MainWindow(object):
         self.specw_mpl_graph_gridLayout.addWidget(self.specw_fig)
 
         self.specw_ax = self.specw_fig.figure.subplots()
-        self.specw_ax.set_facecolor("#E0E0E0")
+        # self.specw_ax.set_facecolor("#E0E0E0")
         self.specw_ax.grid(True)
         self.specw_ax.set_xlabel("Frequency (kHz)", fontsize=14)
-        self.specw_ax.set_ylabel("Current (A)", fontsize=14)
+        self.specw_ax.set_ylabel("Magnetic Field (mT)", fontsize=14)
         self.specw_ax.set_xlim([50, 600])
 
         self.specw_ax.axhline(linewidth=1, color="black")
@@ -407,11 +407,11 @@ class Ui_MainWindow(object):
             fontsize=14,
         )
 
-        self.specw_fig.figure.set_facecolor("#E0E0E0")
+        # self.specw_fig.figure.set_facecolor("#E0E0E0")
         self.specw_mplToolbar = NavigationToolbar(
             self.specw_fig, self.specw_graph_widget
         )
-        self.specw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        # self.specw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
         self.specw_mpl_graph_gridLayout.addWidget(self.specw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -628,7 +628,7 @@ class Ui_MainWindow(object):
         self.capw_mpl_graph_gridLayout.addWidget(self.capw_fig)
 
         self.capw_ax = self.capw_fig.figure.subplots()
-        self.capw_ax.set_facecolor("#E0E0E0")
+        # self.capw_ax.set_facecolor("#E0E0E0")
         self.capw_ax.grid(True)
         self.capw_ax.set_xlabel("Frequency (kHz)", fontsize=14)
         self.capw_ax.set_ylabel("Current (A)", fontsize=14)
@@ -637,9 +637,9 @@ class Ui_MainWindow(object):
         self.capw_ax.axhline(linewidth=1, color="black")
         self.capw_ax.axvline(linewidth=1, color="black")
 
-        self.capw_fig.figure.set_facecolor("#E0E0E0")
+        # self.capw_fig.figure.set_facecolor("#E0E0E0")
         self.capw_mplToolbar = NavigationToolbar(self.capw_fig, self.capw_graph_widget)
-        self.capw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        # self.capw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
         self.capw_mpl_graph_gridLayout.addWidget(self.capw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -895,7 +895,7 @@ class Ui_MainWindow(object):
         self.ow_mpl_graph_gridLayout.addWidget(self.ow_fig)
 
         self.ow_ax = self.ow_fig.figure.subplots()
-        self.ow_ax.set_facecolor("#E0E0E0")
+        # self.ow_ax.set_facecolor("#E0E0E0")
         self.ow_ax.grid(True)
         self.ow_ax.set_xlabel("Time (s)", fontsize=14)
         self.ow_ax.set_ylabel("Voltage (V)", fontsize=14)
@@ -904,9 +904,9 @@ class Ui_MainWindow(object):
         self.ow_ax.axhline(linewidth=1, color="black")
         self.ow_ax.axvline(linewidth=1, color="black")
 
-        self.ow_fig.figure.set_facecolor("#E0E0E0")
+        # self.ow_fig.figure.set_facecolor("#E0E0E0")
         self.ow_mplToolbar = NavigationToolbar(self.ow_fig, self.ow_graph_widget)
-        self.ow_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        # self.ow_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
         self.ow_mpl_graph_gridLayout.addWidget(self.ow_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------

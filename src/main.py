@@ -542,7 +542,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.frequency_sweep.start()
 
     @QtCore.Slot(list, list, list, list)
-    def update_spectrum(self, frequency, current, vpp, vavg):
+    def update_spectrum(self, frequency, current, magnetic_field, vmax):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
@@ -550,44 +550,53 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Clear plot
         # self.specw_ax.cla()
         try:
+            # Delete two times zero because after the first deletion the first element will be element zero
+            del self.specw_ax.lines[0]
             del self.specw_ax.lines[0]
             del self.specw_ax2.lines[0]
-            del self.specw_ax2.lines[1]
         except IndexError:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.specw_ax.set_xlim([min(frequency), max(frequency)])
-        self.specw_ax.set_ylim([min(current) - 0.05, max(current) + 0.05])
+        self.specw_ax.set_ylim([0, max(np.append(magnetic_field, current)) + 0.05])
 
         self.specw_ax2.set_ylim(
             [
-                min(np.concatenate([vpp, vavg])) - 0.05,
-                max(np.concatenate([vpp, vavg])) + 0.05,
+                min(vmax) - 0.05,
+                max(vmax) + 0.05,
             ]
         )
 
         # Plot current
         self.specw_ax.plot(
             frequency,
-            current,
+            magnetic_field,
             color=(68 / 255, 188 / 255, 65 / 255),
             marker="o",
+            label="Magnetic Field",
         )
 
-        self.specw_ax2.plot(
+        self.specw_ax.plot(
             frequency,
-            vpp,
-            color=(85 / 255, 170 / 255, 255 / 255),
-            marker="o",
-        )
-
-        self.specw_ax2.plot(
-            frequency,
-            vavg,
+            current,
             color="red",
             marker="o",
+            label="Current (A)",
         )
+
+        self.specw_ax2.plot(
+            frequency,
+            vmax,
+            color=(85 / 255, 170 / 255, 255 / 255),
+            marker="o",
+            label="Vmax Induced",
+        )
+
+        lines, labels = self.specw_ax.get_legend_handles_labels()
+        lines2, labels2 = self.specw_ax2.get_legend_handles_labels()
+        legend = self.specw_ax2.legend(lines + lines2, labels + labels2, loc="best")
+        legend.set_draggable(True)
 
         self.specw_fig.draw()
 

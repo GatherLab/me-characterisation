@@ -68,6 +68,17 @@ def calculate_magnetic_field(current, inductance, windings, coil_radius):
     return current * inductance / (windings * np.pi * coil_radius ** 2)
 
 
+def calculate_magnetic_field_from_Vind(
+    windings, radius, maximum_induced_voltage, frequency
+):
+    """
+    For a measured induced voltage calculate the magnetic field (faradays law)
+    """
+    return maximum_induced_voltage / (
+        windings * (radius ** 2 * np.pi) * 2 * np.pi * frequency
+    )
+
+
 # fit_class = ResonanceFit(resistance=12, voltage=5)
 # popt, pcov = fit_class.fit(data["frequency"].to_numpy(), data["current"].to_numpy())
 
