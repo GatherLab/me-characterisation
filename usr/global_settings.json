@@ -5,10 +5,13 @@
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
+            "pid_parameters": "3.6, 18, 0.05",
             "base_capacitance": "10000.0",
             "coil_inductance": "0.072",
             "coil_windings": "35.0",
             "coil_radius": "25.0",
+            "pickup_coil_windings": "4.0",
+            "pickup_coil_radius": "20.0",
             "circuit_resistance": "12.0",
             "capacitances": "3300, 2200, 1000, 680, 10000, 4700",
             "arduino_pins": "2,3,4,5,6,7",
@@ -21,6 +24,7 @@
             "source_address": "ASRL4::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
+            "pid_parameters": "3.5, 18, 0.05",
             "coil_inductance": "0.0773",
             "coil_windings": "35",
             "coil_radius": "25",
@@ -28,7 +32,9 @@
             "base_capacitance": "3300",
             "capacitances": "3300, 2200, 1000, 680, 330, 150",
             "arduino_pins": "2,3,4,5,6,7",
-            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/2021-02-16_Capacitance-calibration/2021-02-16_settling-time-01-freq-step-02_resonances_02.csv"
+            "calibration_file_path": "C:/Users/GatherLab-Julian/Documents/Nextcloud/01-Studium/03-Promotion/02-Data/ME-Devices/2021-02-16_Capacitance-calibration/2021-02-16_settling-time-01-freq-step-02_resonances_02.csv",
+            "pickup_coil_windings": "4",
+            "pickup_coil_radius": "20"
         }
     ]
 }

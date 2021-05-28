@@ -1234,7 +1234,7 @@ class Ui_MainWindow(object):
         # )
         self.specw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.specw_current_label.setText(
-            _translate("MainWindow", "Current Compliance (A)")
+            _translate("MainWindow", "Magnetic Field (mT)")
         )
         self.specw_minimum_frequency_label.setText(
             _translate("MainWindow", "Min Frequency (kHz)")
@@ -1257,7 +1257,7 @@ class Ui_MainWindow(object):
         )
 
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
-        self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        self.specw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.specw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))

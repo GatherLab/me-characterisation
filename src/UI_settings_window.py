@@ -138,17 +138,24 @@ class Ui_Settings(object):
         self.default_saving_path_lineEdit.setObjectName("default_saving_path_lineEdit")
         self.gridLayout.addWidget(self.default_saving_path_lineEdit, 7, 1, 1, 1)
 
+        self.pid_parameters_label = QtWidgets.QLabel(Settings)
+        self.pid_parameters_label.setObjectName("pid_parameters_label")
+        self.gridLayout.addWidget(self.pid_parameters_label, 8, 0, 1, 1)
+        self.pid_parameters_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.pid_parameters_lineEdit.setObjectName("pid_parameters_lineEdit")
+        self.gridLayout.addWidget(self.pid_parameters_lineEdit, 8, 1, 1, 1)
+
         # Data Evaluation Settings
         self.lcr_header_label = QtWidgets.QLabel(Settings)
         self.lcr_header_label.setMinimumSize(QtCore.QSize(0, 20))
         self.lcr_header_label.setStyleSheet('font: 75 bold 10pt "Segoe UI";')
         self.lcr_header_label.setObjectName("lcr_header_label")
-        self.gridLayout.addWidget(self.lcr_header_label, 8, 0, 1, 2)
+        self.gridLayout.addWidget(self.lcr_header_label, 9, 0, 1, 2)
 
         self.header_line_2 = QtWidgets.QFrame()
         self.header_line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.header_line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.gridLayout.addWidget(self.header_line_2, 9, 0, 1, 2)
+        self.gridLayout.addWidget(self.header_line_2, 10, 0, 1, 2)
         self.header_line_2.setStyleSheet(
             "QFrame {\n" "            border: 2px solid rgb(52, 59, 72);\n" "}\n"
         )
@@ -156,58 +163,58 @@ class Ui_Settings(object):
         # Coil inductance
         self.coil_inductance_label = QtWidgets.QLabel(Settings)
         self.coil_inductance_label.setObjectName("coil_inductance_label")
-        self.gridLayout.addWidget(self.coil_inductance_label, 10, 0, 1, 1)
+        self.gridLayout.addWidget(self.coil_inductance_label, 11, 0, 1, 1)
         self.coil_inductance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.coil_inductance_lineEdit.setObjectName("coil_inductance_lineEdit")
-        self.gridLayout.addWidget(self.coil_inductance_lineEdit, 10, 1, 1, 1)
+        self.gridLayout.addWidget(self.coil_inductance_lineEdit, 11, 1, 1, 1)
 
         # Coil windings
         self.coil_windings_label = QtWidgets.QLabel(Settings)
         self.coil_windings_label.setObjectName("coil_windings_label")
-        self.gridLayout.addWidget(self.coil_windings_label, 11, 0, 1, 1)
+        self.gridLayout.addWidget(self.coil_windings_label, 12, 0, 1, 1)
         self.coil_windings_lineEdit = QtWidgets.QLineEdit(Settings)
         self.coil_windings_lineEdit.setObjectName("coil_windings_lineEdit")
-        self.gridLayout.addWidget(self.coil_windings_lineEdit, 11, 1, 1, 1)
+        self.gridLayout.addWidget(self.coil_windings_lineEdit, 12, 1, 1, 1)
 
         # Coil radius
         self.coil_radius_label = QtWidgets.QLabel(Settings)
         self.coil_radius_label.setObjectName("coil_radius_label")
-        self.gridLayout.addWidget(self.coil_radius_label, 12, 0, 1, 1)
+        self.gridLayout.addWidget(self.coil_radius_label, 13, 0, 1, 1)
         self.coil_radius_lineEdit = QtWidgets.QLineEdit(Settings)
         self.coil_radius_lineEdit.setObjectName("coil_radius_lineEdit")
-        self.gridLayout.addWidget(self.coil_radius_lineEdit, 12, 1, 1, 1)
+        self.gridLayout.addWidget(self.coil_radius_lineEdit, 13, 1, 1, 1)
 
         # Circuit Resistance
         self.circuit_resistance_label = QtWidgets.QLabel(Settings)
         self.circuit_resistance_label.setObjectName("circuit_resistance_label")
-        self.gridLayout.addWidget(self.circuit_resistance_label, 13, 0, 1, 1)
+        self.gridLayout.addWidget(self.circuit_resistance_label, 14, 0, 1, 1)
         self.circuit_resistance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.circuit_resistance_lineEdit.setObjectName("circuit_resistance_lineEdit")
-        self.gridLayout.addWidget(self.circuit_resistance_lineEdit, 13, 1, 1, 1)
+        self.gridLayout.addWidget(self.circuit_resistance_lineEdit, 14, 1, 1, 1)
 
         # Base capacitance
         self.base_capacitance_label = QtWidgets.QLabel(Settings)
         self.base_capacitance_label.setObjectName("base_capacitance_label")
-        self.gridLayout.addWidget(self.base_capacitance_label, 14, 0, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_label, 15, 0, 1, 1)
         self.base_capacitance_lineEdit = QtWidgets.QLineEdit(Settings)
         self.base_capacitance_lineEdit.setObjectName("base_capacitance_lineEdit")
-        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 14, 1, 1, 1)
+        self.gridLayout.addWidget(self.base_capacitance_lineEdit, 15, 1, 1, 1)
 
         # Capacitances
         self.capacitances_label = QtWidgets.QLabel(Settings)
         self.capacitances_label.setObjectName("capacitances_label")
-        self.gridLayout.addWidget(self.capacitances_label, 15, 0, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_label, 16, 0, 1, 1)
         self.capacitances_lineEdit = QtWidgets.QLineEdit(Settings)
         self.capacitances_lineEdit.setObjectName("capacitances_lineEdit")
-        self.gridLayout.addWidget(self.capacitances_lineEdit, 15, 1, 1, 1)
+        self.gridLayout.addWidget(self.capacitances_lineEdit, 16, 1, 1, 1)
 
         # Arduino Pins (matching the capacitances)
         self.arduino_pins_label = QtWidgets.QLabel(Settings)
         self.arduino_pins_label.setObjectName("arduino_pins_label")
-        self.gridLayout.addWidget(self.arduino_pins_label, 16, 0, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_label, 17, 0, 1, 1)
         self.arduino_pins_lineEdit = QtWidgets.QLineEdit(Settings)
         self.arduino_pins_lineEdit.setObjectName("arduino_pins_lineEdit")
-        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 16, 1, 1, 1)
+        self.gridLayout.addWidget(self.arduino_pins_lineEdit, 17, 1, 1, 1)
 
         # Resonance Frequency calibration file
         self.resonance_frequency_calibration_path_label = QtWidgets.QLabel(Settings)
@@ -215,7 +222,7 @@ class Ui_Settings(object):
             "resonance_frequency_calibration_path_label"
         )
         self.gridLayout.addWidget(
-            self.resonance_frequency_calibration_path_label, 17, 0, 1, 1
+            self.resonance_frequency_calibration_path_label, 18, 0, 1, 1
         )
         self.resonance_frequency_calibration_path_lineEdit = QtWidgets.QLineEdit(
             Settings
@@ -224,8 +231,45 @@ class Ui_Settings(object):
             "resonance_frequency_calibration_path_lineEdit"
         )
         self.gridLayout.addWidget(
-            self.resonance_frequency_calibration_path_lineEdit, 17, 1, 1, 1
+            self.resonance_frequency_calibration_path_lineEdit, 18, 1, 1, 1
         )
+
+        # Magnetic field measurement settings
+        self.magnetic_field_measurement_label = QtWidgets.QLabel(Settings)
+        self.magnetic_field_measurement_label.setMinimumSize(QtCore.QSize(0, 20))
+        self.magnetic_field_measurement_label.setStyleSheet(
+            'font: 75 bold 10pt "Segoe UI";'
+        )
+        self.magnetic_field_measurement_label.setObjectName(
+            "magnetic_field_measurement_label"
+        )
+        self.gridLayout.addWidget(self.magnetic_field_measurement_label, 19, 0, 1, 2)
+
+        self.header_line_3 = QtWidgets.QFrame()
+        self.header_line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.header_line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.gridLayout.addWidget(self.header_line_3, 20, 0, 1, 2)
+        self.header_line_3.setStyleSheet(
+            "QFrame {\n" "            border: 2px solid rgb(52, 59, 72);\n" "}\n"
+        )
+
+        # Coil windings
+        self.pickup_coil_windings_label = QtWidgets.QLabel(Settings)
+        self.pickup_coil_windings_label.setObjectName("pickup_coil_windings_label")
+        self.gridLayout.addWidget(self.pickup_coil_windings_label, 21, 0, 1, 1)
+        self.pickup_coil_windings_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.pickup_coil_windings_lineEdit.setObjectName(
+            "pickup_coil_windings_lineEdit"
+        )
+        self.gridLayout.addWidget(self.pickup_coil_windings_lineEdit, 21, 1, 1, 1)
+
+        # Coil radius (in mm)
+        self.pickup_coil_radius_label = QtWidgets.QLabel(Settings)
+        self.pickup_coil_radius_label.setObjectName("pickup_coil_radius_label")
+        self.gridLayout.addWidget(self.pickup_coil_radius_label, 22, 0, 1, 1)
+        self.pickup_coil_radius_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.pickup_coil_radius_lineEdit.setObjectName("pickup_coil_radius_lineEdit")
+        self.gridLayout.addWidget(self.pickup_coil_radius_lineEdit, 22, 1, 1, 1)
 
         # # Transimpedance Amplifier Resistance
         # self.amplifier_resistance_label = QtWidgets.QLabel(Settings)
@@ -267,7 +311,7 @@ class Ui_Settings(object):
         self.save_settings_pushButton.setObjectName("save_settings_pushButton")
         self.buttons_HBoxLayout.addWidget(self.save_settings_pushButton)
 
-        self.gridLayout.addLayout(self.buttons_HBoxLayout, 18, 0, 1, 2)
+        self.gridLayout.addLayout(self.buttons_HBoxLayout, 23, 0, 1, 2)
 
         self.retranslateUi(Settings)
         QtCore.QMetaObject.connectSlotsByName(Settings)
@@ -295,8 +339,14 @@ class Ui_Settings(object):
         self.default_saving_path_label.setText(
             _translate("Settings", "Default Saving Path")
         )
+        self.pid_parameters_label.setText(
+            _translate("Settings", "Magnetic Field PID Parameters")
+        )
 
         self.lcr_header_label.setText(_translate("Settings", "LCR Settings"))
+        self.magnetic_field_measurement_label.setText(
+            _translate("Settings", "Magnetic Field Measurement Settings")
+        )
         self.base_capacitance_label.setText(
             _translate("Settings", "Base Capacitance (pF)")
         )
@@ -309,6 +359,13 @@ class Ui_Settings(object):
         )
         self.coil_inductance_label.setText(
             _translate("Settings", "Coil Inductance (mH)")
+        )
+        self.pickup_coil_windings_label.setText(
+            _translate("Settings", "Pickup Coil Windings")
+        )
+
+        self.pickup_coil_radius_label.setText(
+            _translate("Settings", "Pickup Coil Radius (mm)")
         )
         self.coil_windings_label.setText(_translate("Settings", "Coil Windings"))
         self.coil_radius_label.setText(_translate("Settings", "Coil Radius (mm)"))

@@ -5,9 +5,10 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import math
-import json
-import os.path
-from pathlib import Path
+
+# import json
+# import os.path
+# from pathlib import Path
 
 import core_functions as cf
 import physics_functions as pf
@@ -63,18 +64,29 @@ class FrequencyScan(QtCore.QThread):
 
         # If
         if measurement_parameters["constant_magnetic_field_mode"]:
-
-            with open(
-                os.path.join(Path(__file__).parent.parent, "usr", "pid_tuning.json")
-            ) as json_file:
-                data = json.load(json_file)
-            self.pid = PID(
-                float(data["p"]),
-                float(data["i"]),
-                float(data["d"]),
-                setpoint=self.measurement_parameters["current_compliance"],
+            pid_parameters = np.array(
+                self.global_parameters["pid_parameters"].split(","), dtype=float
             )
-            self.pid.output_limits = (1, self.measurement_parameters["voltage"])
+            self.source.start_constant_magnetic_field_mode(
+                pid_parameters,
+                self.measurement_parameters["current_compliance"],
+                self.measurement_parameters["voltage"],
+            )
+
+            # with open(
+            # os.path.join(Path(__file__).parent.parent, "usr", "pid_tuning.json")
+            # ) as json_file:
+            # data = json.load(json_file)
+            # pid_parameters = np.array(
+            #     self.global_parameters["pid_parameters"].split(","), dtype=float
+            # )
+            # self.pid = PID(
+            #     pid_parameters[0],
+            #     pid_parameters[1],
+            #     pid_parameters[2],
+            #     setpoint=self.measurement_parameters["current_compliance"],
+            # )
+            # self.pid.output_limits = (1, self.measurement_parameters["voltage"])
             # self.pid.proportional_on_measurement = True
 
     def run(self):
@@ -94,15 +106,18 @@ class FrequencyScan(QtCore.QThread):
 
         pydevd.settrace(suspend=False)
 
+        # Measure time elapsed
+        start_time = time.time()
+
         self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"])
-        if self.measurement_parameters["constant_magnetic_field_mode"]:
-            self.source.set_current(0.5)
-        else:
+        if not self.measurement_parameters["constant_magnetic_field_mode"]:
             self.source.set_current(self.measurement_parameters["current_compliance"])
-        self.source.output(True)
+        else:
+            # Calculate the average time it took to adjust the magnetic field
+            total_adjustment_time = 0
 
         # Define arrays in which the data shall be stored in
         i = 0
@@ -115,103 +130,99 @@ class FrequencyScan(QtCore.QThread):
         )
         for frequency in frequencies:
             # for frequency in self.df_data["frequency"]:
-            cf.log_message("Frequency set to " + str(frequency) + " kHz")
+            # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set frequency
             self.arduino.set_frequency(
                 frequency, self.measurement_parameters["autoset_capacitance"]
             )
 
-            # Wait a bit (wait longer for the first frequency, so that the PID
-            # of the source can adjust to ensure the set current output)
-            if math.isclose(frequency, frequencies[0]):
-                time.sleep(4)
-            else:
-                time.sleep(self.measurement_parameters["frequency_settling_time"])
+            # Activate output only when frequency was set
+            if i == 0:
+                self.source.output(True)
+                time.sleep(1)
 
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached
             if self.measurement_parameters["constant_magnetic_field_mode"]:
                 # start_time = time.time()
                 # i = 0
-                a = 0
-                while True:
-                    # Generate step-response data to tune with https://pidtuner.com/
-                    # Time (frequency hijacked)
-                    # time_it = round(time.time() - start_time, 2)
-                    # self.df_data.loc[i, "frequency"] = time_it
+                # a = 0
+                # while True:
+                # Generate step-response data to tune with https://pidtuner.com/
+                # Time (frequency hijacked)
+                # time_it = round(time.time() - start_time, 2)
+                # self.df_data.loc[i, "frequency"] = time_it
 
-                    # if i == 0:
-                    #     self.source.output(False)
-                    #     voltage = 0
-                    # elif i == 20:
-                    #     voltage = 2
-                    #     self.source.set_voltage(2)
-                    #     self.source.output(True)
-                    # elif i == 30:
-                    #     voltage = 0
-                    #     self.source.output(False)
-                    # elif i == 50:
-                    #     voltage = 4
-                    #     self.source.set_voltage(4)
-                    #     self.source.output(True)
-                    # elif i == 60:
-                    #     voltage = 0
-                    #     self.source.output(False)
-                    # elif i == 70:
-                    #     self.save_data()
-                    #     print("Data saved")
+                # if i == 0:
+                #     self.source.output(False)
+                #     voltage = 0
+                # elif i == 20:
+                #     voltage = 2
+                #     self.source.set_voltage(2)
+                #     self.source.output(True)
+                # elif i == 30:
+                #     voltage = 0
+                #     self.source.output(False)
+                # elif i == 50:
+                #     voltage = 4
+                #     self.source.set_voltage(4)
+                #     self.source.output(True)
+                # elif i == 60:
+                #     voltage = 0
+                #     self.source.output(False)
+                # elif i == 70:
+                #     self.save_data()
+                #     print("Data saved")
 
-                    # Now measure Vpp from channel one on the oscilloscope (and save in mT)
-                    magnetic_field = (
-                        pf.calculate_magnetic_field_from_Vind(
-                            4,
-                            20e-3,
-                            float(self.oscilloscope.measure_vmax("CHAN1")),
-                            frequency * 1e3,
-                        )
-                        * 1e3
+                pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
+                    self.global_parameters["pickup_coil_windings"],
+                    self.global_parameters["pickup_coil_radius"],
+                    frequency,
+                    self.oscilloscope,
+                )
+
+                # # Plot a graph (for PID tuning)
+                # self.df_data.loc[i, "voltage"] = 1
+                # self.df_data.loc[i, "current"] = 1
+
+                # self.df_data.loc[i, "magnetic_field"] = magnetic_field
+                # self.df_data.loc[i, "vmax"] = 1
+
+                # self.update_spectrum_signal.emit(
+                #     self.df_data["frequency"],
+                #     self.df_data["current"],
+                #     self.df_data["magnetic_field"],
+                #     self.df_data["vmax"],
+                # )
+                total_adjustment_time += elapsed_time
+                if (
+                    self.measurement_parameters["frequency_settling_time"]
+                    > elapsed_time
+                ):
+                    time.sleep(
+                        self.measurement_parameters["frequency_settling_time"]
+                        - elapsed_time
                     )
-                    print("Magnetic field " + str(magnetic_field))
-                    pid_voltage = self.pid(magnetic_field)
-                    print("PID voltage " + str(pid_voltage))
-                    self.source.set_voltage(round(pid_voltage, 1))
-                    print("PID tunings " + str(self.pid.components))
-
-                    # # Plot a graph (for PID tuning)
-                    # self.df_data.loc[i, "voltage"] = 1
-                    # self.df_data.loc[i, "current"] = 1
-
-                    # self.df_data.loc[i, "magnetic_field"] = magnetic_field
-                    # self.df_data.loc[i, "vmax"] = 1
-
-                    # self.update_spectrum_signal.emit(
-                    #     self.df_data["frequency"],
-                    #     self.df_data["current"],
-                    #     self.df_data["magnetic_field"],
-                    #     self.df_data["vmax"],
-                    # )
-                    # i += 1
-                    time.sleep(0.05)
-                    # If deviation is in two consecutive runs lower than abs_tol
-                    if math.isclose(self.pid.setpoint, magnetic_field, abs_tol=0.02):
-                        a += 1
-
-                    if a >= 2:
-                        break
-
-                    if self.is_killed:
-                        # Close the connection to the spectrometer
-                        self.source.output(False)
-                        self.source.set_voltage(5)
-                        self.parent.oscilloscope_thread.pause = False
-                        self.quit()
-                        return
+            else:
+                # Wait for the settling time so that current can be adjusted
+                time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
             voltage, current, mode = self.source.read_values()
 
             vmax = float(self.oscilloscope.measure_vmax("CHAN2"))
+
+            # Calculate the magnetic field using a pickup coil
+            magnetic_field = (
+                pf.calculate_magnetic_field_from_Vind(
+                    self.global_parameters["pickup_coil_windings"],
+                    self.global_parameters["pickup_coil_radius"] * 1e-3,
+                    float(self.oscilloscope.measure_vmax("CHAN1")),
+                    frequency * 1e3,
+                )
+                * 1e3
+            )
 
             # Set the variables in the dataframe
             self.df_data.loc[i, "voltage"] = voltage
@@ -232,35 +243,7 @@ class FrequencyScan(QtCore.QThread):
                 self.df_data["vmax"],
             )
 
-            # Now compute the slope to adjust the step hight on the fly
-            # if i > 0:
-            #     slope = abs(
-            #         (
-            #             self.df_data.loc[i, "current"]
-            #             - self.df_data.loc[i - 1, "current"]
-            #         )
-            #         / (
-            #             self.df_data.loc[i, "frequency"]
-            #             - self.df_data.loc[i - 1, "frequency"]
-            #         )
-            #     )
-
-            # The higher the slope, the smaller the step
-            # if slope > 0:
-            #     frequency = frequency + max(
-            #         [
-            #             self.measurement_parameters["frequency_step"]
-            #             / (slope * 100 * 2),
-            #             0.2,
-            #         ]
-            #     )
-            # else:
-            #     frequency = (
-            #         frequency + self.measurement_parameters["frequency_step"]
-            #     )
-
-            frequency = frequency + self.measurement_parameters["frequency_step"]
-
+            # Increase iterator
             i += 1
 
             if self.is_killed:
@@ -276,6 +259,13 @@ class FrequencyScan(QtCore.QThread):
         self.parent.specw_start_measurement_pushButton.setChecked(False)
 
         self.parent.oscilloscope_thread.pause = False
+
+        cf.log_message(
+            "Frequency scan ended with an average magnetic field adjustment time of "
+            + str(total_adjustment_time / len(frequencies))
+            + " and a total measurement time of "
+            + str(time.time() - start_time)
+        )
         # self.parent.setup_thread.pause = False
         # self.parent.oscilloscope_thread.pause = False
 

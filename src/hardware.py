@@ -4,12 +4,16 @@ import serial
 from PySide2 import QtCore
 
 import core_functions as cf
+import physics_functions as pf
 from physics_functions import calculate_resonance_frequency
 
 import time
 import re
 import sys
 
+from simple_pid import PID
+
+import math
 import numpy as np
 import pandas as pd
 from itertools import chain, combinations
@@ -415,6 +419,78 @@ class VoltcraftSource:
         self.query("CURR%03d" % current_int)
         self.mutex.unlock()
 
+    def start_constant_magnetic_field_mode(
+        self, pid_parameters, set_point, maximum_voltage
+    ):
+        """
+        Start constant magnetic field mode according to a set value
+        """
+        try:
+            del self.pid
+        except:
+            print("PID did not yet exist")
+
+        self.pid = PID(
+            pid_parameters[0],
+            pid_parameters[1],
+            pid_parameters[2],
+            setpoint=set_point,
+        )
+        # Minimum of one volt is required by the voltcraft source
+        self.pid.output_limits = (1, maximum_voltage)
+
+    def adjust_magnetic_field(
+        self, pickup_coil_windings, pickup_coil_radius, frequency, osci
+    ):
+        """
+        Does the adjustment to a constant magnetic field according to an input
+        magnetic field and measurements using an external device (e.g. osci).
+        magnetic field in mT, frequency in kHz
+        """
+        self.mutex.lock()
+        a = 0
+        start_time = time.time()
+        while True:
+            # Calculate the magnetic field using a pickup coil
+            magnetic_field = (
+                pf.calculate_magnetic_field_from_Vind(
+                    pickup_coil_windings,
+                    pickup_coil_radius * 1e-3,
+                    float(osci.measure_vmax("CHAN1")),
+                    frequency * 1e3,
+                )
+                * 1e3
+            )
+
+            # ask for optimum value of pid
+            pid_voltage = self.pid(magnetic_field)
+
+            # Set the voltage to that value (rounded to the accuracy of the
+            # source)
+            self.set_voltage(round(pid_voltage, 1))
+
+            # Wait for a bit so that the hardware can react
+            time.sleep(0.05)
+
+            # If the magnetic field and the setpoint deviate by less than 0.02,
+            # increase a else set it back to zero
+            if math.isclose(self.pid.setpoint, magnetic_field, abs_tol=0.02):
+                a += 1
+            else:
+                a = 0
+
+            # Only break if this is the case for several iterations
+            if a >= 5:
+                break
+
+        # Measure the elapsed time to keep track of how long the adjustment
+        # takes
+        elapsed_time = time.time() - start_time
+        print(elapsed_time)
+
+        self.mutex.unlock()
+        return pid_voltage, elapsed_time
+
     def output(self, state):
         """
         Activate or deactivate output:
@@ -758,8 +834,8 @@ class Arduino:
             # print(com.readall())
             # time.sleep(0.5)
             self.cap_states[np.where(np.array(self.arduino_pins) == cap_no)] = state
-        else:
-            print("Cap " + str(cap_no) + " was already in state " + str(state))
+        # else:
+        # print("Cap " + str(cap_no) + " was already in state " + str(state))
 
         self.mutex.unlock()
 
