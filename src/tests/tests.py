@@ -10,9 +10,12 @@ class MockRigoOscilloscope:
     def __init__(self, com2_address):
         print(com2_address)
 
-    def get_data(self):
+    def get_data(self, osci_name):
         time = np.arange(0, 100, 0.1)
         return time, np.sin(time)
+
+    def measure(self):
+        return 1, 2, 3, 4
 
 
 class MockVoltcraftSource:

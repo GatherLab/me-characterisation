@@ -111,6 +111,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.start_frequency_sweep
         )
         self.specw_start_measurement_pushButton.setCheckable(True)
+        self.specw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
+            self.change_current_to_magnetic_field
+        )
 
         # -------------------------------------------------------------------- #
         # ------------------ Capacitance Sweep Widget ------------------------ #
@@ -142,7 +145,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_frequency_spinBox.setValue(100)
 
         self.sw_capacitance_spinBox.setMinimum(0)
-        self.sw_capacitance_spinBox.setMaximum(20000)
+        self.sw_capacitance_spinBox.setMaximum(100000)
         self.sw_capacitance_spinBox.setKeyboardTracking(False)
         self.sw_capacitance_spinBox.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.NoButtons
@@ -168,15 +171,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
-        self.specw_current_spinBox.setValue(0.3)
+        self.specw_current_spinBox.setValue(1)
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
-        self.specw_minimum_frequency_spinBox.setValue(180)
+        self.specw_minimum_frequency_spinBox.setValue(105)
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
-        self.specw_maximum_frequency_spinBox.setValue(280)
+        self.specw_maximum_frequency_spinBox.setValue(180)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
@@ -185,6 +188,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
         self.specw_frequency_settling_time_spinBox.setMaximum(10)
         self.specw_frequency_settling_time_spinBox.setValue(1)
+
+        self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
+        self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
 
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
@@ -483,11 +489,36 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Currently this only works independently of other functions but it
         # checks for the true state of the source
         if self.source.output_state:
-            self.source.output(False)
+            self.source.output(True)
             self.specw_start_measurement_pushButton.setChecked(False)
         else:
-            self.source.output(True)
+            self.source.output(False)
             self.specw_start_measurement_pushButton.setChecked(True)
+
+    def change_current_to_magnetic_field(self):
+        """
+        Function to toggle source output on or off
+        """
+        # Currently this only works independently of other functions but it
+        # checks for the true state of the source
+        _translate = QtCore.QCoreApplication.translate
+
+        if self.specw_constant_magnetic_field_mode_toggleSwitch.isChecked():
+            self.specw_current_label.setText(
+                _translate("MainWindow", "Magnetic Field (mT)")
+            )
+            self.specw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        else:
+            self.specw_current_label.setText(
+                _translate("MainWindow", "Maximum Current (A)")
+            )
+            self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
+        # if self.source.output_state:
+        #     self.source.output(False)
+        #     self.specw_start_measurement_pushButton.setChecked(False)
+        # else:
+        #     self.source.output(True)
+        #     self.specw_start_measurement_pushButton.setChecked(True)
 
     # -------------------------------------------------------------------- #
     # -------------------------- Frequency Sweep ------------------------- #
@@ -504,6 +535,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "frequency_step": self.specw_frequency_step_spinBox.value(),
             "frequency_settling_time": self.specw_frequency_settling_time_spinBox.value(),
             "autoset_capacitance": self.specw_autoset_capacitance_toggleSwitch.isChecked(),
+            "constant_magnetic_field_mode": self.specw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
         }
 
         # Update statusbar

@@ -57,12 +57,12 @@ void setup()
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
 
-  // Set all but 3 high (all but cap 3 off)
+  // Set all low (but 6 which NC is damaged)
   digitalWrite(2, LOW);
   digitalWrite(3, LOW);
   digitalWrite(4, LOW);
   digitalWrite(5, LOW);
-  digitalWrite(6, LOW);
+  digitalWrite(6, HIGH);
   digitalWrite(7, LOW);
 
   // Read the Status Register and print it only at the beginning

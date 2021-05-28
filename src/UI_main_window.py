@@ -403,7 +403,7 @@ class Ui_MainWindow(object):
 
         self.specw_ax2 = self.specw_ax.twinx()
         self.specw_ax2.set_ylabel(
-            "VPP (V)",
+            "Vmax (V)",
             fontsize=14,
         )
 
@@ -411,7 +411,7 @@ class Ui_MainWindow(object):
         self.specw_mplToolbar = NavigationToolbar(
             self.specw_fig, self.specw_graph_widget
         )
-        # self.specw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        self.specw_mplToolbar.setStyleSheet("background-color:white;")
         self.specw_mpl_graph_gridLayout.addWidget(self.specw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -467,17 +467,33 @@ class Ui_MainWindow(object):
             self.specw_voltage_spinBox, 2, 0, 1, 1
         )
 
+        # Constant magnetic field mode?
+        self.specw_constant_magnetic_field_mode_HLayout = QtWidgets.QHBoxLayout()
+        self.specw_constant_magnetic_field_mode_toggleSwitch = ToggleSwitch()
+        self.specw_constant_magnetic_field_mode_label = QtWidgets.QLabel(
+            "Magnetic Field Mode"
+        )
+        self.specw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.specw_constant_magnetic_field_mode_toggleSwitch
+        )
+        self.specw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.specw_constant_magnetic_field_mode_label
+        )
+        self.specw_scrollArea_gridLayout.addLayout(
+            self.specw_constant_magnetic_field_mode_HLayout, 3, 0, 1, 1
+        )
+
         # Set current limit
         self.specw_current_label = QtWidgets.QLabel(self.specw_scrollAreaWidgetContents)
         self.specw_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
         self.specw_current_label.setObjectName("specw_current_label")
-        self.specw_scrollArea_gridLayout.addWidget(self.specw_current_label, 3, 0, 1, 1)
+        self.specw_scrollArea_gridLayout.addWidget(self.specw_current_label, 4, 0, 1, 1)
         self.specw_current_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
         )
         self.specw_current_spinBox.setObjectName("specw_current_spinBox")
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_current_spinBox, 4, 0, 1, 1
+            self.specw_current_spinBox, 5, 0, 1, 1
         )
 
         # Set minimum scan frequency
@@ -491,7 +507,7 @@ class Ui_MainWindow(object):
             "specw_minimum_frequency_label"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_minimum_frequency_label, 5, 0, 1, 1
+            self.specw_minimum_frequency_label, 6, 0, 1, 1
         )
         self.specw_minimum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
@@ -500,7 +516,7 @@ class Ui_MainWindow(object):
             "specw_minimum_frequency_spinBox"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_minimum_frequency_spinBox, 6, 0, 1, 1
+            self.specw_minimum_frequency_spinBox, 7, 0, 1, 1
         )
 
         # Set maximum scan frequency
@@ -514,7 +530,7 @@ class Ui_MainWindow(object):
             "specw_maximum_frequency_label"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_maximum_frequency_label, 7, 0, 1, 1
+            self.specw_maximum_frequency_label, 8, 0, 1, 1
         )
         self.specw_maximum_frequency_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
@@ -523,7 +539,7 @@ class Ui_MainWindow(object):
             "specw_maximum_frequency_spinBox"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_maximum_frequency_spinBox, 8, 0, 1, 1
+            self.specw_maximum_frequency_spinBox, 9, 0, 1, 1
         )
 
         # Set frequency step
@@ -533,14 +549,14 @@ class Ui_MainWindow(object):
         self.specw_frequency_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
         self.specw_frequency_step_label.setObjectName("specw_frequency_step_label")
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_step_label, 9, 0, 1, 1
+            self.specw_frequency_step_label, 10, 0, 1, 1
         )
         self.specw_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
         )
         self.specw_frequency_step_spinBox.setObjectName("specw_frequency_step_spinBox")
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_step_spinBox, 10, 0, 1, 1
+            self.specw_frequency_step_spinBox, 11, 0, 1, 1
         )
 
         # Set frequency settling time
@@ -554,7 +570,7 @@ class Ui_MainWindow(object):
             "specw_frequency_settling_time_label"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_settling_time_label, 11, 0, 1, 1
+            self.specw_frequency_settling_time_label, 12, 0, 1, 1
         )
         self.specw_frequency_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
@@ -563,7 +579,7 @@ class Ui_MainWindow(object):
             "specw_frequency_settling_time_spinBox"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_settling_time_spinBox, 12, 0, 1, 1
+            self.specw_frequency_settling_time_spinBox, 13, 0, 1, 1
         )
 
         # Auto set capacitance?
@@ -577,7 +593,7 @@ class Ui_MainWindow(object):
             self.specw_autoset_capacitance_label
         )
         self.specw_scrollArea_gridLayout.addLayout(
-            self.specw_autoset_capacitance_HLayout, 13, 0, 1, 1
+            self.specw_autoset_capacitance_HLayout, 14, 0, 1, 1
         )
 
         # Save Spectrum button
@@ -588,7 +604,7 @@ class Ui_MainWindow(object):
             "specw_start_measurement_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_start_measurement_pushButton, 14, 0, 1, 1
+            self.specw_start_measurement_pushButton, 15, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
@@ -639,7 +655,7 @@ class Ui_MainWindow(object):
 
         # self.capw_fig.figure.set_facecolor("#E0E0E0")
         self.capw_mplToolbar = NavigationToolbar(self.capw_fig, self.capw_graph_widget)
-        # self.capw_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        self.capw_mplToolbar.setStyleSheet("background-color:white;")
         self.capw_mpl_graph_gridLayout.addWidget(self.capw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -906,7 +922,7 @@ class Ui_MainWindow(object):
 
         # self.ow_fig.figure.set_facecolor("#E0E0E0")
         self.ow_mplToolbar = NavigationToolbar(self.ow_fig, self.ow_graph_widget)
-        # self.ow_mplToolbar.setStyleSheet("background-color:#E0E0E0;")
+        self.ow_mplToolbar.setStyleSheet("background-color:white;")
         self.ow_mpl_graph_gridLayout.addWidget(self.ow_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -1236,6 +1252,10 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Autoset Capacitance")
         )
 
+        self.specw_constant_magnetic_field_mode_toggleSwitch.setText(
+            _translate("MainWindow", "Constant Magnetic Field Mode")
+        )
+
         self.specw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.specw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
@@ -1250,9 +1270,7 @@ class Ui_MainWindow(object):
         )
 
         self.capw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
-        self.capw_current_label.setText(
-            _translate("MainWindow", "Current Compliance (A)")
-        )
+        self.capw_current_label.setText(_translate("MainWindow", "Maximum Current (A)"))
         self.capw_minimum_frequency_label.setText(
             _translate("MainWindow", "Min Frequency (kHz)")
         )
@@ -1287,9 +1305,7 @@ class Ui_MainWindow(object):
         )
 
         self.ow_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
-        self.ow_current_label.setText(
-            _translate("MainWindow", "Current Compliance (A)")
-        )
+        self.ow_current_label.setText(_translate("MainWindow", "Maximum Current (A)"))
         self.ow_minimum_frequency_label.setText(
             _translate("MainWindow", "Min Frequency (kHz)")
         )
