@@ -54,9 +54,39 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
             str(default_settings["calibration_file_path"])
         )
 
+        self.load_rlc_settings_pushButton.clicked.connect(self.load_rlc_settings)
+
         # Connect buttons to functions
         self.load_defaults_pushButton.clicked.connect(self.load_defaults)
         self.save_settings_pushButton.clicked.connect(self.save_settings)
+
+    def load_rlc_settings(self):
+        """
+        Load RLC settings
+        """
+        global_variables = cf.read_global_settings()
+
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            QtWidgets.QFileDialog(),
+            "Select a RLC Parameter File",
+            global_variables["default_saving_path"],
+            # QtWidgets.QFileDialog.ShowDirsOnly,
+        )[0]
+        # Load the rlc specs from file
+        with open(path) as json_file:
+            rlc_settings = json.load(json_file)
+
+        # Now set the right fields
+        self.base_capacitance_lineEdit.setText(rlc_settings["base_capacitance"])
+        self.coil_inductance_lineEdit.setText(rlc_settings["coil_inductance"])
+        self.coil_windings_lineEdit.setText(rlc_settings["coil_windings"])
+        self.coil_radius_lineEdit.setText(rlc_settings["coil_radius"])
+        self.capacitances_lineEdit.setText(rlc_settings["capacitances"])
+        self.circuit_resistance_lineEdit.setText(rlc_settings["circuit_resistance"])
+        self.arduino_pins_lineEdit.setText(rlc_settings["arduino_pins"])
+        self.resonance_frequency_calibration_path_lineEdit.setText(
+            rlc_settings["calibration_file_path"]
+        )
 
     def save_settings(self):
         """

@@ -152,6 +152,10 @@ class Ui_Settings(object):
         self.lcr_header_label.setObjectName("lcr_header_label")
         self.gridLayout.addWidget(self.lcr_header_label, 9, 0, 1, 2)
 
+        self.load_rlc_settings_pushButton = QtWidgets.QPushButton(Settings)
+        self.load_rlc_settings_pushButton.setObjectName("load_rlc_settings_pushButton")
+        self.gridLayout.addWidget(self.load_rlc_settings_pushButton, 9, 1, 1, 2)
+
         self.header_line_2 = QtWidgets.QFrame()
         self.header_line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.header_line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -385,3 +389,6 @@ class Ui_Settings(object):
 
         self.save_settings_pushButton.setText(_translate("Settings", "Save Settings"))
         self.load_defaults_pushButton.setText(_translate("Settings", "Load Defaults"))
+        self.load_rlc_settings_pushButton.setText(
+            _translate("Settings", "Load RLC Settings")
+        )

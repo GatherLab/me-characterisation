@@ -353,11 +353,20 @@ class Ui_MainWindow(object):
 
         self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
-        self.sw_set_buttons_gridLayout = QtWidgets.QGridLayout()
+        # self.sw_set_buttons_gridLayout = QtWidgets.QGridLayout()
+
+        self.sw_autoset_capacitance_HLayout = QtWidgets.QHBoxLayout()
+        self.sw_autoset_capacitance_toggleSwitch = ToggleSwitch()
+        self.sw_autoset_capacitance_label = QtWidgets.QLabel("Autoset Capacitance")
+        self.sw_autoset_capacitance_HLayout.addWidget(
+            self.sw_autoset_capacitance_toggleSwitch
+        )
+        self.sw_autoset_capacitance_HLayout.addWidget(self.sw_autoset_capacitance_label)
+        self.gridLayout_7.addLayout(self.sw_autoset_capacitance_HLayout, 8, 0, 1, 1)
 
         self.sw_source_output_pushButton = QtWidgets.QPushButton(self.setup_widget)
         self.sw_source_output_pushButton.setObjectName("sw_source_output_pushButton")
-        self.gridLayout_7.addWidget(self.sw_source_output_pushButton, 8, 0, 1, 2)
+        self.gridLayout_7.addWidget(self.sw_source_output_pushButton, 8, 1, 1, 1)
 
         self.tabWidget.addTab(self.setup_widget, "")
 

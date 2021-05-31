@@ -399,7 +399,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Function that changes frequency on arduino when it is changed on spinbox
         """
         frequency = self.sw_frequency_spinBox.value()
-        self.arduino.set_frequency(frequency)
+
+        self.arduino.set_frequency(
+            frequency,
+            set_capacitance=self.sw_autoset_capacitance_toggleSwitch.isChecked(),
+        )
+
+        self.sw_frequency_lcdNumber.display(frequency)
+
+        if self.sw_autoset_capacitance_toggleSwitch.isChecked():
+            self.sw_capacitance_lcdNumber.display(self.arduino.real_capacity)
+
         cf.log_message("Arduino frequency set to " + str(frequency) + " kHz")
 
     def capacity_changed(self):
@@ -489,18 +499,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Currently this only works independently of other functions but it
         # checks for the true state of the source
         if self.source.output_state:
-            self.source.output(True)
+            self.source.output(False)
             self.specw_start_measurement_pushButton.setChecked(False)
         else:
-            self.source.output(False)
+            self.source.output(True)
             self.specw_start_measurement_pushButton.setChecked(True)
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Frequency Sweep ------------------------- #
+    # -------------------------------------------------------------------- #
 
     def change_current_to_magnetic_field(self):
         """
         Function to toggle source output on or off
         """
-        # Currently this only works independently of other functions but it
-        # checks for the true state of the source
         _translate = QtCore.QCoreApplication.translate
 
         if self.specw_constant_magnetic_field_mode_toggleSwitch.isChecked():
@@ -513,16 +525,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 _translate("MainWindow", "Maximum Current (A)")
             )
             self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
-        # if self.source.output_state:
-        #     self.source.output(False)
-        #     self.specw_start_measurement_pushButton.setChecked(False)
-        # else:
-        #     self.source.output(True)
-        #     self.specw_start_measurement_pushButton.setChecked(True)
 
-    # -------------------------------------------------------------------- #
-    # -------------------------- Frequency Sweep ------------------------- #
-    # -------------------------------------------------------------------- #
     def read_frequency_sweep_parameters(self):
         """
         Function to read out the current fields entered in the frequency sweep tab
