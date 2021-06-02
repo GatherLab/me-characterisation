@@ -6,6 +6,7 @@ from frequency_measurement import FrequencyScan
 from capacitance_measurement import CapacitanceScan
 from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
+from pid_tuning import PIDScan
 
 from hardware import RigolOscilloscope, VoltcraftSource, Arduino
 
@@ -134,6 +135,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ow_start_measurement_pushButton.clicked.connect(self.save_osci)
 
         # -------------------------------------------------------------------- #
+        # -------------------- Frequency Sweep Widget ------------------------ #
+        # -------------------------------------------------------------------- #
+        self.pidw_start_measurement_pushButton.clicked.connect(
+            self.start_pid_measurement
+        )
+        self.pidw_start_measurement_pushButton.setCheckable(True)
+
+        # -------------------------------------------------------------------- #
         # --------------------- Set Standard Parameters ---------------------- #
         # -------------------------------------------------------------------- #
 
@@ -228,6 +237,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_frequency_settling_time_spinBox.setMinimum(0.01)
         self.capw_frequency_settling_time_spinBox.setMaximum(10)
         self.capw_frequency_settling_time_spinBox.setValue(0.5)
+
+        # Set standard parameters for spectral measurement
+        self.pidw_voltage_spinBox.setMinimum(0)
+        self.pidw_voltage_spinBox.setMaximum(33)
+        self.pidw_voltage_spinBox.setValue(8)
+
+        self.pidw_current_spinBox.setMinimum(0)
+        self.pidw_current_spinBox.setMaximum(12)
+        self.pidw_current_spinBox.setValue(1)
+
+        self.pidw_frequency_spinBox.setMinimum(8)
+        self.pidw_frequency_spinBox.setMaximum(150000)
+        self.pidw_frequency_spinBox.setValue(105)
+
+        self.pidw_autoset_capacitance_toggleSwitch.setChecked(True)
 
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
@@ -865,6 +889,116 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         cf.save_file(df, file_path, header_lines)
+
+    ################################################################################
+    ############################ PID Tuning ########################################
+    ################################################################################
+
+    def read_pid_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        pid_sweep_parameters = {
+            "voltage": self.pidw_voltage_spinBox.value(),
+            "magnetic_field": self.pidw_current_spinBox.value(),
+            "frequency": self.pidw_frequency_spinBox.value(),
+            # "frequency_settling_time": self.pidw_frequency_settling_time_spinBox.value(),
+            "autoset_capacitance": self.pidw_autoset_capacitance_toggleSwitch.isChecked(),
+        }
+
+        # Update statusbar
+        cf.log_message("PID sweep parameters read")
+
+        return pid_sweep_parameters
+
+    def start_pid_measurement(self):
+        """
+        Function that saves the spectrum (probably by doing another
+        measurement and shortly turning on the OLED for a background
+        measurement and then saving this into a single file)
+        """
+        if not self.pidw_start_measurement_pushButton.isChecked():
+            self.pid_sweep.kill()
+            return
+
+        # Load in setup parameters and make sure that the parameters make sense
+        # setup_parameters = self.safe_read_setup_parameters()
+        pid_parameters = self.read_pid_sweep_parameters()
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        self.pid_sweep = PIDScan(
+            self.arduino,
+            self.source,
+            self.oscilloscope,
+            pid_parameters,
+            # setup_parameters,
+            parent=self,
+        )
+
+        self.pid_sweep.start()
+
+    @QtCore.Slot(list, list, list, list)
+    def update_pid_graph(self, time, magnetic_field):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        try:
+            # Delete two times zero because after the first deletion the first element will be element zero
+            del self.pidw_ax.lines[0]
+            del self.pidw_ax.lines[0]
+            # del self.pidw_ax2.lines[0]
+        except IndexError:
+            pass
+
+        # Set x and y limit
+        self.pidw_ax.set_xlim([min(time), max(time)])
+        self.pidw_ax.set_ylim([0, max(magnetic_field) + 0.05])
+
+        # self.pidw_ax2.set_ylim(
+        #     [
+        #         min(vmax) - 0.05,
+        #         max(vmax) + 0.05,
+        #     ]
+        # )
+
+        # Plot current
+        self.pidw_ax.plot(
+            time,
+            magnetic_field,
+            color=(68 / 255, 188 / 255, 65 / 255),
+            marker="o",
+            label="Magnetic Field",
+        )
+
+        # self.pidw_ax.plot(
+        #     time,
+        #     current,
+        #     color="red",
+        #     marker="o",
+        #     label="Current (A)",
+        # )
+
+        # self.pidw_ax2.plot(
+        #     time,
+        #     vmax,
+        #     color=(85 / 255, 170 / 255, 255 / 255),
+        #     marker="o",
+        #     label="Vmax Induced",
+        # )
+
+        lines, labels = self.pidw_ax.get_legend_handles_labels()
+        # lines2, labels2 = self.pidw_ax2.get_legend_handles_labels()
+        # legend = self.pidw_ax2.legend(lines + lines2, labels + labels2, loc="best")
+        # legend.set_draggable(True)
+
+        self.pidw_fig.draw()
 
 
 # Logging

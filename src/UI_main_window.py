@@ -1075,6 +1075,159 @@ class Ui_MainWindow(object):
 
         self.tabWidget.addTab(self.osci_widget, "")
 
+        # -------------------------------------------------------------------- #
+        # -------------------- Define pid tuning Widget ---------------------- #
+        # -------------------------------------------------------------------- #
+        self.pid_widget = QtWidgets.QWidget()
+        self.pid_widget.setObjectName("pid_widget")
+        self.pid_widget_gridLayout = QtWidgets.QGridLayout(self.pid_widget)
+        self.pid_widget_gridLayout.setObjectName("pid_widget_gridLayout")
+
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.pidw_graph_widget = QtWidgets.QWidget(self.pid_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pidw_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.pidw_graph_widget.setSizePolicy(sizePolicy)
+        self.pidw_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.pidw_graph_widget.setObjectName("pidw_graph_widget")
+        self.pidw_mpl_graph_gridLayout = QtWidgets.QGridLayout(self.pidw_graph_widget)
+        self.pidw_mpl_graph_gridLayout.setObjectName("pidw_mpl_graph_gridLayout")
+        self.pid_widget_gridLayout.addWidget(self.pidw_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.pidw_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.pidw_mpl_graph_gridLayout.addWidget(self.pidw_fig)
+
+        self.pidw_ax = self.pidw_fig.figure.subplots()
+        # self.pidw_ax.set_facecolor("#E0E0E0")
+        self.pidw_ax.grid(True)
+        self.pidw_ax.set_xlabel("Time (s)", fontsize=14)
+        self.pidw_ax.set_ylabel("Magnetic Field (mT)", fontsize=14)
+        self.pidw_ax.set_xlim([50, 600])
+
+        self.pidw_ax.axhline(linewidth=1, color="black")
+        self.pidw_ax.axvline(linewidth=1, color="black")
+
+        # self.pidw_ax2 = self.pidw_ax.twinx()
+        # self.pidw_ax2.set_ylabel(
+        #     "Vmax (V)",
+        #     fontsize=14,
+        # )
+
+        # self.pidw_fig.figure.set_facecolor("#E0E0E0")
+        self.pidw_mplToolbar = NavigationToolbar(self.pidw_fig, self.pidw_graph_widget)
+        self.pidw_mplToolbar.setStyleSheet("background-color:white;")
+        self.pidw_mpl_graph_gridLayout.addWidget(self.pidw_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.pidw_scrollArea = QtWidgets.QScrollArea(self.pid_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pidw_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.pidw_scrollArea.setSizePolicy(sizePolicy)
+        self.pidw_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.pidw_scrollArea.setWidgetResizable(True)
+        self.pidw_scrollArea.setObjectName("pidw_scrollArea")
+        self.pidw_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.pidw_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pidw_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.pidw_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.pidw_scrollAreaWidgetContents.setObjectName(
+            "pidw_scrollAreaWidgetContents"
+        )
+        self.pidw_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.pidw_scrollAreaWidgetContents
+        )
+        self.pidw_scrollArea_gridLayout.setObjectName("pidw_scrollArea_gridLayout")
+
+        self.pidw_header1_label = QtWidgets.QLabel(self.pidw_scrollAreaWidgetContents)
+        self.pidw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pidw_header1_label.setObjectName("pidw_header1_label")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_header1_label, 0, 0, 1, 1)
+        self.pidw_scrollArea.setWidget(self.pidw_scrollAreaWidgetContents)
+        self.pid_widget_gridLayout.addWidget(self.pidw_scrollArea, 0, 3, 1, 1)
+
+        # Set voltage
+        self.pidw_voltage_label = QtWidgets.QLabel(self.pidw_scrollAreaWidgetContents)
+        self.pidw_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pidw_voltage_label.setObjectName("pidw_voltage_label")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_voltage_label, 1, 0, 1, 1)
+        self.pidw_voltage_spinBox = QtWidgets.QDoubleSpinBox(
+            self.pidw_scrollAreaWidgetContents
+        )
+        self.pidw_voltage_spinBox.setObjectName("pidw_voltage_spinBox")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_voltage_spinBox, 2, 0, 1, 1)
+
+        # Set current limit
+        self.pidw_current_label = QtWidgets.QLabel(self.pidw_scrollAreaWidgetContents)
+        self.pidw_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pidw_current_label.setObjectName("pidw_current_label")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_current_label, 3, 0, 1, 1)
+        self.pidw_current_spinBox = QtWidgets.QDoubleSpinBox(
+            self.pidw_scrollAreaWidgetContents
+        )
+        self.pidw_current_spinBox.setObjectName("pidw_current_spinBox")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_current_spinBox, 4, 0, 1, 1)
+
+        # Set minimum scan frequency
+        self.pidw_frequency_label = QtWidgets.QLabel(self.pidw_scrollAreaWidgetContents)
+        self.pidw_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pidw_frequency_label.setObjectName("pidw_frequency_label")
+        self.pidw_scrollArea_gridLayout.addWidget(self.pidw_frequency_label, 5, 0, 1, 1)
+        self.pidw_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.pidw_scrollAreaWidgetContents
+        )
+        self.pidw_frequency_spinBox.setObjectName("pidw_frequency_spinBox")
+        self.pidw_scrollArea_gridLayout.addWidget(
+            self.pidw_frequency_spinBox, 6, 0, 1, 1
+        )
+
+        # Auto set capacitance?
+        self.pidw_autoset_capacitance_HLayout = QtWidgets.QHBoxLayout()
+        self.pidw_autoset_capacitance_toggleSwitch = ToggleSwitch()
+        self.pidw_autoset_capacitance_label = QtWidgets.QLabel("Autoset Capacitance")
+        self.pidw_autoset_capacitance_HLayout.addWidget(
+            self.pidw_autoset_capacitance_toggleSwitch
+        )
+        self.pidw_autoset_capacitance_HLayout.addWidget(
+            self.pidw_autoset_capacitance_label
+        )
+        self.pidw_scrollArea_gridLayout.addLayout(
+            self.pidw_autoset_capacitance_HLayout, 7, 0, 1, 1
+        )
+
+        # Save button
+        self.pidw_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.pidw_scrollAreaWidgetContents
+        )
+        self.pidw_start_measurement_pushButton.setObjectName(
+            "pidw_start_measurement_pushButton"
+        )
+        self.pidw_scrollArea_gridLayout.addWidget(
+            self.pidw_start_measurement_pushButton, 8, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.pid_widget, "")
+
         self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -1238,7 +1391,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.setup_widget), _translate("MainWindow", "Setup")
         )
-        # self.specw_max_voltage_label.setText(
+        # self.pidw_max_voltage_label.setText(
         # _translate("MainWindow", "Max Voltage (V)")
         # )
         self.specw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
@@ -1330,6 +1483,24 @@ class Ui_MainWindow(object):
         self.ow_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.ow_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
 
+        self.pidw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
+        self.pidw_current_label.setText(_translate("MainWindow", "Magnetic Field (mT)"))
+        self.pidw_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
+        self.pidw_autoset_capacitance_toggleSwitch.setText(
+            _translate("MainWindow", "Autoset Capacitance")
+        )
+
+        self.pidw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.pidw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        self.pidw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+
+        self.pidw_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
+        self.pidw_header1_label.setText(
+            _translate("MainWindow", "Measurement Parameters")
+        )
+
         # self.specw_changeover_voltage_label.setText(
         # _translate("MainWindow", "Changeover Voltage (V)")
         # )
@@ -1366,6 +1537,11 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.osci_widget),
             _translate("MainWindow", "Oscilloscope"),
+        )
+
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.pid_widget),
+            _translate("MainWindow", "PID Tuning"),
         )
 
         self.menudfg.setTitle(_translate("MainWindow", "File"))

@@ -196,14 +196,11 @@ class FrequencyScan(QtCore.QThread):
                 #     self.df_data["vmax"],
                 # )
                 total_adjustment_time += elapsed_time
-                if (
-                    self.measurement_parameters["frequency_settling_time"]
-                    > elapsed_time
-                ):
-                    time.sleep(
-                        self.measurement_parameters["frequency_settling_time"]
-                        - elapsed_time
-                    )
+                # if (
+                #     self.measurement_parameters["frequency_settling_time"]
+                #     > elapsed_time
+                # ):
+                time.sleep(self.measurement_parameters["frequency_settling_time"])
             else:
                 # Wait for the settling time so that current can be adjusted
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
@@ -260,12 +257,13 @@ class FrequencyScan(QtCore.QThread):
 
         self.parent.oscilloscope_thread.pause = False
 
-        cf.log_message(
-            "Frequency scan ended with an average magnetic field adjustment time of "
-            + str(total_adjustment_time / len(frequencies))
-            + " and a total measurement time of "
-            + str(time.time() - start_time)
-        )
+        if self.measurement_parameters["constant_magnetic_field_mode"]:
+            cf.log_message(
+                "Frequency scan ended with an average magnetic field adjustment time of "
+                + str(round(total_adjustment_time / len(frequencies), 2))
+                + " and a total measurement time of "
+                + str(round(time.time() - start_time, 2))
+            )
         # self.parent.setup_thread.pause = False
         # self.parent.oscilloscope_thread.pause = False
 

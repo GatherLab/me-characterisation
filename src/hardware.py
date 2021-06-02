@@ -474,7 +474,7 @@ class VoltcraftSource:
 
             # If the magnetic field and the setpoint deviate by less than 0.02,
             # increase a else set it back to zero
-            if math.isclose(self.pid.setpoint, magnetic_field, abs_tol=0.02):
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
                 a += 1
             else:
                 a = 0
