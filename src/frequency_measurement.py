@@ -180,6 +180,7 @@ class FrequencyScan(QtCore.QThread):
                     self.global_parameters["pickup_coil_radius"],
                     frequency,
                     self.oscilloscope,
+                    break_if_too_long=True,
                 )
 
                 # # Plot a graph (for PID tuning)

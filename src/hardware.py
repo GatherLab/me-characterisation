@@ -440,7 +440,12 @@ class VoltcraftSource:
         self.pid.output_limits = (1, maximum_voltage)
 
     def adjust_magnetic_field(
-        self, pickup_coil_windings, pickup_coil_radius, frequency, osci
+        self,
+        pickup_coil_windings,
+        pickup_coil_radius,
+        frequency,
+        osci,
+        break_if_too_long=False,
     ):
         """
         Does the adjustment to a constant magnetic field according to an input
@@ -483,9 +488,13 @@ class VoltcraftSource:
             if a >= 5:
                 break
 
-        # Measure the elapsed time to keep track of how long the adjustment
-        # takes
-        elapsed_time = time.time() - start_time
+            # Measure the elapsed time to keep track of how long the adjustment
+            # takes. If it already took longer than 10 s, break
+            elapsed_time = time.time() - start_time
+            if break_if_too_long:
+                if elapsed_time >= 6:
+                    break
+
         print(elapsed_time)
 
         self.mutex.unlock()
@@ -626,7 +635,7 @@ class Arduino:
                 columns=["constituents", "arduino_pins", "sum"],
             )
             .sort_values("sum", ignore_index=True)
-            .drop_duplicates(subset=["sum"], keep="first")
+            .drop_duplicates(subset=["sum"], keep="first", ignore_index=True)
         )
 
         # Add additional column with resonance frequency

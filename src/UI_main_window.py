@@ -420,7 +420,7 @@ class Ui_MainWindow(object):
         self.specw_mplToolbar = NavigationToolbar(
             self.specw_fig, self.specw_graph_widget
         )
-        self.specw_mplToolbar.setStyleSheet("background-color:white;")
+        self.specw_mplToolbar.setStyleSheet("background-color:white; color: black;")
         self.specw_mpl_graph_gridLayout.addWidget(self.specw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -664,7 +664,7 @@ class Ui_MainWindow(object):
 
         # self.capw_fig.figure.set_facecolor("#E0E0E0")
         self.capw_mplToolbar = NavigationToolbar(self.capw_fig, self.capw_graph_widget)
-        self.capw_mplToolbar.setStyleSheet("background-color:white;")
+        self.capw_mplToolbar.setStyleSheet("background-color:white; color:black; ")
         self.capw_mpl_graph_gridLayout.addWidget(self.capw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -931,7 +931,7 @@ class Ui_MainWindow(object):
 
         # self.ow_fig.figure.set_facecolor("#E0E0E0")
         self.ow_mplToolbar = NavigationToolbar(self.ow_fig, self.ow_graph_widget)
-        self.ow_mplToolbar.setStyleSheet("background-color:white;")
+        self.ow_mplToolbar.setStyleSheet("background-color:white; color: black;")
         self.ow_mpl_graph_gridLayout.addWidget(self.ow_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
@@ -1123,7 +1123,7 @@ class Ui_MainWindow(object):
 
         # self.pidw_fig.figure.set_facecolor("#E0E0E0")
         self.pidw_mplToolbar = NavigationToolbar(self.pidw_fig, self.pidw_graph_widget)
-        self.pidw_mplToolbar.setStyleSheet("background-color:white;")
+        self.pidw_mplToolbar.setStyleSheet("background-color:white; color:black;")
         self.pidw_mpl_graph_gridLayout.addWidget(self.pidw_mplToolbar)
 
         # ----------------------- Define scroll area ---------------------------
