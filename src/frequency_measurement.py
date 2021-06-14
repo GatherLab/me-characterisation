@@ -328,6 +328,10 @@ class FrequencyScan(QtCore.QThread):
             + str(self.setup_parameters["device_number"])
             + ".csv"
         )
+        self.df_data["magnetic_field"] = self.df_data["magnetic_field"].map(
+            lambda x: "{0:.3f}".format(x)
+        )
+
         cf.save_file(self.df_data, file_path, header_lines)
 
         # with open(file_path, "a") as the_file:
