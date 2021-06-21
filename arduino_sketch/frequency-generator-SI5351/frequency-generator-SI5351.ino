@@ -21,7 +21,10 @@
 #include "Wire.h"
 
 unsigned long frequency = 100000ULL;
+long resistance = 2000;
+String input;
 String command;
+unsigned long value;
 
 Si5351 si5351;
 
@@ -38,11 +41,15 @@ void setup()
   }
   else
   {
-    Serial.print("ready");
+    Serial.println("ready");
   }
 
   // Set CLK0 to output 600 kHz (600 000.00)
   si5351.set_freq(frequency * 100, SI5351_CLK0);
+
+  // Set standard resistance
+  change_resistance(value);
+  resistance = value;
 
   // Query a status update and wait a bit to let the Si5351 populate the
   // status flags correctly.
@@ -64,32 +71,22 @@ void setup()
   digitalWrite(5, LOW);
   digitalWrite(6, HIGH);
   digitalWrite(7, LOW);
-
-  // Read the Status Register and print it only at the beginning
-  //  si5351.update_status();
-  //  if (si5351.dev_status.SYS_INIT && si5351.dev_status.LOL_A && si5351.dev_status.LOL_B && i5351.dev_status.LOS && i5351.dev_status.REVID){
-  //    Serial.print("ready");
-  //  }
-  //  else{
-  //    Serial.print("not ready");
-  //  }
-  //  Serial.print("SYS_INIT: ");
-  //  Serial.print(si5351.dev_status.SYS_INIT);
-  //  Serial.print("  LOL_A: ");
-  //  Serial.print(si5351.dev_status.LOL_A);
-  //  Serial.print("  LOL_B: ");
-  //  Serial.print(si5351.dev_status.LOL_B);
-  //  Serial.print("  LOS: ");
-  //  Serial.print(si5351.dev_status.LOS);
-  //  Serial.print("  REVID: ");
-  //  Serial.println(si5351.dev_status.REVID);
 }
 
 void loop()
 {
   // get any incoming bytes:
   if (Serial.available() > 0) {
-    command = Serial.readStringUntil('\n');
+    input = Serial.readStringUntil('\n');
+    command = getValue(input, '_', 0);
+    
+    if (check_numeric(getValue(input, '_', 1))) {
+//      value = getValue(input, '_', 1).toInt();
+      value = strtoul(getValue(input, '_', 1).c_str(), NULL, 10);
+    }
+    else{
+      value = -1;
+    }
 
     // making sure the right byte has been received (for debugging):
     //    Serial.print("received: \'");
@@ -97,91 +94,67 @@ void loop()
     //    Serial.print("\n");
 
     // Return current frequency if freq is typed in by user
-    if (command.equals("freq")) {
-      Serial.print(frequency);
+    if (command.equals("cap")){
+      if (value >= 2 && value <= 7){
+        if (digitalRead(value)== 1) {
+          digitalWrite(value, LOW);
+          Serial.print("Cap ");
+          Serial.print(value);
+          Serial.print(" off\n");
+        }
+        else {
+          digitalWrite(value, HIGH);
+          Serial.print("Cap ");
+          Serial.print(value);
+          Serial.print(" on\n");
+        }
+      }
+      else{
+       Serial.println("Please enter a valid capacitor number");
+      }
     }
-    //
-    else if (command.equals("cap2")) {
-      if (digitalRead(2)== 1) {
-        digitalWrite(2, LOW);
-        Serial.println("Cap 2 off");
+    // Check if user enters a changed resistance
+    else if (command.equals("res")) {
+      if (value == -1) {
+          Serial.print(resistance); 
+        }
+      else if (value >= 0 && value <= 2500){
+        change_resistance(value);
+        resistance = value;
+        Serial.print("Resistance changed to: ");
+        Serial.print(value);
+        Serial.print(" Ohm\n");
       }
       else {
-        digitalWrite(2, HIGH);
-        Serial.println("Cap 2 on");
+        Serial.println("Please enter a valid resistance between 0 and 2500 Ohm");
       }
     }
-    else if (command.equals("cap3")) {
-      if (digitalRead(3)== 1) {
-        digitalWrite(3, LOW);
-        Serial.println("Cap 3 off");
-      }
-      else {
-        digitalWrite(3, HIGH);
-        Serial.println("Cap 3 on");
-      }
-    }
-    else if (command.equals("cap4")) {
-      if (digitalRead(4)== 1) {
-        digitalWrite(4, LOW);
-        Serial.println("Cap 4 off");
-      }
-      else {
-        digitalWrite(4, HIGH);
-        Serial.println("Cap 4 on");
-      }
-    }
-    else if (command.equals("cap5")) {
-      if (digitalRead(5)== 1) {
-        digitalWrite(5, LOW);
-        Serial.println("Cap 5 off");
-      }
-      else {
-        digitalWrite(5, HIGH);
-        Serial.println("Cap 5 on");
-      }
-    }
-    else if (command.equals("cap6")) {
-      if (digitalRead(6)== 1) {
-        digitalWrite(6, LOW);
-        Serial.println("Cap 6 off");
-      }
-      else {
-        digitalWrite(6, HIGH);
-        Serial.println("Cap 6 on");
-      }
-    }
-    else if (command.equals("cap7")) {
-      if (digitalRead(7)== 1) {
-        digitalWrite(7, LOW);
-        Serial.println("Cap 7 off");
-      }
-      else {
-        digitalWrite(7, HIGH);
-        Serial.println("Cap 7 on");
-      }
-    }
-    // Check if user enters a number
-    else if (check_numeric(command)) {
-      // If it is in the range the SI5351 can handle, change the frequency to the value of the number
-      if (command.toFloat() >= 8000 && command.toFloat() <= 150000000) {
-        frequency = (unsigned long) command.toFloat();
-        si5351.set_freq(frequency * 100, SI5351_CLK0);
-        Serial.print("Frequency set to: ");
-        Serial.print(command);
-        Serial.println(" Hz");
-      }
-      // If not return an error
-      else
-      {
-        Serial.println("Frequency out of range");
-      }
+    // Check if user enters a frequency
+    else if (command.equals("freq")) {
+        Serial.println("Success"); 
+        // If it is in the range the SI5351 can handle, change the frequency to the value of the number
+        if (value == -1) {
+          Serial.print(frequency); 
+        }
+        else if (value >= 8000 && value <= 150000000) {
+          si5351.set_freq(value * 100, SI5351_CLK0);
+          frequency = value;
+          Serial.print("Frequency set to: ");
+          Serial.print(value);
+          Serial.println(" Hz");
+          frequency = value;
+        }
+        // If not return an error
+        else
+        {
+          Serial.println("Frequency out of range");
+        }
     }
     // If the input is not a valid number nor a command, return an error
     else
     {
-      Serial.print(command);
-      Serial.println("Input not a command nor a number");
+      Serial.println(command);
+      Serial.println("Input not a valid command please choose command_number as a format.");
     }
   }
 }
@@ -211,4 +184,31 @@ boolean check_numeric(String str) {
         return false;
     }
     return true;
+}
+
+// Function to change the resistance of the rheostat
+void change_resistance(long resistance) {
+  byte val = byte(256 / 2500 * resistance);
+  Wire.beginTransmission(44); // transmit to device #44 (0x2c)
+                              // device address is specified in datasheet
+  Wire.write(byte(0x00));            // sends instruction byte  
+  Wire.write(val);             // sends potentiometer value byte  
+  Wire.endTransmission();     // stop transmitting
+}
+
+// Function to split string
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = { 0, -1 };
+  int maxIndex = data.length() - 1;
+  
+  for (int i = 0; i <= maxIndex && found <= index; i++) {
+      if (data.charAt(i) == separator || i == maxIndex) {
+          found++;
+          strIndex[0] = strIndex[1] + 1;
+          strIndex[1] = (i == maxIndex) ? i+1 : i;
+      }
+  }
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
