@@ -102,6 +102,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_current_spinBox.valueChanged.connect(self.current_changed)
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
         self.sw_capacitance_spinBox.valueChanged.connect(self.capacity_changed)
+        self.sw_resistance_spinBox.valueChanged.connect(self.resistance_changed)
 
         self.sw_source_output_pushButton.clicked.connect(self.toggle_source_output)
         self.sw_source_output_pushButton.setCheckable(True)
@@ -183,6 +184,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.sw_current_spinBox.setValue(1)
 
+        self.sw_resistance_spinBox.setMinimum(70)
+        self.sw_resistance_spinBox.setMaximum(2600)
+        self.sw_resistance_spinBox.setKeyboardTracking(False)
+        self.sw_resistance_spinBox.setButtonSymbols(
+            QtWidgets.QAbstractSpinBox.NoButtons
+        )
+        self.sw_resistance_spinBox.setValue(500)
+
         # Set standard parameters for spectral measurement
         self.specw_voltage_spinBox.setMinimum(0)
         self.specw_voltage_spinBox.setMaximum(33)
@@ -222,19 +231,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.powerw_frequency_spinBox.setMinimum(8)
         self.powerw_frequency_spinBox.setMaximum(150000)
-        self.powerw_frequency_spinBox.setValue(105)
+        self.powerw_frequency_spinBox.setValue(145)
 
-        self.powerw_minimum_resistance_spinBox.setMinimum(8)
-        self.powerw_minimum_resistance_spinBox.setMaximum(150000)
-        self.powerw_minimum_resistance_spinBox.setValue(105)
+        self.powerw_minimum_resistance_spinBox.setMinimum(70)
+        self.powerw_minimum_resistance_spinBox.setMaximum(2600)
+        self.powerw_minimum_resistance_spinBox.setValue(100)
 
-        self.powerw_maximum_resistance_spinBox.setMinimum(8)
-        self.powerw_maximum_resistance_spinBox.setMaximum(150000)
-        self.powerw_maximum_resistance_spinBox.setValue(180)
+        self.powerw_maximum_resistance_spinBox.setMinimum(70)
+        self.powerw_maximum_resistance_spinBox.setMaximum(2600)
+        self.powerw_maximum_resistance_spinBox.setValue(2600)
 
-        self.powerw_resistance_step_spinBox.setMinimum(0.05)
-        self.powerw_resistance_step_spinBox.setMaximum(1000)
-        self.powerw_resistance_step_spinBox.setValue(1)
+        self.powerw_resistance_step_spinBox.setMinimum(10)
+        self.powerw_resistance_step_spinBox.setMaximum(2500)
+        self.powerw_resistance_step_spinBox.setSingleStep(10)
+        self.powerw_resistance_step_spinBox.setValue(100)
 
         self.powerw_resistance_settling_time_spinBox.setMinimum(0.01)
         self.powerw_resistance_settling_time_spinBox.setMaximum(10)
@@ -480,14 +490,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def capacity_changed(self):
         """
-        Function that changes frequency on arduino when it is changed on spinbox
+        Function that changes capacitance on arduino when it is changed on spinbox
         """
         capacity = self.sw_capacitance_spinBox.value()
         self.arduino.set_capacitance(capacity)
 
         self.sw_capacitance_lcdNumber.display(self.arduino.real_capacity)
 
-        cf.log_message("Capacity set to " + str(self.arduino.real_capacity) + " pF")
+        cf.log_message("Capacitance set to " + str(self.arduino.real_capacity) + " pF")
+
+    def resistance_changed(self):
+        """
+        Function that changes resistance on arduino when it is changed on spinbox
+        """
+        resistance = self.sw_resistance_spinBox.value()
+        self.arduino.set_resistance(resistance)
+
+        self.sw_resistance_lcdNumber.display(self.arduino.read_resistance())
+
+        cf.log_message(
+            "Resistance set to " + str(self.arduino.read_resistance()) + " pF"
+        )
 
     def safe_read_setup_parameters(self):
         """
@@ -1195,8 +1218,8 @@ if __name__ == "__main__":
     # Icon (see https://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7/1552105#1552105)
     import ctypes
 
-    myappid = u"mycompan.myproduct.subproduct.version"  # arbitrary string
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    # myappid = u"mycompan.myproduct.subproduct.version"  # arbitrary string
+    # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     app_icon = QtGui.QIcon()
     app_icon.addFile("./icons/program_icon.png", QtCore.QSize(256, 256))
     app.setWindowIcon(app_icon)

@@ -351,6 +351,10 @@ class Ui_MainWindow(object):
         self.sw_capacitance_spinBox.setObjectName("sw_capacitance_spinBox")
         self.sw_set_vc_horizontalLayout.addWidget(self.sw_capacitance_spinBox)
 
+        self.sw_resistance_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        self.sw_resistance_spinBox.setObjectName("sw_resistance_spinBox")
+        self.sw_set_vc_horizontalLayout.addWidget(self.sw_resistance_spinBox)
+
         self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
         # self.sw_set_buttons_gridLayout = QtWidgets.QGridLayout()
@@ -1633,6 +1637,7 @@ class Ui_MainWindow(object):
         self.sw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
         self.sw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.sw_capacitance_spinBox.setSuffix(_translate("MainWindow", " pF"))
+        self.sw_resistance_spinBox.setSuffix(_translate("MainWindow", " Ohm"))
         self.sw_source_output_pushButton.setText(
             _translate("MainWindow", "Output On/Off")
         )
@@ -1741,6 +1746,7 @@ class Ui_MainWindow(object):
 
         self.powerw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
         self.powerw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        self.powerw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.powerw_minimum_resistance_spinBox.setSuffix(
             _translate("MainWindow", " Ohm")
         )
