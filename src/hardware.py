@@ -778,7 +778,7 @@ class Arduino:
             self.init_serial_connection()
 
         # Write the frequency to the serial interface
-        freq = str.encode(str(frequency * 1000) + "\n")
+        freq = str.encode("freq_" + str(frequency * 1000) + "\n")
         com.write(freq)
 
         # Read answer from Arduino
@@ -838,7 +838,7 @@ class Arduino:
             != state
         ):
             # Write the capacitance to the arduino
-            com.write(str.encode("cap" + str(cap_no) + "\n"))
+            com.write(str.encode("cap_" + str(cap_no) + "\n"))
 
             # print(com.readall())
             # time.sleep(0.5)
@@ -875,6 +875,52 @@ class Arduino:
 
         cf.log_message("Capacitance set to " + str(capacitance) + " pF")
         self.mutex.unlock()
+
+    def set_resistance(self, resistance):
+        """
+        Function that allows to set the resistance on the Arduino (by using
+        the Serial Connection interface)
+        """
+        self.mutex.lock()
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the resistance to the serial interface
+        freq = str.encode("res_" + str(resistance) + "\n")
+        com.write(freq)
+
+        # Read answer from Arduino
+        cf.log_message(com.readall())
+
+        self.mutex.unlock()
+
+    def read_resistance(self):
+        """
+        Function that asks the arduino to return the set resistance
+        """
+        self.mutex.lock()
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the frequency to the serial interface
+        com.write(str.encode("res\n"))
+
+        # Read answer from Arduino
+        resistance = com.readall()
+        try:
+            resistance = int(resistance)
+        except:
+            cf.log_message("Could not convert resistance to float")
+
+        # cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
+        self.mutex.unlock()
+        return resistance
 
     # The capacitances can now be matched to resonance frequencies using a fit of capacitance over resonance frequency
     # def capacitance_to_resonance_frequency(self, capacitance):

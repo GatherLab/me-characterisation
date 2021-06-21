@@ -619,6 +619,289 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.spectrum_widget, "")
 
         # -------------------------------------------------------------------- #
+        # ---------------- Define Power Measurement Widget ------------------- #
+        # -------------------------------------------------------------------- #
+        self.power_widget = QtWidgets.QWidget()
+        self.power_widget.setObjectName("power_widget")
+        self.power_widget_gridLayout = QtWidgets.QGridLayout(self.power_widget)
+        self.power_widget_gridLayout.setObjectName("power_widget_gridLayout")
+
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.powerw_graph_widget = QtWidgets.QWidget(self.power_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.powerw_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.powerw_graph_widget.setSizePolicy(sizePolicy)
+        self.powerw_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.powerw_graph_widget.setObjectName("powerw_graph_widget")
+        self.powerw_mpl_graph_gridLayout = QtWidgets.QGridLayout(
+            self.powerw_graph_widget
+        )
+        self.powerw_mpl_graph_gridLayout.setObjectName("powerw_mpl_graph_gridLayout")
+        self.power_widget_gridLayout.addWidget(self.powerw_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.powerw_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.powerw_mpl_graph_gridLayout.addWidget(self.powerw_fig)
+
+        self.powerw_ax = self.powerw_fig.figure.subplots()
+        # self.powerw_ax.set_facecolor("#E0E0E0")
+        self.powerw_ax.grid(True)
+        self.powerw_ax.set_xlabel("Resistance (Ohm)", fontsize=14)
+        self.powerw_ax.set_ylabel("Power (mW)", fontsize=14)
+        self.powerw_ax.set_xlim([50, 600])
+
+        self.powerw_ax.axhline(linewidth=1, color="black")
+        self.powerw_ax.axvline(linewidth=1, color="black")
+
+        self.powerw_ax2 = self.powerw_ax.twinx()
+        self.powerw_ax2.set_ylabel(
+            "Magnetic Field (mT)",
+            fontsize=14,
+        )
+
+        # self.powerw_fig.figure.set_facecolor("#E0E0E0")
+        self.powerw_mplToolbar = NavigationToolbar(
+            self.powerw_fig, self.powerw_graph_widget
+        )
+        self.powerw_mplToolbar.setStyleSheet("background-color:white; color: black;")
+        self.powerw_mpl_graph_gridLayout.addWidget(self.powerw_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.powerw_scrollArea = QtWidgets.QScrollArea(self.power_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.powerw_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.powerw_scrollArea.setSizePolicy(sizePolicy)
+        self.powerw_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.powerw_scrollArea.setWidgetResizable(True)
+        self.powerw_scrollArea.setObjectName("powerw_scrollArea")
+        self.powerw_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.powerw_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.powerw_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.powerw_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.powerw_scrollAreaWidgetContents.setObjectName(
+            "powerw_scrollAreaWidgetContents"
+        )
+        self.powerw_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_scrollArea_gridLayout.setObjectName("powerw_scrollArea_gridLayout")
+
+        self.powerw_header1_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.powerw_header1_label.setObjectName("powerw_header1_label")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_header1_label, 0, 0, 1, 1
+        )
+        self.powerw_scrollArea.setWidget(self.powerw_scrollAreaWidgetContents)
+        self.power_widget_gridLayout.addWidget(self.powerw_scrollArea, 0, 3, 1, 1)
+
+        # Set voltage
+        self.powerw_voltage_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.powerw_voltage_label.setObjectName("powerw_voltage_label")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_voltage_label, 1, 0, 1, 1
+        )
+        self.powerw_voltage_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_voltage_spinBox.setObjectName("powerw_voltage_spinBox")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_voltage_spinBox, 2, 0, 1, 1
+        )
+
+        # Constant magnetic field mode?
+        self.powerw_constant_magnetic_field_mode_HLayout = QtWidgets.QHBoxLayout()
+        self.powerw_constant_magnetic_field_mode_toggleSwitch = ToggleSwitch()
+        self.powerw_constant_magnetic_field_mode_label = QtWidgets.QLabel(
+            "Magnetic Field Mode"
+        )
+        self.powerw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.powerw_constant_magnetic_field_mode_toggleSwitch
+        )
+        self.powerw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.powerw_constant_magnetic_field_mode_label
+        )
+        self.powerw_scrollArea_gridLayout.addLayout(
+            self.powerw_constant_magnetic_field_mode_HLayout, 3, 0, 1, 1
+        )
+
+        # Set current limit
+        self.powerw_current_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_current_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.powerw_current_label.setObjectName("powerw_current_label")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_current_label, 4, 0, 1, 1
+        )
+        self.powerw_current_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_current_spinBox.setObjectName("powerw_current_spinBox")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_current_spinBox, 5, 0, 1, 1
+        )
+
+        # Set frequency
+        self.powerw_frequency_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.powerw_frequency_label.setObjectName("powerw_frequency_label")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_frequency_label, 6, 0, 1, 1
+        )
+        self.powerw_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_frequency_spinBox.setObjectName("powerw_frequency_spinBox")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_frequency_spinBox, 7, 0, 1, 1
+        )
+
+        # Set minimum scan resistance
+        self.powerw_minimum_resistance_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_minimum_resistance_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.powerw_minimum_resistance_label.setObjectName(
+            "powerw_minimum_resistance_label"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_minimum_resistance_label, 8, 0, 1, 1
+        )
+        self.powerw_minimum_resistance_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_minimum_resistance_spinBox.setObjectName(
+            "powerw_minimum_resistance_spinBox"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_minimum_resistance_spinBox, 9, 0, 1, 1
+        )
+
+        # Set maximum scan frequency
+        self.powerw_maximum_resistance_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_maximum_resistance_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.powerw_maximum_resistance_label.setObjectName(
+            "powerw_maximum_resistance_label"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_maximum_resistance_label, 10, 0, 1, 1
+        )
+        self.powerw_maximum_resistance_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_maximum_resistance_spinBox.setObjectName(
+            "powerw_maximum_resistance_spinBox"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_maximum_resistance_spinBox, 11, 0, 1, 1
+        )
+
+        # Set frequency step
+        self.powerw_resistance_step_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_resistance_step_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.powerw_resistance_step_label.setObjectName("powerw_resistance_step_label")
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_resistance_step_label, 12, 0, 1, 1
+        )
+        self.powerw_resistance_step_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_resistance_step_spinBox.setObjectName(
+            "powerw_resistance_step_spinBox"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_resistance_step_spinBox, 13, 0, 1, 1
+        )
+
+        # Set resistance settling time
+        self.powerw_resistance_settling_time_label = QtWidgets.QLabel(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_resistance_settling_time_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.powerw_resistance_settling_time_label.setObjectName(
+            "powerw_resistance_settling_time_label"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_resistance_settling_time_label, 14, 0, 1, 1
+        )
+        self.powerw_resistance_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_resistance_settling_time_spinBox.setObjectName(
+            "powerw_resistance_settling_time_spinBox"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_resistance_settling_time_spinBox, 15, 0, 1, 1
+        )
+
+        # Auto set capacitance?
+        self.powerw_autoset_capacitance_HLayout = QtWidgets.QHBoxLayout()
+        self.powerw_autoset_capacitance_toggleSwitch = ToggleSwitch()
+        self.powerw_autoset_capacitance_label = QtWidgets.QLabel("Autoset Capacitance")
+        self.powerw_autoset_capacitance_HLayout.addWidget(
+            self.powerw_autoset_capacitance_toggleSwitch
+        )
+        self.powerw_autoset_capacitance_HLayout.addWidget(
+            self.powerw_autoset_capacitance_label
+        )
+        self.powerw_scrollArea_gridLayout.addLayout(
+            self.powerw_autoset_capacitance_HLayout, 16, 0, 1, 1
+        )
+
+        # Save Power button
+        self.powerw_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.powerw_scrollAreaWidgetContents
+        )
+        self.powerw_start_measurement_pushButton.setObjectName(
+            "powerw_start_measurement_pushButton"
+        )
+        self.powerw_scrollArea_gridLayout.addWidget(
+            self.powerw_start_measurement_pushButton, 17, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.power_widget, "")
+
+        # -------------------------------------------------------------------- #
         # ------------------- Define capacitance Tester Widget ------------------ #
         # -------------------------------------------------------------------- #
         self.capacitance_tester_widget = QtWidgets.QWidget()
@@ -876,7 +1159,7 @@ class Ui_MainWindow(object):
             self.capw_frequency_settling_time_spinBox, 18, 0, 1, 1
         )
 
-        # Save Spectrum button
+        # Save Power button
         self.capw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.capw_scrollAreaWidgetContents
         )
@@ -1431,6 +1714,48 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Measurement Parameters")
         )
 
+        self.powerw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
+        self.powerw_current_label.setText(
+            _translate("MainWindow", "Magnetic Field (mT)")
+        )
+        self.powerw_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
+        self.powerw_minimum_resistance_label.setText(
+            _translate("MainWindow", "Min Resistance (Ohm)")
+        )
+        self.powerw_maximum_resistance_label.setText(
+            _translate("MainWindow", "Max Resistance (Ohm)")
+        )
+        self.powerw_resistance_step_label.setText(
+            _translate("MainWindow", "Resistance Step (Ohm)")
+        )
+        self.powerw_resistance_settling_time_label.setText(
+            _translate("MainWindow", "Settling Time (s)")
+        )
+        self.powerw_autoset_capacitance_toggleSwitch.setText(
+            _translate("MainWindow", "Autoset Capacitance")
+        )
+
+        self.powerw_constant_magnetic_field_mode_toggleSwitch.setText(
+            _translate("MainWindow", "Constant Magnetic Field Mode")
+        )
+
+        self.powerw_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.powerw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        self.powerw_minimum_resistance_spinBox.setSuffix(
+            _translate("MainWindow", " Ohm")
+        )
+        self.powerw_maximum_resistance_spinBox.setSuffix(
+            _translate("MainWindow", " Ohm")
+        )
+        self.powerw_resistance_step_spinBox.setSuffix(_translate("MainWindow", " Ohm"))
+
+        self.powerw_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
+        self.powerw_header1_label.setText(
+            _translate("MainWindow", "Measurement Parameters")
+        )
+
         self.capw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.capw_current_label.setText(_translate("MainWindow", "Maximum Current (A)"))
         self.capw_minimum_frequency_label.setText(
@@ -1528,6 +1853,11 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.spectrum_widget),
             _translate("MainWindow", "Frequency Scan"),
+        )
+
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.power_widget),
+            _translate("MainWindow", "Power Scan"),
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.capacitance_tester_widget),

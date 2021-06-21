@@ -118,7 +118,7 @@ void loop()
       if (value == -1) {
           Serial.print(resistance); 
         }
-      else if (value >= 0 && value <= 2500){
+      else if (value >= 69 && value <= 2640){
         change_resistance(value);
         resistance = value;
         Serial.print("Resistance changed to: ");
@@ -188,7 +188,8 @@ boolean check_numeric(String str) {
 
 // Function to change the resistance of the rheostat
 void change_resistance(long resistance) {
-  byte val = byte(256 / 2500 * resistance);
+  // byte(resistance * 256 / 2500);
+  byte val = byte((resistance - 70) * 256 / 2640);
   Wire.beginTransmission(44); // transmit to device #44 (0x2c)
                               // device address is specified in datasheet
   Wire.write(byte(0x00));            // sends instruction byte  
