@@ -574,6 +574,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "folder_path": self.sw_folder_path_lineEdit.text(),
             "batch_name": self.sw_batch_name_lineEdit.text(),
             "device_number": self.sw_device_number_spinBox.value(),
+            "device_size": [
+                int(x) for x in self.sw_device_size_lineEdit.text().split(",")
+            ],
         }
 
         # Update statusbar

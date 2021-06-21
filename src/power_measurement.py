@@ -172,11 +172,18 @@ class PowerScan(QtCore.QThread):
             # Set the variables in the dataframe
             self.df_data.loc[i, "resistance"] = resistance
             self.df_data.loc[i, "voltage"] = voltage
-            self.df_data.loc[i, "power"] = float(voltage) ** 2 / resistance
+            # Directly in mW/mm^2
+            self.df_data.loc[i, "power"] = (
+                float(voltage) ** 2
+                / resistance
+                * 1000
+                / (
+                    self.setup_parameters["device_size"][0]
+                    * self.setup_parameters["device_size"][1]
+                )
+            )
+            # in mT
             self.df_data.loc[i, "magnetic_field"] = magnetic_field
-            print(voltage)
-            print(voltage ** 2 / resistance)
-            print(magnetic_field)
 
             # Update progress bar
             self.update_progress_bar.emit(
@@ -233,11 +240,13 @@ class PowerScan(QtCore.QThread):
 
         # Define Header
         line02 = (
-            "Base Capacitance:"
+            "Base Capacitance: "
             + str(self.global_parameters["base_capacitance"])
-            + " pF\t Coil Inductance:"
+            + " pF\t Coil Inductance: "
             + str(self.global_parameters["coil_inductance"])
-            + " mH"
+            + " mH\t Device Size: "
+            + str(self.setup_parameters["device_size"])
+            + " mm"
         )
         line03 = (
             "Voltage:   "
@@ -260,7 +269,7 @@ class PowerScan(QtCore.QThread):
         )
         line05 = "### Measurement data ###"
         line06 = "Resistance\t Voltage\t Power\t Magnetic Field"
-        line07 = "Ohm\t V\t mW\t mT\n"
+        line07 = "Ohm\t V\t mW/mm^2\t mT\n"
 
         header_lines = [
             line02,

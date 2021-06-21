@@ -238,6 +238,14 @@ class Ui_MainWindow(object):
         self.sw_device_number_spinBox.setObjectName("sw_device_number_spinBox")
         self.gridLayout_7.addWidget(self.sw_device_number_spinBox, 3, 1, 1, 1)
 
+        # Setup widget device size
+        self.sw_device_size_label = QtWidgets.QLabel(self.setup_widget)
+        self.sw_device_size_label.setObjectName("sw_device_size_label")
+        self.gridLayout_7.addWidget(self.sw_device_size_label, 4, 0, 1, 1)
+        self.sw_device_size_lineEdit = QtWidgets.QLineEdit(self.setup_widget)
+        self.sw_device_size_lineEdit.setObjectName("sw_device_size_lineEdit")
+        self.gridLayout_7.addWidget(self.sw_device_size_lineEdit, 4, 1, 1, 1)
+
         # Setup widget documentation
         # self.sw_documentation_textEdit = QtWidgets.QTextEdit(self.setup_widget)
         # self.sw_documentation_textEdit.setObjectName("sw_documentation_textEdit")
@@ -1643,6 +1651,9 @@ class Ui_MainWindow(object):
         )
         self.sw_batch_name_label.setText(_translate("MainWindow", "Batch Name"))
         self.sw_device_number_label.setText(_translate("MainWindow", "Device Number"))
+        self.sw_device_size_label.setText(
+            _translate("MainWindow", "Device Size (length, width) in mm")
+        )
         self.sw_header1_label.setToolTip(
             _translate(
                 "MainWindow",

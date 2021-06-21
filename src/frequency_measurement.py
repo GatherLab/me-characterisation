@@ -282,29 +282,36 @@ class FrequencyScan(QtCore.QThread):
 
         # Define Header
         line02 = (
-            "Base Capacitance:"
+            "Base Capacitance: "
             + str(self.global_parameters["base_capacitance"])
-            + " pF\t Coil Inductance:"
+            + " pF\t Coil Inductance: "
             + str(self.global_parameters["coil_inductance"])
-            + " mH"
+            + " mH\t Device Size: "
+            + str(self.setup_parameters["device_size"])
+            + " mm"
         )
-        line03 = (
-            "Voltage:   "
-            + str(self.measurement_parameters["voltage"])
-            + " V   "
-            + "Current:   "
-            + str(self.measurement_parameters["current_compliance"])
-        )
+        line03 = "Voltage: " + str(self.measurement_parameters["voltage"]) + " V\t"
+        if self.measurement_parameters["constant_magnetic_field_mode"]:
+            line03 += (
+                "Constant Magnetic Field: "
+                + str(self.measurement_parameters["current_compliance"])
+                + " mT"
+            )
+        else:
+            line03 += "Current:   " + str(
+                self.measurement_parameters["current_compliance"] + " A"
+            )
+
         line04 = (
-            "Min. Frequency:   "
+            "Min. Frequency: "
             + str(self.measurement_parameters["minimum_frequency"])
-            + " kHz \t"
-            + "Max. Frequency:   "
+            + " kHz\t"
+            + "Max. Frequency: "
             + str(self.measurement_parameters["maximum_frequency"])
-            + " kHz \t"
-            + "Frequency Step:   "
+            + " kHz\t"
+            + "Frequency Step: "
             + str(self.measurement_parameters["frequency_step"])
-            + " kHz \t"
+            + " kHz"
         )
         line05 = "### Measurement data ###"
         line06 = "Frequency\t Voltage\t Current\t Magnetic Field\t Vmax_ind"
