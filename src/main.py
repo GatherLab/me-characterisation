@@ -238,7 +238,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_frequency_settling_time_spinBox.setMaximum(10)
         self.capw_frequency_settling_time_spinBox.setValue(0.5)
 
-        # Set standard parameters for spectral measurement
+        # Set standard parameters for pid adjustment
         self.pidw_voltage_spinBox.setMinimum(0)
         self.pidw_voltage_spinBox.setMaximum(33)
         self.pidw_voltage_spinBox.setValue(8)
