@@ -115,9 +115,6 @@ class PowerScan(QtCore.QThread):
         self.source.set_voltage(self.measurement_parameters["voltage"])
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
             self.source.set_current(self.measurement_parameters["current_compliance"])
-        else:
-            # Calculate the average time it took to adjust the magnetic field
-            total_adjustment_time = 0
 
         # Set frequency
         self.arduino.set_frequency(
@@ -125,6 +122,11 @@ class PowerScan(QtCore.QThread):
             self.measurement_parameters["autoset_capacitance"],
         )
 
+        # Activate output (necessary to adjust field)
+        self.source.output(True)
+        time.sleep(1)
+
+        # If constant magnetic field was chosen, adjust it
         if self.measurement_parameters["constant_magnetic_field_mode"]:
             self.source.adjust_magnetic_field(
                 self.global_parameters["pickup_coil_windings"],
@@ -134,7 +136,7 @@ class PowerScan(QtCore.QThread):
                 break_if_too_long=True,
             )
 
-        # Define arrays in which the data shall be stored in
+        # Counter to iterate over array where data is stored
         i = 0
 
         # Sweep over all frequencies
@@ -143,17 +145,13 @@ class PowerScan(QtCore.QThread):
             self.measurement_parameters["maximum_resistance"],
             self.measurement_parameters["resistance_step"],
         )
+
         for resistance in resistances:
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set frequency
             self.arduino.set_resistance(resistance)
-
-            # Activate output only when resistances was set
-            if i == 0:
-                self.source.output(True)
-                time.sleep(1)
 
             # Measure the voltage and current (and possibly parameters on the osci)
             voltage = float(self.oscilloscope.measure_vmax(channel="CHAN2"))
@@ -197,9 +195,6 @@ class PowerScan(QtCore.QThread):
                 self.df_data["magnetic_field"],
             )
 
-            # Increase iterator
-            i += 1
-
             if self.is_killed:
                 # Close the connection to the spectrometer
                 self.source.output(False)
@@ -208,23 +203,16 @@ class PowerScan(QtCore.QThread):
                 self.quit()
                 return
 
+            # Increase iterator
+            i += 1
+
             time.sleep(self.measurement_parameters["resistance_settling_time"])
 
         self.source.output(False)
         self.save_data()
-        self.parent.specw_start_measurement_pushButton.setChecked(False)
+        self.parent.powerw_start_measurement_pushButton.setChecked(False)
 
         self.parent.oscilloscope_thread.pause = False
-
-        if self.measurement_parameters["constant_magnetic_field_mode"]:
-            cf.log_message(
-                "Power scan ended with an average magnetic field adjustment time of "
-                + str(round(total_adjustment_time / len(resistances), 2))
-                + " and a total measurement time of "
-                + str(round(time.time() - start_time, 2))
-            )
-        # self.parent.setup_thread.pause = False
-        # self.parent.oscilloscope_thread.pause = False
 
     def kill(self):
         """

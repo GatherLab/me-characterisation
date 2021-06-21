@@ -329,10 +329,27 @@ class Ui_MainWindow(object):
         self.sw_capacitance_lcdNumber.setSmallDecimalPoint(False)
         self.sw_capacitance_lcdNumber.setObjectName("sw_capacitance_lcdNumber")
 
+        # resistance LCD number widget
+        self.sw_resistance_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.sw_resistance_lcdNumber.sizePolicy().hasHeightForWidth()
+        )
+        self.sw_resistance_lcdNumber.setSizePolicy(sizePolicy)
+        self.sw_resistance_lcdNumber.setDigitCount(10)
+        self.sw_resistance_lcdNumber.setAutoFillBackground(False)
+        self.sw_resistance_lcdNumber.setSmallDecimalPoint(False)
+        self.sw_resistance_lcdNumber.setObjectName("sw_resistance_lcdNumber")
+
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_voltage_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_current_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_frequency_lcdNumber)
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_capacitance_lcdNumber)
+        self.sw_source_vc_horizonalLayout.addWidget(self.sw_resistance_lcdNumber)
 
         self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 6, 0, 1, 2)
 
