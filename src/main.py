@@ -162,15 +162,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_frequency_spinBox.setMaximum(150000)
         self.sw_frequency_spinBox.setKeyboardTracking(False)
         self.sw_frequency_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_frequency_spinBox.setValue(100)
+        self.sw_frequency_spinBox.setValue(1000)
 
         self.sw_capacitance_spinBox.setMinimum(0)
-        self.sw_capacitance_spinBox.setMaximum(100000)
+        self.sw_capacitance_spinBox.setMaximum(500000)
         self.sw_capacitance_spinBox.setKeyboardTracking(False)
         self.sw_capacitance_spinBox.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.NoButtons
         )
-        self.sw_capacitance_spinBox.setValue(3000)
+        self.sw_capacitance_spinBox.setValue(0)
 
         self.sw_voltage_spinBox.setMinimum(0)
         self.sw_voltage_spinBox.setMaximum(33)
@@ -203,15 +203,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
-        self.specw_minimum_frequency_spinBox.setValue(105)
+        self.specw_minimum_frequency_spinBox.setValue(62)
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
-        self.specw_maximum_frequency_spinBox.setValue(180)
+        self.specw_maximum_frequency_spinBox.setValue(310)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
-        self.specw_frequency_step_spinBox.setValue(1)
+        self.specw_frequency_step_spinBox.setValue(2)
 
         self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
         self.specw_frequency_settling_time_spinBox.setMaximum(10)
@@ -219,6 +219,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
+        self.specw_autoset_frequency_step_toggleSwitch.setChecked(True)
 
         # Set standard parameters for power measurement
         self.powerw_voltage_spinBox.setMinimum(0)
@@ -506,7 +507,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         resistance = self.sw_resistance_spinBox.value()
         self.arduino.set_resistance(resistance)
 
-        self.sw_resistance_lcdNumber.display(self.arduino.read_resistance())
+        self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
 
         cf.log_message(
             "Resistance set to " + str(self.arduino.read_resistance()) + " pF"
@@ -639,6 +640,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "current_compliance": self.specw_current_spinBox.value(),
             "minimum_frequency": self.specw_minimum_frequency_spinBox.value(),
             "maximum_frequency": self.specw_maximum_frequency_spinBox.value(),
+            "autoset_frequency_step": self.specw_autoset_frequency_step_toggleSwitch.isChecked(),
             "frequency_step": self.specw_frequency_step_spinBox.value(),
             "frequency_settling_time": self.specw_frequency_settling_time_spinBox.value(),
             "autoset_capacitance": self.specw_autoset_capacitance_toggleSwitch.isChecked(),
@@ -833,7 +835,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             power,
             color="red",
             marker="o",
-            label="Power (mW)",
+            label="Power",
         )
 
         self.powerw_ax2.plot(

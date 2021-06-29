@@ -275,6 +275,7 @@ class PowerScan(QtCore.QThread):
             + self.setup_parameters["batch_name"]
             + "_d"
             + str(self.setup_parameters["device_number"])
+            + "_pow"
             + ".csv"
         )
         self.df_data["magnetic_field"] = self.df_data["magnetic_field"].map(
