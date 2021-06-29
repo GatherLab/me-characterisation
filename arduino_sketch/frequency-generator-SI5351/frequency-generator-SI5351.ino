@@ -57,20 +57,29 @@ void setup()
   delay(500);
 
   // Now define the cap controlling pins
+  // Capacitors are on pins 2 - 11 but termed 1-10
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
 
-  // Set all low (but 6 which NC is damaged)
+  // Set all caps to low
   digitalWrite(2, LOW);
   digitalWrite(3, LOW);
   digitalWrite(4, LOW);
   digitalWrite(5, LOW);
-  digitalWrite(6, HIGH);
+  digitalWrite(6, LOW);
   digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  digitalWrite(9, LOW);
+  digitalWrite(10, LOW);
+  digitalWrite(11, LOW);
 }
 
 void loop()
@@ -93,20 +102,26 @@ void loop()
     //    Serial.print(command);
     //    Serial.print("\n");
 
-    // Return current frequency if freq is typed in by user
+    // Switch on or off cap depending on its state
     if (command.equals("cap")){
-      if (value >= 2 && value <= 7){
-        if (digitalRead(value)== 1) {
-          digitalWrite(value, LOW);
+      if (value == -1) {
+          for (int i = 1;i <= 10; i++){
+            Serial.print(digitalRead(i+1));
+          }
+          Serial.print("\n");
+        }
+      else if (value >= 1 && value <= 10){
+        if (digitalRead(value+1)== 1) {
+          digitalWrite(value+1, LOW);
           Serial.print("Cap ");
           Serial.print(value);
-          Serial.print(" off\n");
+          Serial.println(" off\n");
         }
         else {
-          digitalWrite(value, HIGH);
+          digitalWrite(value+1, HIGH);
           Serial.print("Cap ");
           Serial.print(value);
-          Serial.print(" on\n");
+          Serial.println(" on\n");
         }
       }
       else{
@@ -116,14 +131,14 @@ void loop()
     // Check if user enters a changed resistance
     else if (command.equals("res")) {
       if (value == -1) {
-          Serial.print(resistance); 
+          Serial.println(resistance); 
         }
       else if (value >= 69 && value <= 2640){
         change_resistance(value);
         resistance = value;
         Serial.print("Resistance changed to: ");
         Serial.print(value);
-        Serial.print(" Ohm\n");
+        Serial.println(" Ohm\n");
       }
       else {
         Serial.println("Please enter a valid resistance between 0 and 2500 Ohm");
@@ -131,10 +146,9 @@ void loop()
     }
     // Check if user enters a frequency
     else if (command.equals("freq")) {
-        Serial.println("Success"); 
         // If it is in the range the SI5351 can handle, change the frequency to the value of the number
         if (value == -1) {
-          Serial.print(frequency); 
+          Serial.println(frequency); 
         }
         else if (value >= 8000 && value <= 150000000) {
           si5351.set_freq(value * 100, SI5351_CLK0);
