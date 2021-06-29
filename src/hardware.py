@@ -621,7 +621,7 @@ class Arduino:
 
         # Define pandas dataframe that contains the capacitance constituents, the corresponding arduino pins and the sum of the capacitances
         # Drop if there exists more than one
-        self.combinations_df = (
+        temp_combinations_df = (
             pd.DataFrame(
                 np.array(
                     [
@@ -640,8 +640,8 @@ class Arduino:
 
         # Add additional column with resonance frequency
 
-        self.combinations_df["resonance_frequency"] = np.empty(
-            len(self.combinations_df)
+        temp_combinations_df["resonance_frequency"] = np.empty(
+            len(temp_combinations_df)
         )
 
         # try:
@@ -671,6 +671,40 @@ class Arduino:
         # If capacitance exists in calibration file, set it to that resonance
         # frequency. Otherwise, estimate resonance frequency from coil
         # inductance given in settings.
+        for index, capacitance in temp_combinations_df["sum"].items():
+            temp_combinations_df.loc[index, "resonance_frequency"] = (
+                calculate_resonance_frequency(
+                    capacitance * 1e-12, global_settings["coil_inductance"] * 1e-3
+                )
+                / 1e3
+            )
+
+        # Thin out the resonances to only obtain those close to a digit number
+        self.combinations_df = pd.DataFrame(
+            columns=["constituents", "arduino_pins", "sum", "resonance_frequency"]
+        )
+        min_frequency = int(round(temp_combinations_df["resonance_frequency"].min(), 0))
+        max_frequency = int(round(temp_combinations_df["resonance_frequency"].max(), 0))
+
+        for freq in np.arange(min_frequency, max_frequency + 1, 1):
+            temp_series = pd.Series(
+                temp_combinations_df.iloc[
+                    (temp_combinations_df.resonance_frequency - freq)
+                    .abs()
+                    .argsort()[:1]
+                ].values[0],
+                index=["constituents", "arduino_pins", "sum", "resonance_frequency"],
+            )
+            self.combinations_df = self.combinations_df.append(
+                temp_series, ignore_index=True
+            )
+
+        # Now drop duplicates
+        self.combinations_df = self.combinations_df.drop_duplicates(
+            "resonance_frequency", ignore_index=True
+        )
+
+        # Now replace those values that do exist in the calibration file with these resonance frequencies
         for index, capacitance in self.combinations_df["sum"].items():
             # Check if there is an entry in the calibration list
             if (
@@ -689,36 +723,12 @@ class Arduino:
                 ].to_list()[
                     0
                 ]
-
-            # If not, calculate the resonance frequency by ourselfs
-            elif (
-                len(
-                    calibration.loc[
-                        calibration["capacitance"] == capacitance, "capacitance"
-                    ].to_numpy()
-                )
-                == 0
-            ):
+            else:
                 cf.log_message(
                     "Capacitance "
                     + str(capacitance)
                     + " pF not found in calibration file"
                 )
-                self.combinations_df.loc[index, "resonance_frequency"] = (
-                    calculate_resonance_frequency(
-                        capacitance * 1e-12, global_settings["coil_inductance"] * 1e-3
-                    )
-                    / 1e3
-                )
-            # Else, something is wrong
-            else:
-                cf.log_message("Could not calculate the resonance frequency")
-
-        # self.combinations_df[
-        # "resonance_frequency"
-        # ] = self.capacitance_to_resonance_frequency(
-        # self.combinations_df["sum"].astype(np.float64).to_numpy()
-        # )
 
     def init_serial_connection(self, wait=1):
         """
@@ -780,6 +790,7 @@ class Arduino:
         # Write the frequency to the serial interface
         freq = str.encode("freq_" + str(frequency * 1000) + "\n")
         com.write(freq)
+        time.sleep(0.1)
 
         # Read answer from Arduino
         cf.log_message(com.readall())
@@ -822,6 +833,32 @@ class Arduino:
         self.mutex.unlock()
         return frequency
 
+    def read_cap_states(self):
+        """
+        Function that asks the arduino to return the frequency
+        """
+        self.mutex.lock()
+        com = self.arduino
+
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the frequency to the serial interface
+        com.write(str.encode("cap\n"))
+        time.sleep(0.1)
+
+        # Read answer from Arduino
+        try:
+            cap_states = np.array(list(str(com.readall()))[2:-3], dtype=int) == 1
+        except:
+            cf.log_message("Could not convert capacitor states to array")
+
+        # This is no universal ordering yet, I have to do this later on
+        self.cap_states = cap_states[self.arduino_pins - 1]
+        print(self.cap_states)
+        self.mutex.unlock()
+
     def switch_cap(self, cap_no, state):
         """
         Function that shall allow to set the capacitance of the LCR circuit
@@ -854,6 +891,9 @@ class Arduino:
         """
         self.mutex.lock()
 
+        # Check the real capacitor states
+        self.read_cap_states()
+
         # Now convert resonance frequency to capacitance and find nearest in combinations array
         # resonance_capacitance = resonance_frequency_to_capacitance(frequency)
         # resonance_capacitance = frequency
@@ -868,10 +908,14 @@ class Arduino:
             ~np.isin(self.arduino_pins, self.combinations_df["arduino_pins"].iloc[idx])
         ]:
             self.switch_cap(arduino_port, False)
+            # print("Turned off pin " + str(arduino_port))
+            # time.sleep(0.1)
 
         # Turn on all pins that are in the above array
         for arduino_port in self.combinations_df["arduino_pins"].iloc[idx]:
             self.switch_cap(arduino_port, True)
+            # print("Turned on pin " + str(arduino_port))
+            # time.sleep(0.1)
 
         cf.log_message("Capacitance set to " + str(capacitance) + " pF")
         self.mutex.unlock()
