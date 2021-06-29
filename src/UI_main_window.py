@@ -580,6 +580,22 @@ class Ui_MainWindow(object):
             self.specw_maximum_frequency_spinBox, 9, 0, 1, 1
         )
 
+        # Auto set step size?
+        self.specw_autoset_frequency_step_HLayout = QtWidgets.QHBoxLayout()
+        self.specw_autoset_frequency_step_toggleSwitch = ToggleSwitch()
+        self.specw_autoset_frequency_step_label = QtWidgets.QLabel(
+            "Auto Frequency Step"
+        )
+        self.specw_autoset_frequency_step_HLayout.addWidget(
+            self.specw_autoset_frequency_step_toggleSwitch
+        )
+        self.specw_autoset_frequency_step_HLayout.addWidget(
+            self.specw_autoset_frequency_step_label
+        )
+        self.specw_scrollArea_gridLayout.addLayout(
+            self.specw_autoset_frequency_step_HLayout, 10, 0, 1, 1
+        )
+
         # Set frequency step
         self.specw_frequency_step_label = QtWidgets.QLabel(
             self.specw_scrollAreaWidgetContents
@@ -587,14 +603,14 @@ class Ui_MainWindow(object):
         self.specw_frequency_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
         self.specw_frequency_step_label.setObjectName("specw_frequency_step_label")
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_step_label, 10, 0, 1, 1
+            self.specw_frequency_step_label, 11, 0, 1, 1
         )
         self.specw_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
         )
         self.specw_frequency_step_spinBox.setObjectName("specw_frequency_step_spinBox")
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_step_spinBox, 11, 0, 1, 1
+            self.specw_frequency_step_spinBox, 12, 0, 1, 1
         )
 
         # Set frequency settling time
@@ -608,7 +624,7 @@ class Ui_MainWindow(object):
             "specw_frequency_settling_time_label"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_settling_time_label, 12, 0, 1, 1
+            self.specw_frequency_settling_time_label, 13, 0, 1, 1
         )
         self.specw_frequency_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
             self.specw_scrollAreaWidgetContents
@@ -617,7 +633,7 @@ class Ui_MainWindow(object):
             "specw_frequency_settling_time_spinBox"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_frequency_settling_time_spinBox, 13, 0, 1, 1
+            self.specw_frequency_settling_time_spinBox, 14, 0, 1, 1
         )
 
         # Auto set capacitance?
@@ -631,7 +647,7 @@ class Ui_MainWindow(object):
             self.specw_autoset_capacitance_label
         )
         self.specw_scrollArea_gridLayout.addLayout(
-            self.specw_autoset_capacitance_HLayout, 14, 0, 1, 1
+            self.specw_autoset_capacitance_HLayout, 15, 0, 1, 1
         )
 
         # Save Spectrum button
@@ -642,7 +658,7 @@ class Ui_MainWindow(object):
             "specw_start_measurement_pushButton"
         )
         self.specw_scrollArea_gridLayout.addWidget(
-            self.specw_start_measurement_pushButton, 15, 0, 1, 1
+            self.specw_start_measurement_pushButton, 16, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.spectrum_widget, "")
@@ -683,7 +699,7 @@ class Ui_MainWindow(object):
         # self.powerw_ax.set_facecolor("#E0E0E0")
         self.powerw_ax.grid(True)
         self.powerw_ax.set_xlabel("Resistance (Ohm)", fontsize=14)
-        self.powerw_ax.set_ylabel("Power (mW)", fontsize=14)
+        self.powerw_ax.set_ylabel("Power (mW/mm^2)/Voltage (V))", fontsize=14)
         self.powerw_ax.set_xlim([50, 600])
 
         self.powerw_ax.axhline(linewidth=1, color="black")
@@ -1728,6 +1744,9 @@ class Ui_MainWindow(object):
         )
         self.specw_autoset_capacitance_toggleSwitch.setText(
             _translate("MainWindow", "Autoset Capacitance")
+        )
+        self.specw_autoset_frequency_step_toggleSwitch.setText(
+            _translate("MainWindow", "Autoset Frequency Step")
         )
 
         self.specw_constant_magnetic_field_mode_toggleSwitch.setText(

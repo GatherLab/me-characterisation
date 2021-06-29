@@ -123,12 +123,16 @@ class FrequencyScan(QtCore.QThread):
         i = 0
 
         # Sweep over all frequencies
-        frequencies = np.arange(
-            self.measurement_parameters["minimum_frequency"],
-            self.measurement_parameters["maximum_frequency"],
-            self.measurement_parameters["frequency_step"],
-        )
-        for frequency in frequencies:
+        # frequencies = np.arange(
+        # self.measurement_parameters["minimum_frequency"],
+        # self.measurement_parameters["maximum_frequency"],
+        # self.measurement_parameters["frequency_step"],
+        # )
+        minimal_step = False
+        baseline = 0
+        frequency = self.measurement_parameters["minimum_frequency"]
+        while frequency <= self.measurement_parameters["maximum_frequency"]:
+            # for frequency in frequencies:
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
@@ -230,9 +234,9 @@ class FrequencyScan(QtCore.QThread):
             self.df_data.loc[i, "vmax"] = vmax
 
             # Update progress bar
-            self.update_progress_bar.emit(
-                "value", int((i + 1) / len(frequencies) * 100)
-            )
+            # self.update_progress_bar.emit(
+            #     "value", int((i + 1) / len(frequencies) * 100)
+            # )
 
             self.update_spectrum_signal.emit(
                 self.df_data["frequency"],
@@ -241,7 +245,40 @@ class FrequencyScan(QtCore.QThread):
                 self.df_data["vmax"],
             )
 
-            # Increase iterator
+            if self.measurement_parameters["autoset_frequency_step"]:
+                # Adjust frequency step automatically depending on the change
+                # Calculate the slope of the last increase
+                if i <= 1:
+                    frequency += self.measurement_parameters["frequency_step"]
+                    # baseline = self.df_data["vmax"].mean()
+                else:
+                    slope = (
+                        self.df_data.loc[i, "vmax"] - self.df_data.loc[i - 2, "vmax"]
+                    ) / (
+                        self.df_data.loc[i, "frequency"]
+                        - self.df_data.loc[i - 2, "frequency"]
+                    )
+
+                    # If slope is high enough use the minimal step size, if it isn't and the value fell below 2 * baseline, set it to false
+                    if slope > 0.04:
+                        if not minimal_step:
+                            baseline = self.df_data.loc[i, "vmax"]
+                            minimal_step = True
+                    elif self.df_data.loc[i, "vmax"] <= baseline:
+                        minimal_step = False
+
+                    # Depending on if the minimum step was selected either choose a minimum step or a step according to a logistic function
+                    if minimal_step:
+                        frequency += 0.5
+                    else:
+                        # Logistic growth function to determine variable step size
+                        # (10/2=5 is the maximum step size (at zero slope), 40 is the
+                        # slope of the logistic function and 0.1 is the minimum step
+                        # size (at infinite slope))
+                        frequency += 10 / (1 + np.exp(100 * abs(slope))) + 0.5
+            else:
+                frequency += self.measurement_parameters["frequency_step"]
+
             i += 1
 
             if self.is_killed:
@@ -261,7 +298,7 @@ class FrequencyScan(QtCore.QThread):
         if self.measurement_parameters["constant_magnetic_field_mode"]:
             cf.log_message(
                 "Frequency scan ended with an average magnetic field adjustment time of "
-                + str(round(total_adjustment_time / len(frequencies), 2))
+                + str(round(total_adjustment_time / i, 2))
                 + " and a total measurement time of "
                 + str(round(time.time() - start_time, 2))
             )
