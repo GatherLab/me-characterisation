@@ -211,7 +211,7 @@ class FrequencyScan(QtCore.QThread):
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
-            voltage, current, mode = self.source.read_values()
+            voltage, current = self.source.read_values()
 
             vmax = float(self.oscilloscope.measure_vmax("CHAN2"))
 
@@ -335,8 +335,10 @@ class FrequencyScan(QtCore.QThread):
                 + " mT"
             )
         else:
-            line03 += "Current:   " + str(
-                self.measurement_parameters["current_compliance"] + " A"
+            line03 += (
+                "Current:   "
+                + str(self.measurement_parameters["current_compliance"])
+                + " A"
             )
 
         line04 = (

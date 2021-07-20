@@ -17,6 +17,9 @@ class MockRigoOscilloscope:
     def measure(self):
         return 1, 2, 3, 4
 
+    def measure_vmax(self, channel):
+        return 1
+
 
 class MockVoltcraftSource:
     """

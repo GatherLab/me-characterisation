@@ -21,6 +21,7 @@ Coil driver control and read out of oscilloscope for benchmarking and automatise
 - I couldn't make Ultra sigma work but the oscilloscope is now recognized by windows
 - Download Voltcraft PPS-16005 software (https://www.conrad.de/de/p/voltcraft-pps-16005-labornetzgeraet-einstellbar-1-36-v-dc-0-10-a-360-w-usb-remote-programmierbar-anzahl-ausgaenge-2-513914.html?refresh=true#productDownloads)
 - Against all intuition the voltcraft pps-16005 must be set to normal mode when controlled remotly by the pc and not to "Remote Control" on the rear side of the device.
+- Connect KORAD 3005P and install the software
   <!-- - Start Ultra Sigma -->
   <!-- - Start Ultra Scope -->
 

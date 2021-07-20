@@ -36,7 +36,7 @@ class SetupThread(QtCore.QThread):
         """
         while True:
             # Measure
-            voltage, current, mode = self.source.read_values()
+            voltage, current = self.source.read_values()
             # frequency = self.arduino.read_frequency()
 
             self.update_display.emit(voltage, current)

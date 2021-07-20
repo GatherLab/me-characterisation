@@ -1,7 +1,8 @@
 {
     "overwrite": [
         {
-            "source_address": "ASRL4::INSTR",
+            "dc_source_address": "ASRL4::INSTR",
+            "hf_source_address": "ASRL5::INSTR",
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
@@ -10,8 +11,8 @@
             "coil_inductance": "0.1987",
             "coil_windings": "53.0",
             "coil_radius": "36.0",
-            "pickup_coil_windings": "4.0",
-            "pickup_coil_radius": "20.0",
+            "pickup_coil_windings": "1.0",
+            "pickup_coil_radius": "12.5",
             "circuit_resistance": "14.0",
             "capacitances": "39, 81, 160, 330, 680, 1200, 2200, 4700, 9100, 15000",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
@@ -21,7 +22,8 @@
     "default": [
         {
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
-            "source_address": "ASRL4::INSTR",
+            "dc_source_address": "ASRL4::INSTR",
+            "hf_source_address": "ASRL5::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
             "pid_parameters": "3.5, 15, 0.02",

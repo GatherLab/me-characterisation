@@ -9,7 +9,7 @@ from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
 from pid_tuning import PIDScan
 
-from hardware import RigolOscilloscope, VoltcraftSource, Arduino
+from hardware import KoradSource, RigolOscilloscope, VoltcraftSource, Arduino
 
 import core_functions as cf
 
@@ -173,13 +173,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_capacitance_spinBox.setValue(0)
 
         self.sw_voltage_spinBox.setMinimum(0)
-        self.sw_voltage_spinBox.setMaximum(33)
+        self.sw_voltage_spinBox.setMaximum(30)
+        self.sw_voltage_spinBox.setDecimals(2)
+        self.sw_voltage_spinBox.setSingleStep(0.5)
         self.sw_voltage_spinBox.setKeyboardTracking(False)
         self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.sw_voltage_spinBox.setValue(5)
 
         self.sw_current_spinBox.setMinimum(0)
-        self.sw_current_spinBox.setMaximum(12)
+        self.sw_current_spinBox.setMaximum(5)
+        self.sw_current_spinBox.setDecimals(3)
+        self.sw_current_spinBox.setSingleStep(0.05)
         self.sw_current_spinBox.setKeyboardTracking(False)
         self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.sw_current_spinBox.setValue(1)
@@ -357,12 +361,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.oscilloscope = oscilloscope_object
 
-    @QtCore.Slot(VoltcraftSource)
-    def init_source(self, source_object):
+    @QtCore.Slot(KoradSource)
+    def init_hf_source(self, source_object):
         """
         Receives a source object from the init thread
         """
         self.source = source_object
+
+    @QtCore.Slot(VoltcraftSource)
+    def init_dc_source(self, source_object):
+        """
+        Receives a source object from the init thread
+        """
+        self.dc_source = source_object
 
     @QtCore.Slot(Arduino)
     def init_arduino(self, arduino_object):
@@ -456,7 +467,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             voltage = self.sw_voltage_spinBox.value()
             self.source.set_voltage(voltage)
-            self.source.output(True)
+            # self.source.output(True)
             cf.log_message("Source voltage set to " + str(voltage) + " V")
 
     def current_changed(self):

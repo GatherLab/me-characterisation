@@ -2,7 +2,13 @@ from PySide2 import QtCore
 import core_functions as cf
 import time
 
-from hardware import RigolOscilloscope, VoltcraftSource, Arduino
+from hardware import (
+    KoradSource,
+    RigolOscilloscope,
+    VoltcraftSource,
+    KoradSource,
+    Arduino,
+)
 from tests.tests import MockRigoOscilloscope, MockVoltcraftSource, MockArduino
 
 
@@ -15,7 +21,8 @@ class InitThread(QtCore.QThread):
     kill_dialog = QtCore.Signal()
     ask_retry = QtCore.Signal()
     emit_oscilloscope = QtCore.Signal(RigolOscilloscope)
-    emit_source = QtCore.Signal(VoltcraftSource)
+    emit_dc_source = QtCore.Signal(VoltcraftSource)
+    emit_hf_source = QtCore.Signal(KoradSource)
     emit_arduino = QtCore.Signal(Arduino)
 
     def __init__(self, widget=None):
@@ -29,11 +36,13 @@ class InitThread(QtCore.QThread):
         self.kill_dialog.connect(widget.kill_dialog)
         self.ask_retry.connect(widget.ask_retry)
         self.emit_oscilloscope.connect(widget.parent.init_oscilloscope)
-        self.emit_source.connect(widget.parent.init_source)
+        self.emit_hf_source.connect(widget.parent.init_hf_source)
+        self.emit_dc_source.connect(widget.parent.init_dc_source)
         self.emit_arduino.connect(widget.parent.init_arduino)
 
         self.oscilloscope_address = settings["rigol_oscilloscope_address"]
-        self.source_address = settings["source_address"]
+        self.dc_source_address = settings["dc_source_address"]
+        self.hf_source_address = settings["hf_source_address"]
         self.arduino_address = settings["arduino_address"]
 
         # Now set widget
@@ -72,14 +81,14 @@ class InitThread(QtCore.QThread):
 
         time.sleep(0.1)
 
-        self.update_loading_dialog.emit(33, "Initialising Source")
+        self.update_loading_dialog.emit(25, "Initialising DC Source")
 
         # Try if Voltcraft Source can be initialised
         try:
             try:
-                source = VoltcraftSource(self.source_address)
+                dc_source = VoltcraftSource(self.dc_source_address)
                 cf.log_message("Voltcraft Source successfully initialised")
-                source_init = True
+                dc_source_init = True
             except:
                 # In the case that there was already a connection established,
                 # it could happen that the source does not allow to establish
@@ -87,21 +96,50 @@ class InitThread(QtCore.QThread):
                 self.widget.parent.setup_thread.pause = True
                 self.widget.parent.source.close()
 
-                source = VoltcraftSource(self.source_address)
+                dc_source = VoltcraftSource(self.dc_source_address)
                 cf.log_message("Voltcraft Source successfully initialised")
-                source_init = True
+                dc_source_init = True
 
         except Exception as e:
-            source = MockVoltcraftSource(self.source_address)
+            dc_source = MockVoltcraftSource(self.dc_source_address)
             cf.log_message(
                 "The Voltcraft source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
             )
             cf.log_message(e)
-            source_init = False
+            dc_source_init = False
 
-        self.emit_source.emit(source)
+        self.emit_dc_source.emit(dc_source)
         time.sleep(0.1)
-        self.update_loading_dialog.emit(66, "Initialising Arduino")
+        self.update_loading_dialog.emit(50, "Initialising HF Source")
+
+        # Try if KORAD Source can be initialised
+        # try:
+        try:
+            hf_source = KoradSource(self.hf_source_address)
+            cf.log_message("Korad Source successfully initialised")
+            hf_source_init = True
+        except:
+            # In the case that there was already a connection established,
+            # it could happen that the source does not allow to establish
+            # a new one. Therefore, close the old one first.
+            # self.widget.parent.setup_thread.pause = True
+            # self.widget.parent.source.close()
+
+            hf_source = KoradSource(self.hf_source_address)
+            cf.log_message("Korad Source successfully initialised")
+            hf_source_init = True
+
+        # except Exception as e:
+        #     source = MockKoradSource(self.source_address)
+        #     cf.log_message(
+        #         "The Koard source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
+        #     )
+        #     cf.log_message(e)
+        #     source_init = False
+
+        self.emit_hf_source.emit(hf_source)
+        time.sleep(0.1)
+        self.update_loading_dialog.emit(75, "Initialising Arduino")
 
         # Try if Arduino can be initialised
         try:
@@ -135,10 +173,45 @@ class InitThread(QtCore.QThread):
         # If one of the devices could not be initialised for whatever reason,
         # ask the user if she wants to retry after reconnecting the devices or
         # continue without some of the devices
-        if oscilloscope_init == False or source_init == False or arduino_init == False:
+
+        # If one of the devices could not be initialised for whatever reason,
+        # ask the user if she wants to retry after reconnecting the devices or
+        # continue without some of the devices
+        if (
+            oscilloscope_init == False
+            or dc_source_init == False
+            or hf_source_init == False
+            or arduino_init == False
+        ):
+            device_not_loading_message = []
+            if oscilloscope_init == False:
+                device_not_loading_message.append("Oscilloscope")
+            if dc_source_init == False:
+                device_not_loading_message.append("DC Source")
+            if hf_source_init == False:
+                device_not_loading_message.append("HF Source")
+            if arduino_init == False:
+                device_not_loading_message.append("Arduino")
+
+            if (
+                len(device_not_loading_message) > 1
+                and len(device_not_loading_message) < 4
+            ):
+                a = ", ".join(device_not_loading_message[:-1])
+                b = a + " and " + device_not_loading_message[-1]
+            elif len(device_not_loading_message) == 1:
+                b = device_not_loading_message[0]
+            elif len(device_not_loading_message) == 4:
+                b = "None"
+
+            c = b + " could not be initialised."
+
+            if len(device_not_loading_message) == 4:
+                c = "None of the devices could be initialised."
+
             self.update_loading_dialog.emit(
                 100,
-                "Some of the devices could not be initialised.",
+                c,
             )
             self.ask_retry.emit()
 
