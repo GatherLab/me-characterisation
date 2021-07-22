@@ -113,6 +113,7 @@ class PowerScan(QtCore.QThread):
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"])
+        self.source.set_current(2)
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
             self.source.set_current(self.measurement_parameters["current_compliance"])
 

@@ -107,13 +107,10 @@ class PIDScan(QtCore.QThread):
 
         pydevd.settrace(suspend=False)
 
-        # Measure time elapsed
-        start_time = time.time()
-
         self.parent.oscilloscope_thread.pause = True
 
-        # Set voltage and current (they shall remain constant over the entire sweep)
-        self.source.set_voltage(self.measurement_parameters["voltage"])
+        self.source.set_voltage(1)
+        self.source.set_current(2)
         total_adjustment_time = 0
 
         # Set frequency
@@ -124,7 +121,6 @@ class PIDScan(QtCore.QThread):
 
         # Activate output only when frequency was set
         self.source.output(True)
-        time.sleep(0.5)
 
         # In constant magnetic field mode, regulate the voltage until a
         # magnetic field is reached
@@ -188,7 +184,7 @@ class PIDScan(QtCore.QThread):
 
             # Set the voltage to that value (rounded to the accuracy of the
             # source)
-            self.source.set_voltage(round(pid_voltage, 1))
+            self.source.set_voltage(round(pid_voltage, 2))
 
             # Wait for a bit so that the hardware can react
             time.sleep(0.05)

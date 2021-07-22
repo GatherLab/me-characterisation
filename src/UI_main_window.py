@@ -699,7 +699,7 @@ class Ui_MainWindow(object):
         # self.powerw_ax.set_facecolor("#E0E0E0")
         self.powerw_ax.grid(True)
         self.powerw_ax.set_xlabel("Resistance (Ohm)", fontsize=14)
-        self.powerw_ax.set_ylabel("Power (mW/mm^2)/Voltage (V))", fontsize=14)
+        self.powerw_ax.set_ylabel("Voltage (V)/Magnetic Field (mT)", fontsize=14)
         self.powerw_ax.set_xlim([50, 600])
 
         self.powerw_ax.axhline(linewidth=1, color="black")
@@ -707,7 +707,7 @@ class Ui_MainWindow(object):
 
         self.powerw_ax2 = self.powerw_ax.twinx()
         self.powerw_ax2.set_ylabel(
-            "Magnetic Field (mT)",
+            "Power Density (mW/mm^2)",
             fontsize=14,
         )
 

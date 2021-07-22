@@ -112,11 +112,12 @@ class FrequencyScan(QtCore.QThread):
         self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.source.set_voltage(self.measurement_parameters["voltage"])
+        self.source.set_voltage(1)
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
             self.source.set_current(self.measurement_parameters["current_compliance"])
         else:
             # Calculate the average time it took to adjust the magnetic field
+            self.source.set_current(2)
             total_adjustment_time = 0
 
         # Define arrays in which the data shall be stored in
@@ -136,49 +137,26 @@ class FrequencyScan(QtCore.QThread):
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
+            # Activate output only when frequency was set
+            if i == 0:
+                self.source.output(True)
+                time.sleep(0.5)
+
             # Set frequency
             self.arduino.set_frequency(
                 frequency, self.measurement_parameters["autoset_capacitance"]
             )
-
-            # Activate output only when frequency was set
-            if i == 0:
-                self.source.output(True)
-                time.sleep(1)
+            time.sleep(0.5)
 
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached
-            if self.measurement_parameters["constant_magnetic_field_mode"]:
-                # start_time = time.time()
-                # i = 0
-                # a = 0
-                # while True:
-                # Generate step-response data to tune with https://pidtuner.com/
-                # Time (frequency hijacked)
-                # time_it = round(time.time() - start_time, 2)
-                # self.df_data.loc[i, "frequency"] = time_it
+            if not self.measurement_parameters["constant_magnetic_field_mode"]:
+                self.source.set_voltage(self.measurement_parameters["voltage"])
 
-                # if i == 0:
-                #     self.source.output(False)
-                #     voltage = 0
-                # elif i == 20:
-                #     voltage = 2
-                #     self.source.set_voltage(2)
-                #     self.source.output(True)
-                # elif i == 30:
-                #     voltage = 0
-                #     self.source.output(False)
-                # elif i == 50:
-                #     voltage = 4
-                #     self.source.set_voltage(4)
-                #     self.source.output(True)
-                # elif i == 60:
-                #     voltage = 0
-                #     self.source.output(False)
-                # elif i == 70:
-                #     self.save_data()
-                #     print("Data saved")
-
+                # Wait for the settling time so that current can be adjusted
+                time.sleep(self.measurement_parameters["frequency_settling_time"])
+            else:
+                # Adjust the magnetic field
                 pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"],
@@ -187,27 +165,10 @@ class FrequencyScan(QtCore.QThread):
                     break_if_too_long=True,
                 )
 
-                # # Plot a graph (for PID tuning)
-                # self.df_data.loc[i, "voltage"] = 1
-                # self.df_data.loc[i, "current"] = 1
-
-                # self.df_data.loc[i, "magnetic_field"] = magnetic_field
-                # self.df_data.loc[i, "vmax"] = 1
-
-                # self.update_spectrum_signal.emit(
-                #     self.df_data["frequency"],
-                #     self.df_data["current"],
-                #     self.df_data["magnetic_field"],
-                #     self.df_data["vmax"],
-                # )
+                # Return total adjustment time to let user know how long it took
                 total_adjustment_time += elapsed_time
-                # if (
-                #     self.measurement_parameters["frequency_settling_time"]
-                #     > elapsed_time
-                # ):
-                time.sleep(self.measurement_parameters["frequency_settling_time"])
-            else:
-                # Wait for the settling time so that current can be adjusted
+
+                # Sleep for the settling time
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
@@ -278,6 +239,8 @@ class FrequencyScan(QtCore.QThread):
                         frequency += 10 / (1 + np.exp(100 * abs(slope))) + 0.5
             else:
                 frequency += self.measurement_parameters["frequency_step"]
+
+            self.source.set_voltage(voltage)
 
             i += 1
 

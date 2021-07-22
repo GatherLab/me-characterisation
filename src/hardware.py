@@ -2,6 +2,7 @@ import pyvisa
 import serial
 
 from PySide2 import QtCore
+from serial.serialutil import SerialTimeoutException
 
 import core_functions as cf
 import physics_functions as pf
@@ -1048,7 +1049,7 @@ class KoradSource:
         Function that returns the display readings of the source in volt and
         ampere. This takes about 20 - 25 ms to run
         """
-        # self.mutex.lock()
+        self.mutex.lock()
         # The source will return something liek 119700020 which translates to:
         # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
         self.source.write(b"VOUT1?")
@@ -1059,7 +1060,7 @@ class KoradSource:
             cf.log_message("Couldn't read out voltage")
             voltage = 0
 
-        time.sleep(0.1)
+        time.sleep(0.2)
         self.source.write(b"IOUT1?")
         raw_current = self.source.read(5).decode()
         try:
@@ -1068,9 +1069,10 @@ class KoradSource:
             cf.log_message("Couldn't read out current")
             current = 0
 
+        time.sleep(0.2)
         # Now disect this string
 
-        # self.mutex.unlock()
+        self.mutex.unlock()
         return voltage, current
 
     def set_voltage(self, voltage):
@@ -1095,8 +1097,14 @@ class KoradSource:
             )
             voltage = 0
 
-        self.source.write(str.encode("VSET1:" + str(voltage)))
-        time.sleep(0.1)
+        try:
+            self.source.write(str.encode("VSET1:" + str(voltage)))
+        except SerialTimeoutException as err:
+            cf.log_message(err)
+            time.sleep(0.2)
+            self.source.write(str.encode("VSET1:" + str(voltage)))
+
+        time.sleep(0.2)
         # self.mutex.unlock()
 
     def set_current(self, current):
@@ -1122,7 +1130,7 @@ class KoradSource:
             current = 0
 
         self.source.write(str.encode("ISET1:" + str(current)))
-        time.sleep(0.1)
+        time.sleep(0.2)
         # self.mutex.unlock()
 
     def start_constant_magnetic_field_mode(
@@ -1178,7 +1186,7 @@ class KoradSource:
 
             # Set the voltage to that value (rounded to the accuracy of the
             # source)
-            self.set_voltage(round(pid_voltage, 1))
+            self.set_voltage(round(pid_voltage, 2))
 
             # Wait for a bit so that the hardware can react
             time.sleep(0.05)
@@ -1206,7 +1214,7 @@ class KoradSource:
         self.mutex.unlock()
         return pid_voltage, elapsed_time
 
-    def output(self, state):
+    def output(self, state, slow=False):
         """
         Activate or deactivate output:
         state = True: output on
@@ -1216,16 +1224,33 @@ class KoradSource:
         (maybe class variable).
         """
         # self.mutex.lock()
-
         # The logic of the voltcraft source is just the other way around than
         # my logic (true means off)
-        self.source.write(str.encode("OUT" + str(int(state))))
+        if slow:
+            voltage, current = self.read_values()
+            self.set_voltage(round(voltage / 4, 2))
+
+            self.source.write(str.encode("OUT" + str(int(state))))
+            time.sleep(1)
+
+            self.set_voltage(round(voltage / 2, 2))
+            time.sleep(0.2)
+            self.set_voltage(round(voltage, 2))
+            time.sleep(0.2)
+        else:
+            try:
+                self.source.write(str.encode("OUT" + str(int(state))))
+
+            except SerialTimeoutException as err:
+                cf.log_message(err)
+                time.sleep(0.2)
+                self.source.write(str.encode("OUT" + str(int(state))))
+
+            # Wait shortly because the source needs a bit until the final voltage is reached
+            time.sleep(1)
 
         # Set the state variable
         self.output_state = state
-
-        # Wait shortly because the source needs a bit until the final voltage is reached
-        time.sleep(1)
 
         # self.mutex.unlock()
 

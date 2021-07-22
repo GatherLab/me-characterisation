@@ -178,7 +178,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_voltage_spinBox.setSingleStep(0.5)
         self.sw_voltage_spinBox.setKeyboardTracking(False)
         self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_voltage_spinBox.setValue(5)
+        self.sw_voltage_spinBox.setValue(3)
 
         self.sw_current_spinBox.setMinimum(0)
         self.sw_current_spinBox.setMaximum(5)
@@ -186,7 +186,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_current_spinBox.setSingleStep(0.05)
         self.sw_current_spinBox.setKeyboardTracking(False)
         self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_current_spinBox.setValue(1)
+        self.sw_current_spinBox.setValue(0.3)
 
         self.sw_resistance_spinBox.setMinimum(70)
         self.sw_resistance_spinBox.setMaximum(2600)
@@ -203,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
-        self.specw_current_spinBox.setValue(1)
+        self.specw_current_spinBox.setValue(0.5)
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
@@ -215,7 +215,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
         self.specw_frequency_step_spinBox.setMaximum(1000)
-        self.specw_frequency_step_spinBox.setValue(2)
+        self.specw_frequency_step_spinBox.setValue(1)
 
         self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
         self.specw_frequency_settling_time_spinBox.setMaximum(10)
@@ -223,7 +223,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
-        self.specw_autoset_frequency_step_toggleSwitch.setChecked(True)
+        self.specw_autoset_frequency_step_toggleSwitch.setChecked(False)
 
         # Set standard parameters for power measurement
         self.powerw_voltage_spinBox.setMinimum(0)
@@ -302,7 +302,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pidw_current_spinBox.setMinimum(0)
         self.pidw_current_spinBox.setMaximum(12)
-        self.pidw_current_spinBox.setValue(1)
+        self.pidw_current_spinBox.setValue(0.5)
 
         self.pidw_frequency_spinBox.setMinimum(8)
         self.pidw_frequency_spinBox.setMaximum(150000)
@@ -823,12 +823,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Set x and y limit
         self.powerw_ax.set_xlim([min(resistance), max(resistance)])
-        self.powerw_ax.set_ylim([0, max(np.append(voltage, power)) + 0.05])
+        self.powerw_ax.set_ylim([0, max(np.append(voltage, magnetic_field)) + 0.05])
 
         self.powerw_ax2.set_ylim(
             [
-                min(magnetic_field) - 0.05,
-                max(magnetic_field) + 0.05,
+                min(power) - 0.05,
+                max(power) + 0.05,
             ]
         )
 
@@ -843,18 +843,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.powerw_ax.plot(
             resistance,
-            power,
+            magnetic_field,
             color="red",
             marker="o",
-            label="Power",
+            label="Magnetic Field",
         )
 
         self.powerw_ax2.plot(
             resistance,
-            magnetic_field,
+            power,
             color=(85 / 255, 170 / 255, 255 / 255),
             marker="o",
-            label="Magnetic Field",
+            label="Power Density",
         )
 
         lines, labels = self.powerw_ax.get_legend_handles_labels()

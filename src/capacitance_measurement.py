@@ -164,7 +164,7 @@ class CapacitanceScan(QtCore.QThread):
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
                 # Measure the voltage and current (and posssibly paramters on the osci)
-                voltage, current, mode = self.source.read_values()
+                voltage, current = self.source.read_values()
 
                 # Now measure Vpp from channel one on the oscilloscope
                 # vpp = float(self.oscilloscope.measure_vpp())
