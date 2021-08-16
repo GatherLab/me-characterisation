@@ -8,7 +8,7 @@ Coil driver control and read out of oscilloscope for benchmarking and automatise
 - Voltcraft PPS-16005, python api: https://github.com/ap--/voltcraft
 - PCB with electric components
 - Cupper Coil
-- Various Capacitors of different capacity
+- Various Capacitors of different capacitance
 
 ## First Installation
 

@@ -12,6 +12,7 @@ from pid_tuning import PIDScan
 from hardware import KoradSource, RigolOscilloscope, VoltcraftSource, Arduino
 
 import core_functions as cf
+import physics_functions as pf
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -91,6 +92,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
         # --------------------------- Setup Widget --------------------------- #
         # -------------------------------------------------------------------- #
+        # This two variables are needed to update the HF field strength
+        self.initial_global_parameters = cf.read_global_settings()
+        self.previous_current = 0
+
         self.sw_browse_pushButton.clicked.connect(self.browse_folder)
 
         # Setup and start setup thread that continuously reads out the voltage
@@ -101,7 +106,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
         self.sw_current_spinBox.valueChanged.connect(self.current_changed)
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
-        self.sw_capacitance_spinBox.valueChanged.connect(self.capacity_changed)
+        self.sw_capacitance_spinBox.valueChanged.connect(self.capacitance_changed)
+        self.sw_dc_current_spinBox.valueChanged.connect(self.dc_current_changed)
         self.sw_resistance_spinBox.valueChanged.connect(self.resistance_changed)
 
         self.sw_source_output_pushButton.clicked.connect(self.toggle_source_output)
@@ -174,19 +180,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.sw_voltage_spinBox.setMinimum(0)
         self.sw_voltage_spinBox.setMaximum(30)
-        self.sw_voltage_spinBox.setDecimals(2)
-        self.sw_voltage_spinBox.setSingleStep(0.5)
+        self.sw_voltage_spinBox.setDecimals(1)
+        self.sw_voltage_spinBox.setSingleStep(0.1)
         self.sw_voltage_spinBox.setKeyboardTracking(False)
         self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_voltage_spinBox.setValue(3)
+        self.sw_voltage_spinBox.setValue(1)
 
         self.sw_current_spinBox.setMinimum(0)
         self.sw_current_spinBox.setMaximum(5)
-        self.sw_current_spinBox.setDecimals(3)
-        self.sw_current_spinBox.setSingleStep(0.05)
+        self.sw_current_spinBox.setDecimals(1)
+        self.sw_current_spinBox.setSingleStep(0.1)
         self.sw_current_spinBox.setKeyboardTracking(False)
         self.sw_current_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_current_spinBox.setValue(0.3)
+        self.sw_current_spinBox.setValue(0.1)
+
+        self.sw_dc_current_spinBox.setMinimum(0)
+        self.sw_dc_current_spinBox.setMaximum(5)
+        self.sw_dc_current_spinBox.setDecimals(3)
+        self.sw_dc_current_spinBox.setSingleStep(0.1)
+        self.sw_dc_current_spinBox.setKeyboardTracking(False)
+        self.sw_dc_current_spinBox.setButtonSymbols(
+            QtWidgets.QAbstractSpinBox.NoButtons
+        )
+        self.sw_dc_current_spinBox.setValue(0)
 
         self.sw_resistance_spinBox.setMinimum(70)
         self.sw_resistance_spinBox.setMaximum(2600)
@@ -195,6 +211,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QtWidgets.QAbstractSpinBox.NoButtons
         )
         self.sw_resistance_spinBox.setValue(500)
+        self.sw_resistance_spinBox.setSingleStep(10)
+
+        self.sw_autoset_capacitance_toggleSwitch.setChecked(True)
 
         # Set standard parameters for spectral measurement
         self.specw_voltage_spinBox.setMinimum(0)
@@ -361,14 +380,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.oscilloscope = oscilloscope_object
 
-    @QtCore.Slot(KoradSource)
+    @QtCore.Slot(VoltcraftSource)
     def init_hf_source(self, source_object):
         """
         Receives a source object from the init thread
         """
         self.source = source_object
 
-    @QtCore.Slot(VoltcraftSource)
+    @QtCore.Slot(KoradSource)
     def init_dc_source(self, source_object):
         """
         Receives a source object from the init thread
@@ -457,6 +476,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_voltage_lcdNumber.display(voltage)
         self.sw_current_lcdNumber.display(current)
 
+        # Only calculate the magnetic field if the current changed (otherwise it
+        # is too time consuming to measure vmax from the osci)
+        if not math.isclose(current, self.previous_current, abs_tol=0.001):
+            magnetic_field = round(
+                (
+                    pf.calculate_magnetic_field_from_Vind(
+                        self.initial_global_parameters["pickup_coil_windings"],
+                        self.initial_global_parameters["pickup_coil_radius"] * 1e-3,
+                        float(self.oscilloscope.measure_vmax("CHAN1")),
+                        self.arduino.frequency * 1e3,
+                    )
+                    * 1e3
+                ),
+                2,
+            )
+            # print(magnetic_field)
+            self.sw_hf_field_lcdNumber.display(magnetic_field)
+
+        self.previous_current = current
+
     def voltage_changed(self):
         """
         Function that changes voltage on source when it is changed on spinbox
@@ -468,7 +507,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             voltage = self.sw_voltage_spinBox.value()
             self.source.set_voltage(voltage)
             # self.source.output(True)
-            cf.log_message("Source voltage set to " + str(voltage) + " V")
+            # cf.log_message("Source voltage set to " + str(voltage) + " V")
 
     def current_changed(self):
         """
@@ -496,20 +535,36 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_frequency_lcdNumber.display(frequency)
 
         if self.sw_autoset_capacitance_toggleSwitch.isChecked():
-            self.sw_capacitance_lcdNumber.display(self.arduino.real_capacity)
+            self.sw_capacitance_lcdNumber.display(self.arduino.real_capacitance)
 
         cf.log_message("Arduino frequency set to " + str(frequency) + " kHz")
 
-    def capacity_changed(self):
+    def capacitance_changed(self):
         """
         Function that changes capacitance on arduino when it is changed on spinbox
         """
-        capacity = self.sw_capacitance_spinBox.value()
-        self.arduino.set_capacitance(capacity)
+        capacitance = self.sw_capacitance_spinBox.value()
+        self.arduino.set_capacitance(capacitance)
 
-        self.sw_capacitance_lcdNumber.display(self.arduino.real_capacity)
+        self.sw_capacitance_lcdNumber.display(self.arduino.real_capacitance)
 
-        cf.log_message("Capacitance set to " + str(self.arduino.real_capacity) + " pF")
+        # cf.log_message("Capacitance set to " + str(self.arduino.real_capacitance) + " pF")
+
+    def dc_current_changed(self):
+        """
+        Function that changes dc current on dc source when it is changed on spinbox
+        """
+        dc_current = self.sw_dc_current_spinBox.value()
+        self.dc_source.set_current(dc_current)
+
+        if dc_current > 0 and self.dc_source.output_state == False:
+            self.dc_source.output(True)
+        elif dc_current == 0 and self.dc_source.output_state == True:
+            self.dc_source.output(False)
+
+        self.sw_dc_current_lcdNumber.display(str(dc_current))
+        self.sw_dc_field_lcdNumber.display(str(dc_current * 0.37))
+        # self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
 
     def resistance_changed(self):
         """
@@ -518,11 +573,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         resistance = self.sw_resistance_spinBox.value()
         self.arduino.set_resistance(resistance)
 
-        self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
-
-        cf.log_message(
-            "Resistance set to " + str(self.arduino.read_resistance()) + " pF"
-        )
+        self.sw_resistance_lcdNumber.display(str(resistance))
+        # self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
 
     def safe_read_setup_parameters(self):
         """
@@ -656,6 +708,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "frequency_settling_time": self.specw_frequency_settling_time_spinBox.value(),
             "autoset_capacitance": self.specw_autoset_capacitance_toggleSwitch.isChecked(),
             "constant_magnetic_field_mode": self.specw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
+            "dc_magnetic_field": self.specw_dc_magnetic_field_spinBox.value(),
         }
 
         # Update statusbar
@@ -685,6 +738,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.frequency_sweep = FrequencyScan(
             self.arduino,
             self.source,
+            self.dc_source,
             self.oscilloscope,
             frequency_sweep_parameters,
             setup_parameters,

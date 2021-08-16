@@ -31,6 +31,7 @@ class FrequencyScan(QtCore.QThread):
         self,
         arduino,
         source,
+        dc_source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -43,6 +44,7 @@ class FrequencyScan(QtCore.QThread):
         self.arduino = arduino
         self.arduino.init_serial_connection()
         self.source = source
+        self.dc_source = dc_source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -120,15 +122,12 @@ class FrequencyScan(QtCore.QThread):
             self.source.set_current(2)
             total_adjustment_time = 0
 
-        # Define arrays in which the data shall be stored in
-        i = 0
+        self.dc_source.set_magnetic_field(
+            self.measurement_parameters["dc_magnetic_field"]
+        )
+        self.dc_source.output(True)
 
-        # Sweep over all frequencies
-        # frequencies = np.arange(
-        # self.measurement_parameters["minimum_frequency"],
-        # self.measurement_parameters["maximum_frequency"],
-        # self.measurement_parameters["frequency_step"],
-        # )
+        i = 0
         minimal_step = False
         baseline = 0
         frequency = self.measurement_parameters["minimum_frequency"]

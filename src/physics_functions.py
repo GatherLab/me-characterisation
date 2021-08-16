@@ -54,11 +54,11 @@ class ResonanceFit:
         return popt, pcov
 
 
-def calculate_resonance_frequency(capacity, inductance):
+def calculate_resonance_frequency(capacitance, inductance):
     """
-    For a given capacity and inductance, calculate the resonance frequency
+    For a given capacitance and inductance, calculate the resonance frequency
     """
-    return np.sqrt(1 / (capacity * inductance)) / 2 / np.pi
+    return np.sqrt(1 / (capacitance * inductance)) / 2 / np.pi
 
 
 def calculate_magnetic_field(current, inductance, windings, coil_radius):

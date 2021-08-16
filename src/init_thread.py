@@ -21,8 +21,8 @@ class InitThread(QtCore.QThread):
     kill_dialog = QtCore.Signal()
     ask_retry = QtCore.Signal()
     emit_oscilloscope = QtCore.Signal(RigolOscilloscope)
-    emit_dc_source = QtCore.Signal(VoltcraftSource)
-    emit_hf_source = QtCore.Signal(KoradSource)
+    emit_dc_source = QtCore.Signal(KoradSource)
+    emit_hf_source = QtCore.Signal(VoltcraftSource)
     emit_arduino = QtCore.Signal(Arduino)
 
     def __init__(self, widget=None):
@@ -86,7 +86,7 @@ class InitThread(QtCore.QThread):
         # Try if Voltcraft Source can be initialised
         try:
             try:
-                dc_source = VoltcraftSource(self.dc_source_address)
+                dc_source = KoradSource(self.dc_source_address)
                 cf.log_message("Voltcraft Source successfully initialised")
                 dc_source_init = True
             except:
@@ -96,12 +96,12 @@ class InitThread(QtCore.QThread):
                 self.widget.parent.setup_thread.pause = True
                 self.widget.parent.source.close()
 
-                dc_source = VoltcraftSource(self.dc_source_address)
+                dc_source = KoradSource(self.dc_source_address)
                 cf.log_message("Voltcraft Source successfully initialised")
                 dc_source_init = True
 
         except Exception as e:
-            dc_source = MockVoltcraftSource(self.dc_source_address)
+            dc_source = KoradSource(self.dc_source_address)
             cf.log_message(
                 "The Voltcraft source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
             )
@@ -115,7 +115,7 @@ class InitThread(QtCore.QThread):
         # Try if KORAD Source can be initialised
         # try:
         try:
-            hf_source = KoradSource(self.hf_source_address)
+            hf_source = VoltcraftSource(self.hf_source_address)
             cf.log_message("Korad Source successfully initialised")
             hf_source_init = True
         except:
@@ -125,7 +125,7 @@ class InitThread(QtCore.QThread):
             # self.widget.parent.setup_thread.pause = True
             # self.widget.parent.source.close()
 
-            hf_source = KoradSource(self.hf_source_address)
+            hf_source = MockVoltcraftSource(self.hf_source_address)
             cf.log_message("Korad Source successfully initialised")
             hf_source_init = True
 

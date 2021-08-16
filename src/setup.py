@@ -34,6 +34,11 @@ class SetupThread(QtCore.QThread):
         """
         Class that continuously measures the spectrum
         """
+
+        import pydevd
+
+        pydevd.settrace(suspend=False)
+
         while True:
             # Measure
             voltage, current = self.source.read_values()
@@ -41,8 +46,10 @@ class SetupThread(QtCore.QThread):
 
             self.update_display.emit(voltage, current)
 
-            # The sleep time here is very important because if it is chosen to
-            # short, the program may crash. Currently 1 s seems to be save (one can at least go down to 0.5s)
+            # The sleep time here is very important because if it is chosen too
+            # short, the program may crash. Currently 1 s seems to be save (one
+            # can at least go down to 0.5s). The reason is the latency of the
+            # source.
             time.sleep(1)
 
             if self.pause:

@@ -323,8 +323,8 @@ class VoltcraftSource:
         self.maximum_current = float(gmax[3:6]) / 10
 
         self.output(False)
-        self.set_voltage(5)
-        self.set_current(1)
+        self.set_voltage(1)
+        self.set_current(0.1)
 
         cf.log_message("Voltcraft Source successfully initialised")
 
@@ -368,7 +368,9 @@ class VoltcraftSource:
             mode = "CC"
 
         self.mutex.unlock()
-        return voltage, current, mode
+
+        # Mode is not returned since this function is never used
+        return voltage, current
 
     def set_voltage(self, voltage):
         """
@@ -386,13 +388,14 @@ class VoltcraftSource:
                 + " V. I set the voltage to this value for you instead."
             )
             voltage_int = int(np.round(self.maximum_voltage, 1) * 10)
-        elif voltage < 0:
+        elif voltage < 0.8:
             cf.log_message(
-                "You are attempting to set the voltage to a negative value. This is not possible. I set the voltage to 0 V for you instead"
+                "You are attempting to set the voltage below the capabilities of the power supply. This is not possible."
             )
-            voltage_int = 0
+            return
 
         self.query("VOLT%03d" % voltage_int)
+        cf.log_message("Source voltage set to " + str(voltage))
         self.mutex.unlock()
 
     def set_current(self, current):
@@ -573,6 +576,9 @@ class Arduino:
 
         # assign name to Arduino and assign short timeout to be able to do things fast
         self.arduino = serial.Serial(arduino_port, timeout=0.01)
+
+        # Frequency in kHz
+        self.frequency = 1000
 
         self.init_caps()
 
@@ -804,8 +810,9 @@ class Arduino:
             closest_capacitance = self.combinations_df.at[idx, "sum"]
             self.set_capacitance(closest_capacitance)
 
-        # Set capacity accordingly
+        # Set capacitance accordingly
         # self.set_capacitance(frequency)
+        self.frequency = frequency
 
         self.mutex.unlock()
 
@@ -900,7 +907,7 @@ class Arduino:
         # resonance_capacitance = frequency
 
         # Find closest capacitor available and convert again to resonance frequency
-        self.real_capacity, idx = cf.find_nearest(
+        self.real_capacitance, idx = cf.find_nearest(
             self.combinations_df["sum"], capacitance
         )
 
@@ -939,6 +946,7 @@ class Arduino:
 
         # Read answer from Arduino
         cf.log_message(com.readall())
+        cf.log_message("Resistance set to " + str(resistance) + " pF")
 
         self.mutex.unlock()
 
@@ -1039,8 +1047,8 @@ class KoradSource:
         self.maximum_current = 5
 
         self.output(False)
-        self.set_voltage(3)
-        self.set_current(0.3)
+        self.set_voltage(5)
+        self.set_current(0.05)
 
         cf.log_message("Korad Source successfully initialised")
 
@@ -1132,6 +1140,15 @@ class KoradSource:
         self.source.write(str.encode("ISET1:" + str(current)))
         time.sleep(0.2)
         # self.mutex.unlock()
+
+    def set_magnetic_field(self, magnetic_field):
+        """
+        Function that converts a value for a magnetic field to a current that
+        can be set on the source
+        """
+        current = magnetic_field * 0.37
+
+        self.set_current(current)
 
     def start_constant_magnetic_field_mode(
         self, pid_parameters, set_point, maximum_voltage

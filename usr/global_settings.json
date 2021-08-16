@@ -1,8 +1,8 @@
 {
     "overwrite": [
         {
-            "dc_source_address": "ASRL4::INSTR",
-            "hf_source_address": "ASRL5::INSTR",
+            "hf_source_address": "ASRL4::INSTR",
+            "dc_source_address": "ASRL5::INSTR",
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
@@ -22,8 +22,8 @@
     "default": [
         {
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
-            "dc_source_address": "ASRL4::INSTR",
-            "hf_source_address": "ASRL5::INSTR",
+            "hf_source_address": "ASRL4::INSTR",
+            "dc_source_address": "ASRL5::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
             "pid_parameters": "3.5, 15, 0.02",

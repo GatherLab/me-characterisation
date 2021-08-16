@@ -147,6 +147,11 @@ class PowerScan(QtCore.QThread):
             self.measurement_parameters["resistance_step"],
         )
 
+        self.dc_source.set_magnetic_field(
+            self.measurement_parameters["dc_magnetic_field"]
+        )
+        self.dc_source.output(True)
+
         for resistance in resistances:
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")

@@ -52,7 +52,8 @@ class MockArduino:
 
     def __init__(self, com2_address):
         print(com2_address)
-        self.frequency = 10000
+        self.frequency = 1000
+        self.real_capacitance = 1000
 
     def init_serial_connection(self):
         print("Serial connection initialised")
@@ -60,5 +61,11 @@ class MockArduino:
     def read_frequency(self):
         return self.frequency
 
-    def set_frequency(self, frequency):
+    def set_frequency(self, frequency, set_capacitance=True):
         self.frequency = frequency
+
+    def set_resistance(self, resistance):
+        self.resistance = resistance
+
+    def set_capacitance(self, capacitance):
+        self.real_capacitance = capacitance
