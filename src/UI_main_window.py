@@ -171,9 +171,10 @@ class Ui_MainWindow(object):
             "QTabWidget:pane {\n"
             "            border: 2px solid rgb(52, 59, 72);\n"
             "}\n"
-            "QTabWidget:tab:disabled {\n"
-            "            width: 300px;\n"
+            "QTabBar:tab:disabled {\n"
+            "            width: 80px;\n"
             "            color: rgb(44, 49, 60);\n"
+            "            background: rgb(44, 49, 60);\n"
             "}\n"
         )
 
@@ -2326,15 +2327,15 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Capacitance Calibration"),
         )
 
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.spacer),
-            _translate("MainWindow", "               "),
-        )
+        # self.tabWidget.setTabText(
+        #     self.tabWidget.indexOf(self.spacer),
+        #     _translate("MainWindow", "               "),
+        # )
 
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.spacer2),
-            _translate("MainWindow", "               "),
-        )
+        # self.tabWidget.setTabText(
+        #     self.tabWidget.indexOf(self.spacer2),
+        #     _translate("MainWindow", "               "),
+        # )
 
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.osci_widget),
