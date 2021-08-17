@@ -1,8 +1,8 @@
 {
     "overwrite": [
         {
-            "hf_source_address": "ASRL4::INSTR",
             "dc_source_address": "ASRL5::INSTR",
+            "hf_source_address": "ASRL4::INSTR",
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
             "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\ME-Devices",
@@ -12,8 +12,8 @@
             "coil_windings": "53.0",
             "coil_radius": "36.0",
             "pickup_coil_windings": "1.0",
-            "pickup_coil_radius": "18",
-            "circuit_resistance": "10",
+            "pickup_coil_radius": "17.75",
+            "circuit_resistance": "10.0",
             "capacitances": "39, 81, 160, 330, 680, 1200, 2200, 4700, 9100, 15000",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
             "calibration_file_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2021-06-29_198uH-1200pF_resonances.csv"
@@ -32,7 +32,7 @@
             "coil_windings": "53.0",
             "coil_radius": "36.0",
             "pickup_coil_windings": "1.0",
-            "pickup_coil_radius": "18",
+            "pickup_coil_radius": "17.75",
             "circuit_resistance": "10",
             "capacitances": "39, 81, 160, 330, 680, 1200, 2200, 4700, 9100, 15000",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
