@@ -42,7 +42,9 @@ class OscilloscopeThread(QtCore.QThread):
             time_data2, data2 = self.osci.get_data("CHAN2")
             variables = self.osci.measure()
 
-            self.update_oscilloscope.emit(time_data, data, time_data2, data2, variables)
+            self.update_oscilloscope.emit(
+                time_data * 1e6, data, time_data2 * 1e6, data2, variables
+            )
 
             # The sleep time here is very important because if it is chosen to
             # short, the program may crash. Currently 1 s seems to be save (one can at least go down to 0.5s)

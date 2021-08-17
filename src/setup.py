@@ -15,7 +15,7 @@ class SetupThread(QtCore.QThread):
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
     update_display = QtCore.Signal(float, float)
 
-    def __init__(self, source, arduino, parent=None):
+    def __init__(self, hf_source, arduino, parent=None):
         super(SetupThread, self).__init__()
         # Variable to kill thread
         self.is_killed = False
@@ -24,7 +24,7 @@ class SetupThread(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.source = source
+        self.hf_source = hf_source
         # self.oscilloscope = oscilloscope
 
         # Connect signal to the updater from the parent class
@@ -41,7 +41,7 @@ class SetupThread(QtCore.QThread):
 
         while True:
             # Measure
-            voltage, current = self.source.read_values()
+            voltage, current = self.hf_source.read_values()
             # frequency = self.arduino.read_frequency()
 
             self.update_display.emit(voltage, current)
@@ -49,7 +49,7 @@ class SetupThread(QtCore.QThread):
             # The sleep time here is very important because if it is chosen too
             # short, the program may crash. Currently 1 s seems to be save (one
             # can at least go down to 0.5s). The reason is the latency of the
-            # source.
+            # hf_source.
             time.sleep(1)
 
             if self.pause:
@@ -69,8 +69,8 @@ class SetupThread(QtCore.QThread):
         """
         self.arduino.close_serial_connection()
 
-        # Turn source off
-        self.source.output(False)
+        # Turn hf_source off
+        self.hf_source.output(False)
 
         # Trigger interruption of run sequence
         self.is_killed = True

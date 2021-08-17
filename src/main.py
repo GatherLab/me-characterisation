@@ -1,4 +1,5 @@
 from UI_main_window import Ui_MainWindow
+from bias_field_measurement import BiasScan
 from settings import Settings
 from loading_window import LoadingWindow
 
@@ -99,8 +100,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_browse_pushButton.clicked.connect(self.browse_folder)
 
         # Setup and start setup thread that continuously reads out the voltage
-        # and current of the source as well as the frequency of the Arduino
-        self.setup_thread = SetupThread(self.source, self.arduino, self)
+        # and current of the hf_source as well as the frequency of the Arduino
+        self.setup_thread = SetupThread(self.hf_source, self.arduino, self)
         self.setup_thread.start()
 
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
@@ -121,6 +122,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.specw_start_measurement_pushButton.setCheckable(True)
         self.specw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
+            self.change_current_to_magnetic_field
+        )
+
+        # -------------------------------------------------------------------- #
+        # ----------------------- Power Sweep Widget ------------------------- #
+        # -------------------------------------------------------------------- #
+        self.bw_start_measurement_pushButton.clicked.connect(self.start_dc_field_sweep)
+        self.bw_start_measurement_pushButton.setCheckable(True)
+        self.bw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
             self.change_current_to_magnetic_field
         )
 
@@ -243,6 +253,39 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
         self.specw_autoset_frequency_step_toggleSwitch.setChecked(False)
+
+        # Set standard parameters for bias field measurement
+        self.bw_voltage_spinBox.setMinimum(0)
+        self.bw_voltage_spinBox.setMaximum(33)
+        self.bw_voltage_spinBox.setValue(8)
+
+        self.bw_current_spinBox.setMinimum(0)
+        self.bw_current_spinBox.setMaximum(12)
+        self.bw_current_spinBox.setValue(0.5)
+
+        self.bw_frequency_spinBox.setMinimum(8)
+        self.bw_frequency_spinBox.setMaximum(150000)
+        self.bw_frequency_spinBox.setValue(145)
+
+        self.bw_minimum_dc_magnetic_field_spinBox.setMinimum(0)
+        self.bw_minimum_dc_magnetic_field_spinBox.setMaximum(20)
+        self.bw_minimum_dc_magnetic_field_spinBox.setValue(0)
+
+        self.bw_maximum_dc_magnetic_field_spinBox.setMinimum(0)
+        self.bw_maximum_dc_magnetic_field_spinBox.setMaximum(20)
+        self.bw_maximum_dc_magnetic_field_spinBox.setValue(10)
+
+        self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
+        self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
+        self.bw_dc_magnetic_field_step_spinBox.setSingleStep(0.1)
+        self.bw_dc_magnetic_field_step_spinBox.setValue(0.5)
+
+        self.bw_dc_magnetic_field_settling_time_spinBox.setMinimum(0.01)
+        self.bw_dc_magnetic_field_settling_time_spinBox.setMaximum(10)
+        self.bw_dc_magnetic_field_settling_time_spinBox.setValue(1)
+
+        self.bw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
+        self.bw_autoset_capacitance_toggleSwitch.setChecked(True)
 
         # Set standard parameters for power measurement
         self.powerw_voltage_spinBox.setMinimum(0)
@@ -383,14 +426,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     @QtCore.Slot(VoltcraftSource)
     def init_hf_source(self, source_object):
         """
-        Receives a source object from the init thread
+        Receives a hf_source object from the init thread
         """
-        self.source = source_object
+        self.hf_source = source_object
 
     @QtCore.Slot(KoradSource)
     def init_dc_source(self, source_object):
         """
-        Receives a source object from the init thread
+        Receives a hf_source object from the init thread
         """
         self.dc_source = source_object
 
@@ -431,9 +474,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Kill Source
         try:
-            self.source.close()
+            self.hf_source.close()
         except Exception as e:
-            cf.log_message("I am not yet sure how to close the Rigol source correctly")
+            cf.log_message("I am not yet sure how to close the Rigol hf_source correctly")
             cf.log_message(e)
 
         # Kill arduino connection
@@ -498,27 +541,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def voltage_changed(self):
         """
-        Function that changes voltage on source when it is changed on spinbox
+        Function that changes voltage on hf_source when it is changed on spinbox
         """
         if self.t < 2:
             self.t += 1
             return
         else:
             voltage = self.sw_voltage_spinBox.value()
-            self.source.set_voltage(voltage)
-            # self.source.output(True)
+            self.hf_source.set_voltage(voltage)
+            # self.hf_source.output(True)
             # cf.log_message("Source voltage set to " + str(voltage) + " V")
 
     def current_changed(self):
         """
-        Function that changes current on source when it is changed on spinbox
+        Function that changes current on hf_source when it is changed on spinbox
         """
         if self.t < 2:
             self.t += 1
             return
         else:
             current = self.sw_current_spinBox.value()
-            self.source.set_current(current)
+            self.hf_source.set_current(current)
             cf.log_message("Source current set to " + str(current) + " A")
 
     def frequency_changed(self):
@@ -552,7 +595,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def dc_current_changed(self):
         """
-        Function that changes dc current on dc source when it is changed on spinbox
+        Function that changes dc current on dc hf_source when it is changed on spinbox
         """
         dc_current = self.sw_dc_current_spinBox.value()
         self.dc_source.set_current(dc_current)
@@ -650,15 +693,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def toggle_source_output(self):
         """
-        Function to toggle source output on or off
+        Function to toggle hf_source output on or off
         """
         # Currently this only works independently of other functions but it
-        # checks for the true state of the source
-        if self.source.output_state:
-            self.source.output(False)
+        # checks for the true state of the hf_source
+        if self.hf_source.output_state:
+            self.hf_source.output(False)
             self.specw_start_measurement_pushButton.setChecked(False)
         else:
-            self.source.output(True)
+            self.hf_source.output(True)
             self.specw_start_measurement_pushButton.setChecked(True)
 
     # -------------------------------------------------------------------- #
@@ -667,7 +710,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def change_current_to_magnetic_field(self):
         """
-        Function to toggle source output on or off
+        Function to toggle hf_source output on or off
         """
         _translate = QtCore.QCoreApplication.translate
 
@@ -737,7 +780,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.frequency_sweep = FrequencyScan(
             self.arduino,
-            self.source,
+            self.hf_source,
             self.dc_source,
             self.oscilloscope,
             frequency_sweep_parameters,
@@ -774,29 +817,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             ]
         )
 
-        # Plot current
+        # Do plotting
         self.specw_ax.plot(
             frequency,
-            magnetic_field,
-            color=(68 / 255, 188 / 255, 65 / 255),
+            vmax,
             marker="o",
-            label="Magnetic Field",
+            label="Vmax, ME (V)",
         )
 
-        self.specw_ax.plot(
+        self.specw_ax2.plot(
+            frequency,
+            magnetic_field,
+            color=(85 / 255, 170 / 255, 255 / 255),
+            marker="o",
+            label="Magnetic Field (mT)",
+        )
+
+        self.specw_ax2.plot(
             frequency,
             current,
             color="red",
             marker="o",
             label="Current (A)",
-        )
-
-        self.specw_ax2.plot(
-            frequency,
-            vmax,
-            color=(85 / 255, 170 / 255, 255 / 255),
-            marker="o",
-            label="Vmax Induced",
         )
 
         lines, labels = self.specw_ax.get_legend_handles_labels()
@@ -805,6 +847,97 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         legend.set_draggable(True)
 
         self.specw_fig.draw()
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Bias Field Sweep ------------------------ #
+    # -------------------------------------------------------------------- #
+
+    def read_dc_field_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        dc_sweep_parameters = {
+            "voltage": self.bw_voltage_spinBox.value(),
+            "current_compliance": self.bw_current_spinBox.value(),
+            "frequency": self.bw_frequency_spinBox.value(),
+            "minimum_dc_field": self.bw_minimum_dc_magnetic_field_spinBox.value(),
+            "maximum_dc_field": self.bw_maximum_dc_magnetic_field_spinBox.value(),
+            "dc_field_step": self.bw_dc_magnetic_field_step_spinBox.value(),
+            "bias_field_settling_time": self.bw_dc_magnetic_field_settling_time_spinBox.value(),
+            "autoset_capacitance": self.bw_autoset_capacitance_toggleSwitch.isChecked(),
+            "constant_magnetic_field_mode": self.bw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
+        }
+
+        # Update statusbar
+        cf.log_message("Power sweep parameters read")
+
+        return dc_sweep_parameters
+
+    def start_dc_field_sweep(self):
+        """
+        Function to start the power measurement
+        """
+        if not self.bw_start_measurement_pushButton.isChecked():
+            self.bias_field_sweep.kill()
+            return
+
+        # Load in setup parameters and make sure that the parameters make sense
+        setup_parameters = self.safe_read_setup_parameters()
+        power_sweep_parameters = self.read_dc_field_sweep_parameters()
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        self.bias_field_sweep = BiasScan(
+            self.arduino,
+            self.hf_source,
+            self.dc_source,
+            self.oscilloscope,
+            power_sweep_parameters,
+            setup_parameters,
+            parent=self,
+        )
+
+        self.bias_field_sweep.start()
+
+    @QtCore.Slot(list, list, list, list)
+    def update_bias_plot(self, current, dc_field, me_voltage, hf_magnetic_field):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        try:
+            # Delete two times zero because after the first deletion the first element will be element zero
+            del self.bw_ax.lines[0]
+            del self.bw_ax2.lines[0]
+        except IndexError:
+            cf.log_message("Plot lines could not be deleted")
+
+        # Set x and y limit
+        self.bw_ax.set_xlim([min(dc_field), max(dc_field)])
+        self.bw_ax.set_ylim([0, max(np.append(me_voltage, hf_magnetic_field)) + 0.05])
+
+        # Plot current
+        self.bw_ax.plot(
+            dc_field,
+            me_voltage,
+            marker="o",
+        )
+
+        self.bw_ax2.plot(
+            dc_field,
+            hf_magnetic_field,
+            color=(85 / 255, 170 / 255, 255 / 255),
+            marker="o",
+        )
+
+        # lines, labels = self.bw_ax.legend(loc="best")
+
+        self.bw_fig.draw()
 
     # -------------------------------------------------------------------- #
     # ----------------------------- Power Sweep -------------------------- #
@@ -850,7 +983,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.power_sweep = PowerScan(
             self.arduino,
-            self.source,
+            self.hf_source,
             self.oscilloscope,
             power_sweep_parameters,
             setup_parameters,
@@ -890,25 +1023,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.powerw_ax.plot(
             resistance,
             voltage,
-            color=(68 / 255, 188 / 255, 65 / 255),
             marker="o",
-            label="Voltage",
+            label="ME Voltage",
         )
 
         self.powerw_ax.plot(
             resistance,
-            magnetic_field,
+            power,
             color="red",
             marker="o",
-            label="Magnetic Field",
+            label="Power Density",
         )
 
         self.powerw_ax2.plot(
             resistance,
-            power,
+            magnetic_field,
             color=(85 / 255, 170 / 255, 255 / 255),
             marker="o",
-            label="Power Density",
+            label="Magnetic Field",
         )
 
         lines, labels = self.powerw_ax.get_legend_handles_labels()
@@ -963,7 +1095,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capacitance_sweep = CapacitanceScan(
             self.arduino,
-            self.source,
+            self.hf_source,
             # self.oscilloscope,
             capacitance_sweep_parameters,
             setup_parameters,
@@ -1033,7 +1165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             del self.ow_ax.lines[0]
-            del self.ow_ax.lines[1]
+            del self.ow_ax.lines[0]
         except IndexError:
             cf.log_message("Oscilloscope line can not be deleted")
 
@@ -1050,35 +1182,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ow_ax.plot(
             time,
             voltage,
-            color="yellow",
+            color="orange",
+            label="CHAN1"
             # marker="o",
         )
 
         self.ow_ax.plot(
             time2,
             voltage2,
-            color="blue",
+            color=(85 / 255, 170 / 255, 255 / 255),
+            label="CHAN2"
             # marker="o",
         )
 
-        # self.ow_ax.text(
-        #     0.2,
-        #     0.7,
-        #     "VPP: "
-        #     + str(measurements[0])
-        #     + "\nVmax: "
-        #     + str(measurements[1])
-        #     + "\nVmin: "
-        #     + str(measurements[2])
-        #     + "\nFrequency: "
-        #     + str(measurements[3]),
-        #     verticalalignment="bottom",
-        #     horizontalalignment="left",
-        #     transform=self.ow_ax.transAxes,
-        #     bbox={"facecolor": "white", "alpha": 0.5, "pad": 10},
-        # )
+        legend = self.ow_ax.legend(loc="best")
 
         self.ow_fig.draw()
+
+        self.ow_vmax_chan1_lcdNumber.display(max(voltage))
+        self.ow_vmax_chan2_lcdNumber.display(max(voltage2))
 
     def stop_osci(self):
         """
@@ -1191,7 +1313,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pid_sweep = PIDScan(
             self.arduino,
-            self.source,
+            self.hf_source,
             self.oscilloscope,
             pid_parameters,
             # setup_parameters,
@@ -1231,7 +1353,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pidw_ax.plot(
             time,
             magnetic_field,
-            color=(68 / 255, 188 / 255, 65 / 255),
             marker="o",
             label="Magnetic Field",
         )

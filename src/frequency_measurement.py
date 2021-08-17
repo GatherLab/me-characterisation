@@ -30,7 +30,7 @@ class FrequencyScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        source,
+        hf_source,
         dc_source,
         oscilloscope,
         measurement_parameters,
@@ -43,7 +43,7 @@ class FrequencyScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.source = source
+        self.hf_source = hf_source
         self.dc_source = dc_source
         self.oscilloscope = oscilloscope
         self.parent = parent
@@ -69,7 +69,7 @@ class FrequencyScan(QtCore.QThread):
             pid_parameters = np.array(
                 self.global_parameters["pid_parameters"].split(","), dtype=float
             )
-            self.source.start_constant_magnetic_field_mode(
+            self.hf_source.start_constant_magnetic_field_mode(
                 pid_parameters,
                 self.measurement_parameters["current_compliance"],
                 self.measurement_parameters["voltage"],
@@ -114,12 +114,14 @@ class FrequencyScan(QtCore.QThread):
         self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.source.set_voltage(1)
+        self.hf_source.set_voltage(1)
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
-            self.source.set_current(self.measurement_parameters["current_compliance"])
+            self.hf_source.set_current(
+                self.measurement_parameters["current_compliance"]
+            )
         else:
             # Calculate the average time it took to adjust the magnetic field
-            self.source.set_current(2)
+            self.hf_source.set_current(2)
             total_adjustment_time = 0
 
         self.dc_source.set_magnetic_field(
@@ -138,7 +140,7 @@ class FrequencyScan(QtCore.QThread):
 
             # Activate output only when frequency was set
             if i == 0:
-                self.source.output(True)
+                self.hf_source.output(True)
                 time.sleep(0.5)
 
             # Set frequency
@@ -150,13 +152,13 @@ class FrequencyScan(QtCore.QThread):
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached
             if not self.measurement_parameters["constant_magnetic_field_mode"]:
-                self.source.set_voltage(self.measurement_parameters["voltage"])
+                self.hf_source.set_voltage(self.measurement_parameters["voltage"])
 
                 # Wait for the settling time so that current can be adjusted
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
             else:
                 # Adjust the magnetic field
-                pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
+                pid_voltage, elapsed_time = self.hf_source.adjust_magnetic_field(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"],
                     frequency,
@@ -171,7 +173,7 @@ class FrequencyScan(QtCore.QThread):
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
-            voltage, current = self.source.read_values()
+            voltage, current = self.hf_source.read_values()
 
             vmax = float(self.oscilloscope.measure_vmax("CHAN2"))
 
@@ -239,19 +241,19 @@ class FrequencyScan(QtCore.QThread):
             else:
                 frequency += self.measurement_parameters["frequency_step"]
 
-            self.source.set_voltage(voltage)
+            self.hf_source.set_voltage(voltage)
 
             i += 1
 
             if self.is_killed:
                 # Close the connection to the spectrometer
-                self.source.output(False)
-                self.source.set_voltage(5)
+                self.hf_source.output(False)
+                self.hf_source.set_voltage(5)
                 self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
 
-        self.source.output(False)
+        self.hf_source.output(False)
         self.save_data()
         self.parent.specw_start_measurement_pushButton.setChecked(False)
 

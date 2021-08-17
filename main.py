@@ -12,9 +12,9 @@ import time
 # print(time.time())
 
 voltcraft_source_address = "ASRL4::INSTR"
-source = VoltcraftSource(voltcraft_source_address)
-# source.output(True)
-voltage, current, mode = source.read_values()
+hf_source = VoltcraftSource(voltcraft_source_address)
+# hf_source.output(True)
+voltage, current, mode = hf_source.read_values()
 print(voltage, current)
 
 

@@ -16,7 +16,7 @@ import physics_functions as pf
 from simple_pid import PID
 
 
-class PowerScan(QtCore.QThread):
+class BiasScan(QtCore.QThread):
     """
     Class thread that handles the spectrum measurement
     """
@@ -24,25 +24,27 @@ class PowerScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_power_plot_signal = QtCore.Signal(list, list, list, list)
+    update_bias_plot_signal = QtCore.Signal(list, list, list, list)
     update_progress_bar = QtCore.Signal(str, float)
 
     def __init__(
         self,
         arduino,
         hf_source,
+        dc_source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
         parent=None,
     ):
-        super(PowerScan, self).__init__()
+        super(BiasScan, self).__init__()
         # Variable to kill thread
 
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
         self.hf_source = hf_source
+        self.dc_source = dc_source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -52,12 +54,12 @@ class PowerScan(QtCore.QThread):
         self.global_parameters = cf.read_global_settings()
 
         # Connect signal to the updater from the parent class
-        self.update_power_plot_signal.connect(parent.update_power_plot)
+        self.update_bias_plot_signal.connect(parent.update_bias_plot)
         self.update_progress_bar.connect(parent.progressBar.setProperty)
 
         # Define dataframe to store data in
         self.df_data = pd.DataFrame(
-            columns=["resistance", "voltage", "power", "magnetic_field"]
+            columns=["current", "bias_field", "me_voltage", "hf_magnetic_field"]
         )
 
         self.is_killed = False
@@ -91,7 +93,7 @@ class PowerScan(QtCore.QThread):
 
     def run(self):
         """
-        Class that does a resistance sweep
+        Class that does a dc bias field sweep
         """
         # self.parent.setup_thread.pause = True
         # self.parent.oscilloscope_thread.pause = True
@@ -143,26 +145,26 @@ class PowerScan(QtCore.QThread):
         i = 0
 
         # Sweep over all frequencies
-        resistances = np.arange(
-            self.measurement_parameters["minimum_resistance"],
-            self.measurement_parameters["maximum_resistance"],
-            self.measurement_parameters["resistance_step"],
+        dc_field_list = np.arange(
+            self.measurement_parameters["minimum_dc_field"],
+            self.measurement_parameters["maximum_dc_field"]
+            + self.measurement_parameters["dc_field_step"],
+            self.measurement_parameters["dc_field_step"],
         )
 
-        self.dc_source.set_magnetic_field(
-            self.measurement_parameters["dc_magnetic_field"]
-        )
         self.dc_source.output(True)
 
-        for resistance in resistances:
+        time.sleep(1)
+
+        for dc_field in dc_field_list:
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
-            # Set frequency
-            self.arduino.set_resistance(resistance)
+            # Set DC Field
+            self.dc_source.set_magnetic_field(dc_field)
 
             # Measure the voltage and current (and possibly parameters on the osci)
-            voltage = float(self.oscilloscope.measure_vmax(channel="CHAN2"))
+            me_voltage = float(self.oscilloscope.measure_vmax(channel="CHAN2"))
 
             # Calculate the magnetic field using a pickup coil
             magnetic_field = (
@@ -176,37 +178,33 @@ class PowerScan(QtCore.QThread):
             )
 
             # Set the variables in the dataframe
-            self.df_data.loc[i, "resistance"] = resistance
-            self.df_data.loc[i, "voltage"] = voltage
+            (
+                source_voltage,
+                self.df_data.loc[i, "current"],
+            ) = self.hf_source.read_values()
+            self.df_data.loc[i, "bias_field"] = dc_field
+            self.df_data.loc[i, "me_voltage"] = me_voltage
             # Directly in mW/mm^2
-            self.df_data.loc[i, "power"] = (
-                float(voltage) ** 2
-                / resistance
-                * 1000
-                / (
-                    self.setup_parameters["device_size"][0]
-                    * self.setup_parameters["device_size"][1]
-                )
-            )
             # in mT
-            self.df_data.loc[i, "magnetic_field"] = magnetic_field
+            self.df_data.loc[i, "hf_magnetic_field"] = magnetic_field
 
             # Update progress bar
             self.update_progress_bar.emit(
-                "value", int((i + 1) / len(resistances) * 100)
+                "value", int((i + 1) / len(dc_field_list) * 100)
             )
 
-            self.update_power_plot_signal.emit(
-                self.df_data["resistance"],
-                self.df_data["voltage"],
-                self.df_data["power"],
-                self.df_data["magnetic_field"],
+            self.update_bias_plot_signal.emit(
+                self.df_data["current"],
+                self.df_data["bias_field"],
+                self.df_data["me_voltage"],
+                self.df_data["hf_magnetic_field"],
             )
 
             if self.is_killed:
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
-                self.hf_source.set_voltage(5)
+                self.hf_source.set_voltage(1)
+                self.dc_source.output(False)
                 self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -214,11 +212,12 @@ class PowerScan(QtCore.QThread):
             # Increase iterator
             i += 1
 
-            time.sleep(self.measurement_parameters["resistance_settling_time"])
+            time.sleep(self.measurement_parameters["bias_field_settling_time"])
 
         self.hf_source.output(False)
+        self.dc_source.output(False)
         self.save_data()
-        self.parent.powerw_start_measurement_pushButton.setChecked(False)
+        self.parent.bw_start_measurement_pushButton.setChecked(False)
 
         self.parent.oscilloscope_thread.pause = False
 
@@ -234,7 +233,28 @@ class PowerScan(QtCore.QThread):
         integrated into the AutotubeMeasurement class
         """
 
+        # Calculate optimium bias field (field with maximum response)
+        optimum_bias_list = self.df_data.loc[
+            self.df_data.me_voltage == self.df_data.me_voltage.max()
+        ]
+
+        optimum_bias_field = optimum_bias_list.loc[
+            int(len(optimum_bias_list) / 2), "bias_field"
+        ]
+        optimum_bias_current = optimum_bias_list.loc[
+            int(len(optimum_bias_list) / 2), "current"
+        ]
+
         # Define Header
+        line01 = (
+            "Optimum Bias Field:   "
+            + str(optimum_bias_field)
+            + " mT\t At a Current of:   "
+            + str(optimum_bias_current)
+            + " A"
+        )
+        print(line01)
+
         line02 = (
             "Base Capacitance: "
             + str(self.global_parameters["base_capacitance"])
@@ -245,29 +265,41 @@ class PowerScan(QtCore.QThread):
             + " mm"
         )
         line03 = (
-            "Voltage:   "
+            "Maximum Voltage:   "
             + str(self.measurement_parameters["voltage"])
             + " V   "
-            + "Current:   "
-            + str(self.measurement_parameters["current_compliance"])
         )
+        if self.measurement_parameters["constant_magnetic_field_mode"]:
+            line03 += (
+                "Constant HF Magnetic Field:   "
+                + str(self.measurement_parameters["current_compliance"])
+                + " mT"
+            )
+        else:
+            line03 += (
+                "Constant Current:   "
+                + str(self.measurement_parameters["current_compliance"])
+                + " A"
+            )
+
         line04 = (
             "Frequency: " + str(self.measurement_parameters["frequency"]) + " kHz \t"
-            "Min. Power:   "
-            + str(self.measurement_parameters["minimum_resistance"])
+            "Min. Bias Field:   "
+            + str(self.measurement_parameters["minimum_dc_field"])
             + " kHz \t"
-            + "Max. Power:   "
-            + str(self.measurement_parameters["maximum_resistance"])
+            + "Max. Bias Field:   "
+            + str(self.measurement_parameters["maximum_dc_field"])
             + " kHz \t"
-            + "Power Step:   "
-            + str(self.measurement_parameters["resistance_step"])
+            + "Bias Field Step:   "
+            + str(self.measurement_parameters["dc_field_step"])
             + " kHz \t"
         )
         line05 = "### Measurement data ###"
-        line06 = "Resistance\t Voltage\t Power\t Magnetic Field"
-        line07 = "Ohm\t V\t mW/mm^2\t mT\n"
+        line06 = "Current\t Bias Field\t ME Voltage\t Magnetic Field"
+        line07 = "A\t mT\t V\t mT\n"
 
         header_lines = [
+            line01,
             line02,
             line03,
             line04,
@@ -283,10 +315,10 @@ class PowerScan(QtCore.QThread):
             + self.setup_parameters["batch_name"]
             + "_d"
             + str(self.setup_parameters["device_number"])
-            + "_pow"
+            + "_bias"
             + ".csv"
         )
-        self.df_data["magnetic_field"] = self.df_data["magnetic_field"].map(
+        self.df_data["hf_magnetic_field"] = self.df_data["hf_magnetic_field"].map(
             lambda x: "{0:.3f}".format(x)
         )
 

@@ -43,7 +43,7 @@ class RigolOscilloscope:
         # The actual addresses for the Keithleys can be accessed via rm.list_resources()
         visa_resources = rm.list_resources()
 
-        # Check if keithley source is present at the given address
+        # Check if keithley hf_source is present at the given address
         if rigol_source_address not in visa_resources:
             cf.log_message("The Oscilloscope seems to be absent or switched off.")
             # raise IOError("The Oscilloscope seems to be absent or switched off.")
@@ -110,7 +110,7 @@ class RigolOscilloscope:
         self.osci.write(":" + channel + ":OFFS?")
         voltoffset = float(self.osci.read())
 
-        # Set channel source
+        # Set channel hf_source
         self.osci.write("WAV:SOUR " + channel)
 
         # Sets the mode in which the data is returned
@@ -281,9 +281,9 @@ class RigolOscilloscope:
 
 class VoltcraftSource:
     """
-    Class to control the voltcraft PPS-16005 source
-    The voltcraft source is controlled via the serial interface
-    A usefull source for this is https://github.com/ap--/voltcraft/blob/master/voltcraft/pps.py
+    Class to control the voltcraft PPS-16005 hf_source
+    The voltcraft hf_source is controlled via the serial interface
+    A usefull hf_source for this is https://github.com/ap--/voltcraft/blob/master/voltcraft/pps.py
     However, the initialisation did not work out of the box for me.
     Furthermore, I wanted to do some further costumisation.
     """
@@ -293,7 +293,7 @@ class VoltcraftSource:
         voltcraft_source_address,
     ):
         """
-        Initialise voltcraft source
+        Initialise voltcraft hf_source
         """
         self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 
@@ -302,14 +302,14 @@ class VoltcraftSource:
         # The actual addresses for the Keithleys can be accessed via rm.list_resources()
         visa_resources = rm.list_resources()
 
-        # Check if keithley source is present at the given address
+        # Check if keithley hf_source is present at the given address
         if voltcraft_source_address not in visa_resources:
             cf.log_message("The Voltcraft Source seems to be absent or switched off.")
 
         # Time out is in ms
         voltcraft_port = "COM" + re.findall(r"\d+", voltcraft_source_address)[0]
 
-        self.source = serial.Serial(voltcraft_port, timeout=1)
+        self.hf_source = serial.Serial(voltcraft_port, timeout=1)
 
         # To see if device is on or not. There is no built-in function for the
         # voltcraft device. This is always true when the software was not used
@@ -334,10 +334,10 @@ class VoltcraftSource:
         """
         self.mutex.lock()
 
-        self.source.write((cmd + "\r").encode())
+        self.hf_source.write((cmd + "\r").encode())
         b = []
         while True:
-            b.append(self.source.read(1))
+            b.append(self.hf_source.read(1))
             if b[-1] == "":
                 raise serial.SerialTimeoutException()
             if b"".join(b[-3:]) == b"OK\r":
@@ -347,11 +347,11 @@ class VoltcraftSource:
 
     def read_values(self):
         """
-        Function that returns the display readings of the source in volt and
+        Function that returns the display readings of the hf_source in volt and
         ampere. This takes about 20 - 25 ms to run
         """
         self.mutex.lock()
-        # The source will return something liek 119700020 which translates to:
+        # The hf_source will return something liek 119700020 which translates to:
         # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
         raw_data = self.query("GETD")
 
@@ -440,7 +440,7 @@ class VoltcraftSource:
             pid_parameters[2],
             setpoint=set_point,
         )
-        # Minimum of one volt is required by the voltcraft source
+        # Minimum of one volt is required by the voltcraft hf_source
         self.pid.output_limits = (1, maximum_voltage)
 
     def adjust_magnetic_field(
@@ -475,7 +475,7 @@ class VoltcraftSource:
             pid_voltage = self.pid(magnetic_field)
 
             # Set the voltage to that value (rounded to the accuracy of the
-            # source)
+            # hf_source)
             self.set_voltage(round(pid_voltage, 1))
 
             # Wait for a bit so that the hardware can react
@@ -515,21 +515,21 @@ class VoltcraftSource:
         """
         self.mutex.lock()
 
-        # The logic of the voltcraft source is just the other way around than
+        # The logic of the voltcraft hf_source is just the other way around than
         # my logic (true means off)
         self.query("SOUT%d" % int(not state))
 
         # Set the state variable
         self.output_state = state
 
-        # Wait shortly because the source needs a bit until the final voltage is reached
+        # Wait shortly because the hf_source needs a bit until the final voltage is reached
         time.sleep(2)
 
         self.mutex.unlock()
 
     def close(self):
         """
-        Savely close the source
+        Savely close the hf_source
         """
         self.mutex.lock()
 
@@ -537,7 +537,7 @@ class VoltcraftSource:
         self.output(False)
 
         # Close serial connection
-        self.source.close()
+        self.hf_source.close()
 
         # Wait shortly to make sure the connection is closed
         time.sleep(1)
@@ -1003,9 +1003,9 @@ class Arduino:
 
 class KoradSource:
     """
-    Class to control the KORAD KA3005P source
-    The korad source is controlled via the serial interface
-    A usefull source for this is
+    Class to control the KORAD KA3005P hf_source
+    The korad hf_source is controlled via the serial interface
+    A usefull hf_source for this is
     https://github.com/vb0/korad/blob/master/kcontrol.py and
     https://sigrok.org/wiki/Korad_KAxxxxP_series#Protocol
     """
@@ -1015,7 +1015,7 @@ class KoradSource:
         source_address,
     ):
         """
-        Initialise KORAD source
+        Initialise KORAD hf_source
         """
         import pydevd
 
@@ -1026,14 +1026,14 @@ class KoradSource:
         # The actual addresses for the devices can be accessed via rm.list_resources()
         visa_resources = rm.list_resources()
 
-        # Check if source is present at the given address
+        # Check if hf_source is present at the given address
         if source_address not in visa_resources:
             cf.log_message("The Korad Source seems to be absent or switched off.")
 
         # Time out is in ms
         source_port = "COM" + re.findall(r"\d+", source_address)[0]
 
-        self.source = serial.Serial(source_port, timeout=1)
+        self.hf_source = serial.Serial(source_port, timeout=1)
 
         # To see if device is on or not. There is no built-in function for the
         # voltcraft device. This is always true when the software was not used
@@ -1054,14 +1054,14 @@ class KoradSource:
 
     def read_values(self):
         """
-        Function that returns the display readings of the source in volt and
+        Function that returns the display readings of the hf_source in volt and
         ampere. This takes about 20 - 25 ms to run
         """
         self.mutex.lock()
-        # The source will return something liek 119700020 which translates to:
+        # The hf_source will return something liek 119700020 which translates to:
         # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
-        self.source.write(b"VOUT1?")
-        raw_voltage = self.source.read(5).decode()
+        self.hf_source.write(b"VOUT1?")
+        raw_voltage = self.hf_source.read(5).decode()
         try:
             voltage = float(raw_voltage)
         except:
@@ -1069,8 +1069,8 @@ class KoradSource:
             voltage = 0
 
         time.sleep(0.2)
-        self.source.write(b"IOUT1?")
-        raw_current = self.source.read(5).decode()
+        self.hf_source.write(b"IOUT1?")
+        raw_current = self.hf_source.read(5).decode()
         try:
             current = float(raw_current)
         except:
@@ -1106,11 +1106,11 @@ class KoradSource:
             voltage = 0
 
         try:
-            self.source.write(str.encode("VSET1:" + str(voltage)))
+            self.hf_source.write(str.encode("VSET1:" + str(voltage)))
         except SerialTimeoutException as err:
             cf.log_message(err)
             time.sleep(0.2)
-            self.source.write(str.encode("VSET1:" + str(voltage)))
+            self.hf_source.write(str.encode("VSET1:" + str(voltage)))
 
         time.sleep(0.2)
         # self.mutex.unlock()
@@ -1137,14 +1137,14 @@ class KoradSource:
             )
             current = 0
 
-        self.source.write(str.encode("ISET1:" + str(current)))
+        self.hf_source.write(str.encode("ISET1:" + str(current)))
         time.sleep(0.2)
         # self.mutex.unlock()
 
     def set_magnetic_field(self, magnetic_field):
         """
         Function that converts a value for a magnetic field to a current that
-        can be set on the source
+        can be set on the hf_source
         """
         current = magnetic_field * 0.37
 
@@ -1167,7 +1167,7 @@ class KoradSource:
             pid_parameters[2],
             setpoint=set_point,
         )
-        # Minimum of one volt is required by the voltcraft source
+        # Minimum of one volt is required by the voltcraft hf_source
         self.pid.output_limits = (1, maximum_voltage)
 
     def adjust_magnetic_field(
@@ -1202,7 +1202,7 @@ class KoradSource:
             pid_voltage = self.pid(magnetic_field)
 
             # Set the voltage to that value (rounded to the accuracy of the
-            # source)
+            # hf_source)
             self.set_voltage(round(pid_voltage, 2))
 
             # Wait for a bit so that the hardware can react
@@ -1241,13 +1241,13 @@ class KoradSource:
         (maybe class variable).
         """
         # self.mutex.lock()
-        # The logic of the voltcraft source is just the other way around than
+        # The logic of the voltcraft hf_source is just the other way around than
         # my logic (true means off)
         if slow:
             voltage, current = self.read_values()
             self.set_voltage(round(voltage / 4, 2))
 
-            self.source.write(str.encode("OUT" + str(int(state))))
+            self.hf_source.write(str.encode("OUT" + str(int(state))))
             time.sleep(1)
 
             self.set_voltage(round(voltage / 2, 2))
@@ -1256,14 +1256,14 @@ class KoradSource:
             time.sleep(0.2)
         else:
             try:
-                self.source.write(str.encode("OUT" + str(int(state))))
+                self.hf_source.write(str.encode("OUT" + str(int(state))))
 
             except SerialTimeoutException as err:
                 cf.log_message(err)
                 time.sleep(0.2)
-                self.source.write(str.encode("OUT" + str(int(state))))
+                self.hf_source.write(str.encode("OUT" + str(int(state))))
 
-            # Wait shortly because the source needs a bit until the final voltage is reached
+            # Wait shortly because the hf_source needs a bit until the final voltage is reached
             time.sleep(1)
 
         # Set the state variable
@@ -1273,7 +1273,7 @@ class KoradSource:
 
     def close(self):
         """
-        Savely close the source
+        Savely close the hf_source
         """
         self.mutex.lock()
 
@@ -1281,7 +1281,7 @@ class KoradSource:
         self.output(False)
 
         # Close serial connection
-        self.source.close()
+        self.hf_source.close()
 
         # Wait shortly to make sure the connection is closed
         time.sleep(1)

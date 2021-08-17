@@ -26,7 +26,7 @@ class CapacitanceScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        source,
+        hf_source,
         # oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -38,7 +38,7 @@ class CapacitanceScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.source = source
+        self.hf_source = hf_source
         # self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -73,8 +73,8 @@ class CapacitanceScan(QtCore.QThread):
         pydevd.settrace(suspend=False)
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.source.set_voltage(self.measurement_parameters["voltage"])
-        self.source.set_current(self.measurement_parameters["current_compliance"])
+        self.hf_source.set_voltage(self.measurement_parameters["voltage"])
+        self.hf_source.set_current(self.measurement_parameters["current_compliance"])
 
         # Clear axis before the measurement
         self.parent.capw_ax.cla()
@@ -112,7 +112,7 @@ class CapacitanceScan(QtCore.QThread):
         for capacitance in selected_available_cap:
             # Now set the capacitance
             self.arduino.set_capacitance(capacitance)
-            self.source.output(True)
+            self.hf_source.output(True)
 
             # Define dataframe to store data in
             del self.df_data
@@ -164,7 +164,7 @@ class CapacitanceScan(QtCore.QThread):
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
                 # Measure the voltage and current (and posssibly paramters on the osci)
-                voltage, current = self.source.read_values()
+                voltage, current = self.hf_source.read_values()
 
                 # Now measure Vpp from channel one on the oscilloscope
                 # vpp = float(self.oscilloscope.measure_vpp())
@@ -224,14 +224,14 @@ class CapacitanceScan(QtCore.QThread):
 
                 if self.is_killed:
                     # Close the connection to the spectrometer
-                    self.source.output(False)
-                    self.source.set_voltage(5)
+                    self.hf_source.output(False)
+                    self.hf_source.set_voltage(5)
                     # Save all resonance data you have
                     self.save_resonance_data()
                     self.quit()
                     return
 
-            self.source.output(False)
+            self.hf_source.output(False)
             self.save_data(str(capacitance) + "pF")
 
             # Helper variable for correct plotting

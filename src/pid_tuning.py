@@ -30,7 +30,7 @@ class PIDScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        source,
+        hf_source,
         oscilloscope,
         measurement_parameters,
         # setup_parameters,
@@ -42,7 +42,7 @@ class PIDScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.source = source
+        self.hf_source = hf_source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -71,7 +71,7 @@ class PIDScan(QtCore.QThread):
             pid_parameters[2],
             setpoint=self.measurement_parameters["magnetic_field"],
         )
-        # Minimum of one volt is required by the voltcraft source
+        # Minimum of one volt is required by the voltcraft hf_source
         self.pid.output_limits = (1, self.measurement_parameters["voltage"])
 
         # with open(
@@ -109,8 +109,8 @@ class PIDScan(QtCore.QThread):
 
         self.parent.oscilloscope_thread.pause = True
 
-        self.source.set_voltage(1)
-        self.source.set_current(2)
+        self.hf_source.set_voltage(1)
+        self.hf_source.set_current(2)
         total_adjustment_time = 0
 
         # Set frequency
@@ -120,7 +120,7 @@ class PIDScan(QtCore.QThread):
         )
 
         # Activate output only when frequency was set
-        self.source.output(True)
+        self.hf_source.output(True)
 
         # In constant magnetic field mode, regulate the voltage until a
         # magnetic field is reached
@@ -134,22 +134,22 @@ class PIDScan(QtCore.QThread):
             # self.df_data.loc[i, "frequency"] = time_it
 
             # if i == 0:
-            #     self.source.output(False)
+            #     self.hf_source.output(False)
             #     voltage = 0
             # elif i == 20:
             #     voltage = 2
-            #     self.source.set_voltage(2)
-            #     self.source.output(True)
+            #     self.hf_source.set_voltage(2)
+            #     self.hf_source.output(True)
             # elif i == 30:
             #     voltage = 0
-            #     self.source.output(False)
+            #     self.hf_source.output(False)
             # elif i == 50:
             #     voltage = 4
-            #     self.source.set_voltage(4)
-            #     self.source.output(True)
+            #     self.hf_source.set_voltage(4)
+            #     self.hf_source.output(True)
             # elif i == 60:
             #     voltage = 0
-            #     self.source.output(False)
+            #     self.hf_source.output(False)
             # elif i == 70:
             #     self.save_data()
             #     print("Data saved")
@@ -183,8 +183,8 @@ class PIDScan(QtCore.QThread):
             pid_voltage = self.pid(magnetic_field)
 
             # Set the voltage to that value (rounded to the accuracy of the
-            # source)
-            self.source.set_voltage(round(pid_voltage, 2))
+            # hf_source)
+            self.hf_source.set_voltage(round(pid_voltage, 2))
 
             # Wait for a bit so that the hardware can react
             time.sleep(0.05)
@@ -203,8 +203,8 @@ class PIDScan(QtCore.QThread):
 
             if self.is_killed:
                 # Close the connection to the spectrometer
-                self.source.output(False)
-                self.source.set_voltage(5)
+                self.hf_source.output(False)
+                self.hf_source.set_voltage(5)
                 self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -216,7 +216,7 @@ class PIDScan(QtCore.QThread):
         # Update progress bar
         # self.update_progress_bar.emit("value", int((i + 1) / len(frequencies) * 100))
 
-        self.source.output(False)
+        self.hf_source.output(False)
         # self.save_data()
         self.parent.pidw_start_measurement_pushButton.setChecked(False)
 

@@ -85,7 +85,7 @@ class Ui_Settings(object):
         self.dc_source_address_lineEdit.setMinimumSize(QtCore.QSize(270, 0))
         self.gridLayout.addWidget(self.dc_source_address_lineEdit, 2, 1, 1, 1)
 
-        # HF source address
+        # HF hf_source address
         self.hf_source_address_label = QtWidgets.QLabel(Settings)
         self.hf_source_address_label.setObjectName("hf_source_address_label")
         self.gridLayout.addWidget(self.hf_source_address_label, 3, 0, 1, 1)
