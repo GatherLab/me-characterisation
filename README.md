@@ -1,18 +1,23 @@
-# Magnetoelectric Device Measurement and Readout
+# Magnetoelectric Device Characterisation
 
-Software to control DC and RF coil to characterize ME devices.
+Software that interfaces several hardware components (listed below) to determine
+the performance of magnetoelectric thin films. The software allows for
+calibration of the devices, and control of a pair of DC Helmholtz coils as well
+as a high-frequency AC coil.
+
+Self-built electronics are interfaced with an Arduino.
 
 ## Setup
 ### First Setup
 
-- Install the python packages provided by requirements.txt best in a new virtual environment
-- Install Ultra Sigma from the rigol website (https://www.rigolna.com/download/), takes ages to download and install
-- Install Ultra Scope from rigol website
-- Connect oscilloscope
-- I couldn't make Ultra sigma work but the oscilloscope is now recognized by windows
-- Download Voltcraft PPS-16005 software (https://www.conrad.de/de/p/voltcraft-pps-16005-labornetzgeraet-einstellbar-1-36-v-dc-0-10-a-360-w-usb-remote-programmierbar-anzahl-ausgaenge-2-513914.html?refresh=true#productDownloads)
-- Against all intuition the voltcraft pps-16005 must be set to normal mode when controlled remotly by the pc and not to "Remote Control" on the rear side of the device.
-- Connect KORAD 3005P and install the software
+1. Install the python packages provided by requirements.txt best in a new virtual environment
+2. Install Ultra Sigma from the rigol website (https://www.rigolna.com/download/), takes ages to download and install
+3. Install Ultra Scope from rigol website
+4. Connect oscilloscope
+5. I couldn't make Ultra sigma work but the oscilloscope is now recognized by windows
+6. Download Voltcraft PPS-16005 software (https://www.conrad.de/de/p/voltcraft-pps-16005-labornetzgeraet-einstellbar-1-36-v-dc-0-10-a-360-w-usb-remote-programmierbar-anzahl-ausgaenge-2-513914.html?refresh=true#productDownloads)
+7. Against all intuition the voltcraft pps-16005 must be set to normal mode when controlled remotly by the pc and not to "Remote Control" on the rear side of the device.
+8. Connect KORAD 3005P and install the software
 
 ### Development
 - Python formatter: black
@@ -26,13 +31,74 @@ Software to control DC and RF coil to characterize ME devices.
 | RF Source    | Voltcraft | PPS-16005                 |
 
 ## User Journey
-###
+### Setup
+#### Loading Window
 
-- User should be able to set the frequency of the frequency generator to a set value
-- User should be able to do a frequency sweep from one frequency to another one and also set the steps for this sweep
-- User should be able to set the voltage and maximum allowed current of the power hf_source
-- The user should see a diagram with the current voltage and current reading of the power hf_source.
-- When sweeping over a frequency range a diagram with the current drawn by the coil from the hf_source should be visible to characterise quality factor and maximum drawn current. It should build up from low frequency to high frequency and remain there until a new measurement is started.
-- The user should be able to save the raw data of this graph to a data file where wavelength, voltage and current are stored.
-- Additionally, to characterise the ME film, the maximum voltage on the oscilloscope should be read out and also plotted in the very same diagram (second y-axis). I am not sure yet how to measure the power output on the ME device but I am probably still a little bit away (an easy way would be to simply attach a consumer to it, otherwise a current-meter must be used somehow). The ME film voltage should be optional and even without the oscilloscope the drawn current should be visible.
-- I am not sure yet but it could also come handy to simply replicate the oscilloscope image on the PC so that it would be easy to save an oscilloscope image (e.g. when measureing the frequency of a magnetic field or showing the time delay between magnetic field and stimulation signal).
+To start the program execute main.py in your virtual environment setup as
+described above. The start screen that appears should look something like this.
+It will guide you through the initialisation of all different hardware
+components.
+
+In case everything went well and all hardware could be initialised the screen
+will directly disappear. However, if the program had a problem initialising any
+of the component it will indicate that in the following dialog. You can either
+select to continue anyways if the device that could not be initialised is not
+necessary for your measurements or you can troubleshoot your device and retry
+the initialisation again. In case the device address is not correct, either
+continue and modify it in the settings as described below or directly modify it
+in the /usr/global_settings.json file.
+
+In case everything went well or the user decided to continue anyways she will
+end up with the following window.
+
+This main window gives you several options that can be selected from the top tabs and are
+
+- Setup
+- Oscilloscope
+- Resonance Frequency
+- Bias Field
+- Power
+- Capacitance Calibration
+- PID Tuning
+
+Additionally, the user can select Settings from the top menubar. The different
+tabs as well as the settings are described in more detail in the following.
+
+#### Setup
+
+Here the user has to define the saving path, batch name, device number and the
+size of the device. These quantities are used during measurement and are saved
+in the measurement file for future reference.
+
+Furthermore, the user has the option to manually adjust all hardware parameters
+for a quick test of the device and the equipment. The LCD numbers directly yield
+the current value that is set at the equipment itself.
+
+#### Oscilloscope 
+
+Direct interface to the attached Rigol Oscilloscope allowing the user to
+permanently read out the oscilloscope output and easily stop it and save it.
+There is a latency of about 1 s between the updates of the oscilloscope due to a
+lag in communication between computer and oscilloscope.
+
+### Measurement
+
+An ME device can be characterized by its resonance frequency, the bias field
+necessary to obtain the maximum resonance voltage and the power that can be
+generated from the device. In order to do one full characterization a device has
+to be measured in this three different tabs. In case the resonance frequency is
+already roughly known this should take less than 5-10 min per device.
+
+#### Resonance Frequency
+The resonance frequency tab allows the user to sweep over a broad frequency
+range (depending on coil capacitance configuration) to identify the resonance
+frequency of the investigated ME device. For this the user enters all relevant
+parameters for the measurement and can decide on some automatization options.
+
+
+#### Bias Field
+#### Power 
+
+### Calibration
+#### Capacitance Calibration
+#### PID Tuning 
