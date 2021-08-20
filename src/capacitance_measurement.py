@@ -84,16 +84,31 @@ class CapacitanceScan(QtCore.QThread):
         self.parent.capw_ax.axhline(linewidth=1, color="black")
         self.parent.capw_ax.axvline(linewidth=1, color="black")
 
+        # Make sure to choose closest resonance frequencies to a given step size
+        available_caps = pd.DataFrame(
+            columns=["constituents", "arduino_pins", "sum", "resonance_frequency"]
+        )
+
+        for freq in np.arange(
+            self.measurement_parameters["minimum_frequency"],
+            self.measurement_parameters["maximum_frequency"]
+            + self.measurement_parameters["resonance_frequency_step"],
+            self.measurement_parameters["resonance_frequency_step"],
+        ):
+            temp_series = pd.Series(
+                self.arduino.all_capacitances_df.iloc[
+                    (self.arduino.all_capacitances_df.resonance_frequency - freq)
+                    .abs()
+                    .argsort()[:1]
+                ].values[0],
+                index=["constituents", "arduino_pins", "sum", "resonance_frequency"],
+            )
+            available_caps = available_caps.append(temp_series, ignore_index=True)
+
         # First check the given minimum and maximum value for the capacitance
-        selected_available_cap = self.arduino.combinations_df.loc[
-            np.logical_and(
-                self.arduino.combinations_df["sum"]
-                >= self.measurement_parameters["minimum_capacitance"],
-                self.arduino.combinations_df["sum"]
-                <= self.measurement_parameters["maximum_capacitance"],
-            ),
-            "sum",
-        ].to_numpy()
+        selected_available_cap = available_caps["sum"].to_numpy()
+
+        # Sort out that only the closest to a step size are taken
 
         # Set a new color for the plot
         cmap = mpl.cm.get_cmap("viridis", np.size(selected_available_cap))
