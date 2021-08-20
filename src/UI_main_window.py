@@ -1666,50 +1666,50 @@ class Ui_MainWindow(object):
         )
 
         # Set minimum capacitance
-        self.capw_minimum_capacitance_label = QtWidgets.QLabel(
+        self.capw_resonance_frequency_step_label = QtWidgets.QLabel(
             self.capw_scrollAreaWidgetContents
         )
-        self.capw_minimum_capacitance_label.setStyleSheet(
+        self.capw_resonance_frequency_step_label.setStyleSheet(
             'font: 63 bold 10pt "Segoe UI";'
         )
-        self.capw_minimum_capacitance_label.setObjectName(
-            "capw_minimum_capacitance_label"
+        self.capw_resonance_frequency_step_label.setObjectName(
+            "capw_resonance_frequency_step_label"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_minimum_capacitance_label, 11, 0, 1, 1
+            self.capw_resonance_frequency_step_label, 11, 0, 1, 1
         )
-        self.capw_minimum_capacitance_spinBox = QtWidgets.QDoubleSpinBox(
+        self.capw_resonance_frequency_step_spinBox = QtWidgets.QDoubleSpinBox(
             self.capw_scrollAreaWidgetContents
         )
-        self.capw_minimum_capacitance_spinBox.setObjectName(
-            "capw_minimum_capacitance_spinBox"
+        self.capw_resonance_frequency_step_spinBox.setObjectName(
+            "capw_resonance_frequency_step_spinBox"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_minimum_capacitance_spinBox, 12, 0, 1, 1
+            self.capw_resonance_frequency_step_spinBox, 12, 0, 1, 1
         )
 
-        # Set maximum scan capacitance
-        self.capw_maximum_capacitance_label = QtWidgets.QLabel(
-            self.capw_scrollAreaWidgetContents
-        )
-        self.capw_maximum_capacitance_label.setStyleSheet(
-            'font: 63 bold 10pt "Segoe UI";'
-        )
-        self.capw_maximum_capacitance_label.setObjectName(
-            "capw_maximum_capacitance_label"
-        )
-        self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_maximum_capacitance_label, 13, 0, 1, 1
-        )
-        self.capw_maximum_capacitance_spinBox = QtWidgets.QDoubleSpinBox(
-            self.capw_scrollAreaWidgetContents
-        )
-        self.capw_maximum_capacitance_spinBox.setObjectName(
-            "capw_maximum_capacitance_spinBox"
-        )
-        self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_maximum_capacitance_spinBox, 14, 0, 1, 1
-        )
+        # # Set maximum scan capacitance
+        # self.capw_maximum_capacitance_label = QtWidgets.QLabel(
+        #     self.capw_scrollAreaWidgetContents
+        # )
+        # self.capw_maximum_capacitance_label.setStyleSheet(
+        #     'font: 63 bold 10pt "Segoe UI";'
+        # )
+        # self.capw_maximum_capacitance_label.setObjectName(
+        #     "capw_maximum_capacitance_label"
+        # )
+        # self.capw_scrollArea_gridLayout.addWidget(
+        #     self.capw_maximum_capacitance_label, 13, 0, 1, 1
+        # )
+        # self.capw_maximum_capacitance_spinBox = QtWidgets.QDoubleSpinBox(
+        #     self.capw_scrollAreaWidgetContents
+        # )
+        # self.capw_maximum_capacitance_spinBox.setObjectName(
+        #     "capw_maximum_capacitance_spinBox"
+        # )
+        # self.capw_scrollArea_gridLayout.addWidget(
+        #     self.capw_maximum_capacitance_spinBox, 14, 0, 1, 1
+        # )
 
         # Set Frequency Margin around the resonance frequency
         self.capw_frequency_margin_label = QtWidgets.QLabel(
@@ -1718,7 +1718,7 @@ class Ui_MainWindow(object):
         self.capw_frequency_margin_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
         self.capw_frequency_margin_label.setObjectName("capw_frequency_margin_label")
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_frequency_margin_label, 15, 0, 1, 1
+            self.capw_frequency_margin_label, 13, 0, 1, 1
         )
         self.capw_frequency_margin_spinBox = QtWidgets.QDoubleSpinBox(
             self.capw_scrollAreaWidgetContents
@@ -1727,7 +1727,7 @@ class Ui_MainWindow(object):
             "capw_frequency_margin_spinBox"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_frequency_margin_spinBox, 16, 0, 1, 1
+            self.capw_frequency_margin_spinBox, 14, 0, 1, 1
         )
 
         # Set frequency settling time (time to wait until we measure)
@@ -1741,7 +1741,7 @@ class Ui_MainWindow(object):
             "capw_frequency_settling_time_label"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_frequency_settling_time_label, 17, 0, 1, 1
+            self.capw_frequency_settling_time_label, 15, 0, 1, 1
         )
         self.capw_frequency_settling_time_spinBox = QtWidgets.QDoubleSpinBox(
             self.capw_scrollAreaWidgetContents
@@ -1750,7 +1750,7 @@ class Ui_MainWindow(object):
             "capw_frequency_settling_time_spinBox"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_frequency_settling_time_spinBox, 18, 0, 1, 1
+            self.capw_frequency_settling_time_spinBox, 16, 0, 1, 1
         )
 
         # Save Power button
@@ -1761,7 +1761,7 @@ class Ui_MainWindow(object):
             "capw_start_measurement_pushButton"
         )
         self.capw_scrollArea_gridLayout.addWidget(
-            self.capw_start_measurement_pushButton, 19, 0, 1, 1
+            self.capw_start_measurement_pushButton, 17, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.capacitance_tester_widget, "")
@@ -2228,17 +2228,21 @@ class Ui_MainWindow(object):
         self.capw_minimum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.capw_maximum_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.capw_frequency_step_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.capw_resonance_frequency_step_spinBox.setSuffix(
+            _translate("MainWindow", " kHz")
+        )
+        self.capw_frequency_margin_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.capw_frequency_settling_time_spinBox.setSuffix(
+            _translate("MainWindow", " s")
+        )
         self.capw_start_measurement_pushButton.setText(
             _translate("MainWindow", "Start Measurement")
         )
         self.capw_header1_label.setText(
             _translate("MainWindow", "Measurement Parameters")
         )
-        self.capw_minimum_capacitance_label.setText(
-            _translate("MainWindow", "Min Capacitance (pF)")
-        )
-        self.capw_maximum_capacitance_label.setText(
-            _translate("MainWindow", "Max Capacitance (pF)")
+        self.capw_resonance_frequency_step_label.setText(
+            _translate("MainWindow", "Resonance Freq Step (kHz)")
         )
         self.capw_frequency_margin_label.setText(
             _translate("MainWindow", "Frequency Margin (kHz)")

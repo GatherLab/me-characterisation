@@ -228,7 +228,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for spectral measurement
         self.specw_voltage_spinBox.setMinimum(0)
         self.specw_voltage_spinBox.setMaximum(33)
-        self.specw_voltage_spinBox.setValue(8)
+        self.specw_voltage_spinBox.setValue(5)
 
         self.specw_current_spinBox.setMinimum(0)
         self.specw_current_spinBox.setMaximum(12)
@@ -250,6 +250,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_frequency_settling_time_spinBox.setMaximum(10)
         self.specw_frequency_settling_time_spinBox.setValue(1)
 
+        self.specw_dc_magnetic_field_spinBox.setMinimum(0)
+        self.specw_dc_magnetic_field_spinBox.setValue(15)
+        self.specw_dc_magnetic_field_spinBox.setValue(4.5)
+
         self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
         self.specw_autoset_frequency_step_toggleSwitch.setChecked(False)
@@ -257,7 +261,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for bias field measurement
         self.bw_voltage_spinBox.setMinimum(0)
         self.bw_voltage_spinBox.setMaximum(33)
-        self.bw_voltage_spinBox.setValue(8)
+        self.bw_voltage_spinBox.setValue(5)
 
         self.bw_current_spinBox.setMinimum(0)
         self.bw_current_spinBox.setMaximum(12)
@@ -278,7 +282,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
         self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
         self.bw_dc_magnetic_field_step_spinBox.setSingleStep(0.1)
-        self.bw_dc_magnetic_field_step_spinBox.setValue(0.5)
+        self.bw_dc_magnetic_field_step_spinBox.setValue(0.2)
 
         self.bw_dc_magnetic_field_settling_time_spinBox.setMinimum(0.01)
         self.bw_dc_magnetic_field_settling_time_spinBox.setMaximum(10)
@@ -290,7 +294,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for power measurement
         self.powerw_voltage_spinBox.setMinimum(0)
         self.powerw_voltage_spinBox.setMaximum(33)
-        self.powerw_voltage_spinBox.setValue(8)
+        self.powerw_voltage_spinBox.setValue(5)
 
         self.powerw_current_spinBox.setMinimum(0)
         self.powerw_current_spinBox.setMaximum(12)
@@ -323,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
         self.capw_voltage_spinBox.setMaximum(33)
-        self.capw_voltage_spinBox.setValue(3)
+        self.capw_voltage_spinBox.setValue(2)
 
         self.capw_current_spinBox.setMinimum(0)
         self.capw_current_spinBox.setMaximum(12)
@@ -331,7 +335,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capw_minimum_frequency_spinBox.setMinimum(8)
         self.capw_minimum_frequency_spinBox.setMaximum(150000)
-        self.capw_minimum_frequency_spinBox.setValue(120)
+        self.capw_minimum_frequency_spinBox.setValue(62)
 
         self.capw_maximum_frequency_spinBox.setMinimum(8)
         self.capw_maximum_frequency_spinBox.setMaximum(150000)
@@ -341,13 +345,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_frequency_step_spinBox.setMaximum(1000)
         self.capw_frequency_step_spinBox.setValue(1)
 
-        self.capw_minimum_capacitance_spinBox.setMinimum(0)
-        self.capw_minimum_capacitance_spinBox.setMaximum(50000)
-        self.capw_minimum_capacitance_spinBox.setValue(3300)
-
-        self.capw_maximum_capacitance_spinBox.setMinimum(0)
-        self.capw_maximum_capacitance_spinBox.setMaximum(50000)
-        self.capw_maximum_capacitance_spinBox.setValue(4000)
+        self.capw_resonance_frequency_step_spinBox.setMinimum(0)
+        self.capw_resonance_frequency_step_spinBox.setMaximum(100)
+        self.capw_resonance_frequency_step_spinBox.setValue(1)
 
         self.capw_frequency_margin_spinBox.setMinimum(0)
         self.capw_frequency_margin_spinBox.setMaximum(1000)
@@ -360,7 +360,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set standard parameters for pid adjustment
         self.pidw_voltage_spinBox.setMinimum(0)
         self.pidw_voltage_spinBox.setMaximum(33)
-        self.pidw_voltage_spinBox.setValue(8)
+        self.pidw_voltage_spinBox.setValue(5)
 
         self.pidw_current_spinBox.setMinimum(0)
         self.pidw_current_spinBox.setMaximum(12)
@@ -476,7 +476,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             self.hf_source.close()
         except Exception as e:
-            cf.log_message("I am not yet sure how to close the Rigol hf_source correctly")
+            cf.log_message(
+                "I am not yet sure how to close the Rigol hf_source correctly"
+            )
             cf.log_message(e)
 
         # Kill arduino connection
@@ -801,19 +803,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
             del self.specw_ax.lines[0]
-            del self.specw_ax.lines[0]
+            del self.specw_ax2.lines[0]
             del self.specw_ax2.lines[0]
         except IndexError:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
         self.specw_ax.set_xlim([min(frequency), max(frequency)])
-        self.specw_ax.set_ylim([0, max(np.append(magnetic_field, current)) + 0.05])
+        self.specw_ax.set_ylim([0, max(vmax) + 0.05])
 
         self.specw_ax2.set_ylim(
             [
-                min(vmax) - 0.05,
-                max(vmax) + 0.05,
+                min(np.append(magnetic_field, current)) - 0.05,
+                max(np.append(magnetic_field, current)) + 0.05,
             ]
         )
 
@@ -822,6 +824,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             frequency,
             vmax,
             marker="o",
+            color="black",
             label="Vmax, ME (V)",
         )
 
@@ -925,6 +928,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_ax.plot(
             dc_field,
             me_voltage,
+            color="black",
             marker="o",
         )
 
@@ -1024,6 +1028,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             resistance,
             voltage,
             marker="o",
+            color="black",
             label="ME Voltage",
         )
 
@@ -1063,8 +1068,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "minimum_frequency": self.capw_minimum_frequency_spinBox.value(),
             "maximum_frequency": self.capw_maximum_frequency_spinBox.value(),
             "frequency_step": self.capw_frequency_step_spinBox.value(),
-            "minimum_capacitance": self.capw_minimum_capacitance_spinBox.value(),
-            "maximum_capacitance": self.capw_maximum_capacitance_spinBox.value(),
+            "resonance_frequency_step": self.capw_resonance_frequency_step_spinBox.value(),
             "frequency_margin": self.capw_frequency_margin_spinBox.value(),
             "frequency_settling_time": self.capw_frequency_settling_time_spinBox.value(),
         }
@@ -1353,6 +1357,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pidw_ax.plot(
             time,
             magnetic_field,
+            color="black",
             marker="o",
             label="Magnetic Field",
         )
