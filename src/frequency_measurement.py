@@ -302,8 +302,14 @@ class FrequencyScan(QtCore.QThread):
             line03 += (
                 "Current:   "
                 + str(self.measurement_parameters["current_compliance"])
-                + " A"
+                + " A\t"
             )
+
+        line03 += (
+            "Bias Field: "
+            + str(self.measurement_parameters["dc_magnetic_field"])
+            + " mT"
+        )
 
         line04 = (
             "Min. Frequency: "
@@ -336,7 +342,7 @@ class FrequencyScan(QtCore.QThread):
             + self.setup_parameters["batch_name"]
             + "_d"
             + str(self.setup_parameters["device_number"])
-            + ".csv"
+            + "_spec.csv"
         )
         self.df_data["magnetic_field"] = self.df_data["magnetic_field"].map(
             lambda x: "{0:.3f}".format(x)

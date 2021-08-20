@@ -181,7 +181,7 @@ class BiasScan(QtCore.QThread):
             (
                 source_voltage,
                 self.df_data.loc[i, "current"],
-            ) = self.hf_source.read_values()
+            ) = self.dc_source.read_values()
             self.df_data.loc[i, "bias_field"] = dc_field
             self.df_data.loc[i, "me_voltage"] = me_voltage
             # Directly in mW/mm^2
@@ -238,11 +238,11 @@ class BiasScan(QtCore.QThread):
             self.df_data.me_voltage == self.df_data.me_voltage.max()
         ]
 
-        optimum_bias_field = optimum_bias_list.loc[
-            int(len(optimum_bias_list) / 2), "bias_field"
+        optimum_bias_field = optimum_bias_list["bias_field"].iloc[
+            int(len(optimum_bias_list) / 2)
         ]
-        optimum_bias_current = optimum_bias_list.loc[
-            int(len(optimum_bias_list) / 2), "current"
+        optimum_bias_current = optimum_bias_list["current"].iloc[
+            int(len(optimum_bias_list) / 2)
         ]
 
         # Define Header
