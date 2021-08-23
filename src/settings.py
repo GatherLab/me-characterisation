@@ -54,6 +54,9 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         self.resonance_frequency_calibration_path_lineEdit.setText(
             str(default_settings["calibration_file_path"])
         )
+        self.dc_field_conversion_lineEdit.setText(
+            str(default_settings["dc_field_conversion_factor"])
+        )
 
         self.load_rlc_settings_pushButton.clicked.connect(self.load_rlc_settings)
 
@@ -115,6 +118,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
                 "capacitances": self.capacitances_lineEdit.text(),
                 "arduino_pins": self.arduino_pins_lineEdit.text(),
                 "calibration_file_path": self.resonance_frequency_calibration_path_lineEdit.text(),
+                "dc_field_conversion_factor": self.dc_field_conversion_lineEdit.text(),
             }
         )
 
@@ -183,4 +187,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         self.arduino_pins_lineEdit.setText(default_settings["arduino_pins"])
         self.resonance_frequency_calibration_path_lineEdit.setText(
             default_settings["calibration_file_path"]
+        )
+        self.dc_field_conversion_lineEdit.setText(
+            default_settings["dc_field_conversion_factor"]
         )

@@ -181,8 +181,9 @@ class BiasScan(QtCore.QThread):
             (
                 source_voltage,
                 self.df_data.loc[i, "current"],
+                dc_magnetic_field,
             ) = self.dc_source.read_values()
-            self.df_data.loc[i, "bias_field"] = dc_field
+            self.df_data.loc[i, "bias_field"] = dc_magnetic_field
             self.df_data.loc[i, "me_voltage"] = me_voltage
             # Directly in mW/mm^2
             # in mT
@@ -295,7 +296,7 @@ class BiasScan(QtCore.QThread):
             + " kHz \t"
         )
         line05 = "### Measurement data ###"
-        line06 = "Current\t Bias Field\t ME Voltage\t Magnetic Field"
+        line06 = "DC Current\t DC Field\t ME Voltage\t HF Magnetic Field"
         line07 = "A\t mT\t V\t mT\n"
 
         header_lines = [

@@ -101,7 +101,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Setup and start setup thread that continuously reads out the voltage
         # and current of the hf_source as well as the frequency of the Arduino
-        self.setup_thread = SetupThread(self.hf_source, self.arduino, self)
+        self.setup_thread = SetupThread(
+            self.hf_source, self.arduino, self.dc_source, self
+        )
         self.setup_thread.start()
 
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
@@ -277,10 +279,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bw_maximum_dc_magnetic_field_spinBox.setMinimum(0)
         self.bw_maximum_dc_magnetic_field_spinBox.setMaximum(20)
-        self.bw_maximum_dc_magnetic_field_spinBox.setValue(10)
+        self.bw_maximum_dc_magnetic_field_spinBox.setValue(5)
 
         self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
-        self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
+        self.bw_dc_magnetic_field_step_spinBox.setMaximum(5)
         self.bw_dc_magnetic_field_step_spinBox.setSingleStep(0.1)
         self.bw_dc_magnetic_field_step_spinBox.setValue(0.2)
 
@@ -512,7 +514,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # --------------------------- Setup Thread --------------------------- #
     # -------------------------------------------------------------------- #
     @QtCore.Slot(float, float)
-    def update_display(self, voltage, current):
+    def update_display(self, voltage, current, dc_current, dc_field):
         """
         Function to update the readings of the LCD panels that serve as an
         overview to yield the current value of voltage, current and frequency
@@ -520,6 +522,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.sw_frequency_lcdNumber.display(frequency)
         self.sw_voltage_lcdNumber.display(voltage)
         self.sw_current_lcdNumber.display(current)
+
+        # Update dc source parameters
+        self.sw_dc_current_lcdNumber.display(dc_current)
+        self.sw_dc_field_lcdNumber.display(dc_field)
 
         # Only calculate the magnetic field if the current changed (otherwise it
         # is too time consuming to measure vmax from the osci)

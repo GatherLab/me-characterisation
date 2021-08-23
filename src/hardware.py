@@ -1028,10 +1028,7 @@ class KoradSource:
     https://sigrok.org/wiki/Korad_KAxxxxP_series#Protocol
     """
 
-    def __init__(
-        self,
-        source_address,
-    ):
+    def __init__(self, source_address, dc_field_conversion_factor):
         """
         Initialise KORAD source
         """
@@ -1058,6 +1055,8 @@ class KoradSource:
         # previously. Otherwise the output state will only be the correct one
         # after the first usage of self.output()
         self.output_state = True
+
+        self.dc_field_conversion_factor = dc_field_conversion_factor
 
         # # Now query details about the instrument
         # gmax = self.query("GMAX")
@@ -1095,11 +1094,13 @@ class KoradSource:
             cf.log_message("Couldn't read out current")
             current = 0
 
+        magnetic_field = current * self.dc_field_conversion_factor
+
         time.sleep(0.2)
         # Now disect this string
 
         self.mutex.unlock()
-        return voltage, current
+        return voltage, current, magnetic_field
 
     def set_voltage(self, voltage):
         """
@@ -1164,7 +1165,7 @@ class KoradSource:
         Function that converts a value for a magnetic field to a current that
         can be set on the source
         """
-        current = magnetic_field * 0.37
+        current = magnetic_field / self.dc_field_conversion_factor
 
         self.set_current(current)
 

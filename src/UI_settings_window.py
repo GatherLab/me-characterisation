@@ -281,6 +281,16 @@ class Ui_Settings(object):
         self.pickup_coil_radius_lineEdit.setObjectName("pickup_coil_radius_lineEdit")
         self.gridLayout.addWidget(self.pickup_coil_radius_lineEdit, 23, 1, 1, 1)
 
+        # DC Magnetic Field Converstion
+        self.dc_field_conversion_label = QtWidgets.QLabel(Settings)
+        self.dc_field_conversion_label.setObjectName("dc_field_conversion_label")
+        self.gridLayout.addWidget(self.dc_field_conversion_label, 24, 0, 1, 1)
+        self.dc_field_conversion_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.dc_field_conversion_lineEdit.setObjectName("dc_field_conversion_lineEdit")
+        self.gridLayout.addWidget(self.dc_field_conversion_lineEdit, 24, 1, 1, 1)
+
+        # # Transimpedance Amplifier Resistance
+
         # # Transimpedance Amplifier Resistance
         # self.amplifier_resistance_label = QtWidgets.QLabel(Settings)
         # self.amplifier_resistance_label.setObjectName("amplifier_resistance_label")
@@ -321,7 +331,7 @@ class Ui_Settings(object):
         self.save_settings_pushButton.setObjectName("save_settings_pushButton")
         self.buttons_HBoxLayout.addWidget(self.save_settings_pushButton)
 
-        self.gridLayout.addLayout(self.buttons_HBoxLayout, 24, 0, 1, 2)
+        self.gridLayout.addLayout(self.buttons_HBoxLayout, 25, 0, 1, 2)
 
         self.retranslateUi(Settings)
         QtCore.QMetaObject.connectSlotsByName(Settings)
@@ -387,6 +397,10 @@ class Ui_Settings(object):
         )
         self.resonance_frequency_calibration_path_label.setText(
             _translate("Settings", "Calibration File Path")
+        )
+
+        self.dc_field_conversion_label.setText(
+            _translate("Settings", "DC I to B Conversion Factor (mT/A)")
         )
         # self.amplifier_resistance_label.setText(
         #     _translate("Settings", "Transimpedance Amplifier Resistance (Ohm)")
