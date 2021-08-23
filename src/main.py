@@ -253,8 +253,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_frequency_settling_time_spinBox.setValue(1)
 
         self.specw_dc_magnetic_field_spinBox.setMinimum(0)
-        self.specw_dc_magnetic_field_spinBox.setValue(15)
-        self.specw_dc_magnetic_field_spinBox.setValue(4.5)
+        self.specw_dc_magnetic_field_spinBox.setValue(10)
+        self.specw_dc_magnetic_field_spinBox.setValue(1.5)
 
         self.specw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.specw_autoset_capacitance_toggleSwitch.setChecked(True)
@@ -274,15 +274,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_frequency_spinBox.setValue(145)
 
         self.bw_minimum_dc_magnetic_field_spinBox.setMinimum(0)
-        self.bw_minimum_dc_magnetic_field_spinBox.setMaximum(20)
+        self.bw_minimum_dc_magnetic_field_spinBox.setMaximum(10)
         self.bw_minimum_dc_magnetic_field_spinBox.setValue(0)
 
         self.bw_maximum_dc_magnetic_field_spinBox.setMinimum(0)
-        self.bw_maximum_dc_magnetic_field_spinBox.setMaximum(20)
-        self.bw_maximum_dc_magnetic_field_spinBox.setValue(5)
+        self.bw_maximum_dc_magnetic_field_spinBox.setMaximum(10)
+        self.bw_maximum_dc_magnetic_field_spinBox.setValue(10)
 
         self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
-        self.bw_dc_magnetic_field_step_spinBox.setMaximum(5)
+        self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
         self.bw_dc_magnetic_field_step_spinBox.setSingleStep(0.1)
         self.bw_dc_magnetic_field_step_spinBox.setValue(0.2)
 
@@ -322,6 +322,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.powerw_resistance_settling_time_spinBox.setMinimum(0.01)
         self.powerw_resistance_settling_time_spinBox.setMaximum(10)
         self.powerw_resistance_settling_time_spinBox.setValue(1)
+
+        self.powerw_dc_magnetic_field_spinBox.setMinimum(0.01)
+        self.powerw_dc_magnetic_field_spinBox.setMaximum(10)
+        self.powerw_dc_magnetic_field_spinBox.setValue(1.5)
 
         self.powerw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.powerw_autoset_capacitance_toggleSwitch.setChecked(True)

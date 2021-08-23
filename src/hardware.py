@@ -1064,7 +1064,7 @@ class KoradSource:
         self.maximum_current = 5
 
         self.output(False)
-        self.set_voltage(5)
+        self.set_voltage(20)
         self.set_current(0.05)
 
         cf.log_message("Korad Source successfully initialised")

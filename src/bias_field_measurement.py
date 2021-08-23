@@ -111,7 +111,9 @@ class BiasScan(QtCore.QThread):
         # Measure time elapsed
         start_time = time.time()
 
-        self.parent.oscilloscope_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
+        self.dc_source.set_voltage(20)
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.hf_source.set_voltage(self.measurement_parameters["voltage"])
@@ -200,6 +202,8 @@ class BiasScan(QtCore.QThread):
                 self.df_data["me_voltage"],
                 self.df_data["hf_magnetic_field"],
             )
+
+            time.sleep(self.measurement_parameters["bias_field_settling_time"])
 
             if self.is_killed:
                 # Close the connection to the spectrometer
