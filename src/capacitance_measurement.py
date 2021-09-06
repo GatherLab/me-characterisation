@@ -90,10 +90,8 @@ class CapacitanceScan(QtCore.QThread):
         )
 
         for freq in np.arange(
-            self.measurement_parameters["minimum_frequency"]
-            + self.measurement_parameters["resonance_frequency_step"],
-            self.measurement_parameters["maximum_frequency"]
-            - self.measurement_parameters["resonance_frequency_step"],
+            self.measurement_parameters["minimum_frequency"],
+            self.measurement_parameters["maximum_frequency"],
             self.measurement_parameters["resonance_frequency_step"],
         ):
             temp_series = pd.Series(
@@ -150,15 +148,13 @@ class CapacitanceScan(QtCore.QThread):
                 1,
             )
 
-            min_frequency = max(
+            min_frequency = (
                 predicted_resonance_frequency
-                - self.measurement_parameters["frequency_margin"],
-                self.measurement_parameters["minimum_frequency"],
+                - self.measurement_parameters["frequency_margin"]
             )
-            max_frequency = min(
+            max_frequency = (
                 predicted_resonance_frequency
-                + self.measurement_parameters["frequency_margin"],
-                self.measurement_parameters["maximum_frequency"],
+                + self.measurement_parameters["frequency_margin"]
             )
 
             frequencies = np.arange(
@@ -210,8 +206,10 @@ class CapacitanceScan(QtCore.QThread):
                     self.df_data["frequency"],
                     self.df_data["current"],
                     [
-                        self.measurement_parameters["minimum_frequency"],
-                        self.measurement_parameters["maximum_frequency"],
+                        self.measurement_parameters["minimum_frequency"]
+                        - self.measurement_parameters["frequency_margin"],
+                        self.measurement_parameters["maximum_frequency"]
+                        + self.measurement_parameters["frequency_margin"],
                     ],
                     str(capacitance) + " pF",
                     first_bool,
@@ -281,8 +279,10 @@ class CapacitanceScan(QtCore.QThread):
                 x_fit,
                 fit_class.func(x_fit, *popt),
                 [
-                    self.measurement_parameters["minimum_frequency"],
-                    self.measurement_parameters["maximum_frequency"],
+                    self.measurement_parameters["minimum_frequency"]
+                    - self.measurement_parameters["frequency_margin"],
+                    self.measurement_parameters["maximum_frequency"]
+                    + self.measurement_parameters["frequency_margin"],
                 ],
                 str(capacitance) + "pF fit",
                 first_bool,

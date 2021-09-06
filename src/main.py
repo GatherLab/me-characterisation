@@ -279,7 +279,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bw_maximum_dc_magnetic_field_spinBox.setMinimum(0)
         self.bw_maximum_dc_magnetic_field_spinBox.setMaximum(10)
-        self.bw_maximum_dc_magnetic_field_spinBox.setValue(10)
+        self.bw_maximum_dc_magnetic_field_spinBox.setValue(8)
 
         self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
         self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
