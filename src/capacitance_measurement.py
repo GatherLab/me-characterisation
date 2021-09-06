@@ -90,9 +90,10 @@ class CapacitanceScan(QtCore.QThread):
         )
 
         for freq in np.arange(
-            self.measurement_parameters["minimum_frequency"],
-            self.measurement_parameters["maximum_frequency"]
+            self.measurement_parameters["minimum_frequency"]
             + self.measurement_parameters["resonance_frequency_step"],
+            self.measurement_parameters["maximum_frequency"]
+            - self.measurement_parameters["resonance_frequency_step"],
             self.measurement_parameters["resonance_frequency_step"],
         ):
             temp_series = pd.Series(
