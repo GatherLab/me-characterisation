@@ -16,7 +16,7 @@
             "circuit_resistance": "12.0",
             "capacitances": "39, 81, 160, 330, 680, 1000, 2200, 4700, 9100, 15000",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
-            "calibration_file_path": "",
+            "calibration_file_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2021-09-07_200uH-1200pF_resonances.csv",
             "dc_field_conversion_factor": "1.966"
         }
     ],
@@ -37,7 +37,7 @@
             "circuit_resistance": "10",
             "capacitances": "39, 81, 160, 330, 680, 1000, 2200, 4700, 9100, 15000",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
-            "calibration_file_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2021-06-29_198uH-1200pF_resonances.csv",
+            "calibration_file_path": "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2021-09-07_200uH-1200pF_resonances.csv",
             "dc_field_conversion_factor": "1.966"
         }
     ]
