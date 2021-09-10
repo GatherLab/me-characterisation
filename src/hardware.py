@@ -580,6 +580,7 @@ class Arduino:
 
         # Frequency in kHz
         self.frequency = 1000
+        self.resistor_on = False
 
         self.init_caps()
 
@@ -959,12 +960,12 @@ class Arduino:
             self.init_serial_connection()
 
         # Write the resistance to the serial interface
-        freq = str.encode("res_" + str(resistance) + "\n")
+        freq = str.encode("res_" + str(int(resistance)) + "\n")
         com.write(freq)
 
         # Read answer from Arduino
         cf.log_message(com.readall())
-        cf.log_message("Resistance set to " + str(resistance) + " pF")
+        # cf.log_message("Resistance set to " + str(resistance) + " pF")
 
         self.mutex.unlock()
 
@@ -992,6 +993,44 @@ class Arduino:
         # cf.log_message("Arduino has the frequency " + str(frequency) + " Hz set.")
         self.mutex.unlock()
         return resistance
+
+    def turn_resistor_on(self):
+        """
+        Function that turns on relays allowing to work with the variable resistor
+        """
+        self.mutex.lock()
+        com = self.arduino
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the command to turn on/off the resistor
+        if not self.resistor_on:
+            com.write(str.encode("reson\n"))
+            self.resistor_on = True
+        else:
+            cf.log_message("Resistor is already on")
+
+        self.mutex.unlock()
+
+    def turn_resistor_off(self):
+        """
+        Function that turns on relays allowing to work with the variable resistor
+        """
+        self.mutex.lock()
+        com = self.arduino
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the command to turn on/off the resistor
+        if self.resistor_on:
+            com.write(str.encode("reson\n"))
+            self.resistor_on = False
+        else:
+            cf.log_message("Resistor is already off")
+
+        self.mutex.unlock()
 
     # The capacitances can now be matched to resonance frequencies using a fit of capacitance over resonance frequency
     # def capacitance_to_resonance_frequency(self, capacitance):
