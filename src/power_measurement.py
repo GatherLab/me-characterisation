@@ -31,6 +31,7 @@ class PowerScan(QtCore.QThread):
         self,
         arduino,
         hf_source,
+        dc_source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -43,6 +44,7 @@ class PowerScan(QtCore.QThread):
         self.arduino = arduino
         self.arduino.init_serial_connection()
         self.hf_source = hf_source
+        self.dc_source = dc_source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -153,6 +155,7 @@ class PowerScan(QtCore.QThread):
             self.measurement_parameters["dc_magnetic_field"]
         )
         self.dc_source.output(True)
+        self.arduino.turn_resistor_on()
 
         for resistance in resistances:
             # for frequency in self.df_data["frequency"]:
@@ -208,6 +211,7 @@ class PowerScan(QtCore.QThread):
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
                 self.parent.oscilloscope_thread.pause = False
+                self.arduino.turn_resistor_off()
                 self.quit()
                 return
 
@@ -221,6 +225,7 @@ class PowerScan(QtCore.QThread):
         self.parent.powerw_start_measurement_pushButton.setChecked(False)
 
         self.parent.oscilloscope_thread.pause = False
+        self.arduino.turn_resistor_off()
 
     def kill(self):
         """

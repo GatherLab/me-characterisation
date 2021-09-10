@@ -965,6 +965,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "voltage": self.powerw_voltage_spinBox.value(),
             "current_compliance": self.powerw_current_spinBox.value(),
             "frequency": self.powerw_frequency_spinBox.value(),
+            "dc_magnetic_field": self.powerw_dc_magnetic_field_spinBox.value(),
             "minimum_resistance": self.powerw_minimum_resistance_spinBox.value(),
             "maximum_resistance": self.powerw_maximum_resistance_spinBox.value(),
             "resistance_step": self.powerw_resistance_step_spinBox.value(),
@@ -998,6 +999,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.power_sweep = PowerScan(
             self.arduino,
             self.hf_source,
+            self.dc_source,
             self.oscilloscope,
             power_sweep_parameters,
             setup_parameters,
