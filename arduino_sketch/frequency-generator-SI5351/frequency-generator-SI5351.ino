@@ -69,6 +69,10 @@ void setup()
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
 
+  // Resistor board relays
+  pinMode(12, OUTPUT);
+  pinMode(13, OUTPUT);
+
   // Set all caps to low
   digitalWrite(2, LOW);
   digitalWrite(3, LOW);
@@ -80,6 +84,10 @@ void setup()
   digitalWrite(9, LOW);
   digitalWrite(10, LOW);
   digitalWrite(11, LOW);
+
+  // Set the resistor board relays to low
+  digitalWrite(12, LOW);
+  digitalWrite(13, LOW);
 }
 
 void loop()
@@ -163,6 +171,19 @@ void loop()
         {
           Serial.println("Frequency out of range");
         }
+    }
+    else if (command.equals("reson")) {
+      Serial.print("res_on");
+      if (digitalRead(12)== 1) {
+        digitalWrite(12, LOW);
+        digitalWrite(13, LOW);
+        Serial.print("12 high");
+      }
+      else if (digitalRead(12)== 0) {
+        digitalWrite(12, HIGH);
+        digitalWrite(13, HIGH);
+        Serial.print("12 low");
+      }
     }
     // If the input is not a valid number nor a command, return an error
     else
