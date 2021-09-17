@@ -41,12 +41,14 @@ class SetupThread(QtCore.QThread):
         pydevd.settrace(suspend=False)
 
         while True:
+            reference_time = time.time()
             # Measure
             voltage, current = self.hf_source.read_values()
             dc_voltage, dc_current, dc_magnetic_field = self.dc_source.read_values()
             # frequency = self.arduino.read_frequency()
 
             self.update_display.emit(voltage, current, dc_current, dc_magnetic_field)
+            print("elapsed time: " + str(time.time() - reference_time))
 
             # The sleep time here is very important because if it is chosen too
             # short, the program may crash. Currently 1 s seems to be save (one

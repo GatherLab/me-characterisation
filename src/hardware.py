@@ -37,7 +37,7 @@ class RigolOscilloscope:
         Init the oscilloscope
         """
         # Define a mutex
-        self.mutex = QtCore.QMutex(QtCore.QMutex.NonRecursive)
+        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 
         # Keithley Finding Device
         rm = pyvisa.ResourceManager()
@@ -51,6 +51,21 @@ class RigolOscilloscope:
 
         # Time out is in ms
         self.osci = rm.open_resource(rigol_source_address, timeout=25000)
+
+        # Change scale of both channels so that they are well defined
+        # make sure that the scales are not random but follow some logic
+        self.available_scales = np.array(
+            [10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001]
+        )
+
+        self.scales = np.repeat(2.0, 2)
+        self.change_scale(1, 2)
+        self.change_scale(2, 2)
+
+        # Also set both to zero
+        self.osci.write(":CHAN1:OFFSET 0")
+        self.osci.write(":CHAN2:OFFSET 0")
+
         time.sleep(2)
 
         # self.osci.write("*RST")
@@ -73,6 +88,35 @@ class RigolOscilloscope:
         """
         self.mutex.lock()
         self.osci.write("STOP")
+        self.mutex.unlock()
+
+    def change_scale(self, channel, scale):
+        """
+        Function that allows the easy change of scale of a channel on the oscilloscope
+        """
+        self.mutex.lock()
+        if int(channel) not in [1, 2]:
+            cf.log_message("Channel does not exist on this oscilloscope.")
+            return
+        if scale > 10:
+            cf.log_message("Scale can not be set higher than 10 V")
+            return
+        elif scale < 0.001:
+            cf.log_message("Scale can not be set below 1 mV")
+            return
+
+        # Choose closest available scale
+        available_scales_smaller = self.available_scales[self.available_scales <= scale]
+        scale_to_set = available_scales_smaller[
+            (np.abs(available_scales_smaller - scale)).argmin()
+        ]
+
+        # Set scale
+        self.osci.write(":CHAN" + str(channel) + ":SCALE " + str(scale_to_set))
+
+        # Change the value of the scale in the array
+        self.scales[int(channel - 1)] = scale_to_set
+
         self.mutex.unlock()
 
     def get_data(self, channel="CHAN1"):
@@ -174,18 +218,50 @@ class RigolOscilloscope:
 
         return time_data, data_mapped
 
-    def auto_scale(self):
+    def auto_scale(self, channel):
         """
         I am not yet sure how to do it but this would be an important and
         nice feature. The idea is to mimic the auto scale feature of the
         oscilloscope
         """
         self.mutex.lock()
-        self.osci.write(":KEY:AUTO")
+        vmax = 0
+        # Check if the oscillscope has to be rescaled
+        while True:
+            # Measure Vmax
+            self.osci.write(":MEAS:VMAX? CHAN" + str(channel))
+            vmax = self.osci.read()
+
+            index_scale = np.where(
+                self.available_scales == self.scales[int(channel) - 1]
+            )[0][0]
+
+            # Now check if the next scale is already the smallest or largest available
+            if index_scale + 1 == np.size(self.available_scales):
+                next_smaller_scale = np.min(self.available_scales)
+                next_larger_scale = self.available_scales[index_scale - 1]
+            elif index_scale == 0:
+                next_larger_scale = np.max(self.available_scales)
+                next_smaller_scale = self.available_scales[index_scale + 1]
+            else:
+                next_smaller_scale = self.available_scales[index_scale + 1]
+                next_larger_scale = self.available_scales[index_scale - 1]
+
+            if float(vmax) > 10000:
+                self.change_scale(channel, next_larger_scale)
+                time.sleep(0.5)
+            elif float(vmax) < 4 * next_smaller_scale and float(vmax) >= 0.01:
+                self.change_scale(channel, next_smaller_scale)
+            else:
+                break
+            print(self.scales)
+
+        return vmax
+
         # cf.log_message(self.osci.read())
         self.mutex.unlock()
 
-    def measure(self, channel="CHAN1"):
+    def measure(self, channel=1):
         """
         Measures a bunch of variables of the waveform. The possible commands are
         :MEASure:CLEar
@@ -213,20 +289,22 @@ class RigolOscilloscope:
         :MEASure:SOURce
         """
         self.mutex.lock()
+
+        # # Measure Vmax
+        # self.osci.write(":MEAS:VMAX? CHAN" + str(channel))
+        # vmax = self.osci.read()
+        vmax = self.auto_scale(channel)
+
         # Measre VPP
-        self.osci.write(":MEAS:VPP? " + channel)
+        self.osci.write(":MEAS:VPP? CHAN" + str(channel))
         vpp = self.osci.read()
 
-        # Measure Vmax
-        self.osci.write(":MEAS:VMAX? " + channel)
-        vmax = self.osci.read()
-
         # # # Measure Vmin
-        self.osci.write(":MEAS:VMIN? " + channel)
+        self.osci.write(":MEAS:VMIN? CHAN" + str(channel))
         vmin = self.osci.read()
 
         # # # Measure frequency
-        self.osci.write(":MEAS:FREQ? " + channel)
+        self.osci.write(":MEAS:FREQ? CHAN" + str(channel))
         frequency = self.osci.read()
 
         # # # Measure rise time
@@ -256,16 +334,17 @@ class RigolOscilloscope:
         self.mutex.unlock()
         return vpp
 
-    def measure_vmax(self, channel="CHAN1"):
+    def measure_vmax(self, channel=1):
         """
         Measure Vavg only
         """
         self.mutex.lock()
 
-        # Measre vavg
-        self.osci.write(":MEAS:VMAX? " + channel)
+        vmax = self.auto_scale(channel)
+        # # Measre vavg
+        # self.osci.write(":MEAS:VMAX? " + channel)
 
-        vmax = self.osci.read()
+        # vmax = self.osci.read()
 
         self.mutex.unlock()
         return vmax
@@ -466,7 +545,7 @@ class VoltcraftSource:
                 pf.calculate_magnetic_field_from_Vind(
                     pickup_coil_windings,
                     pickup_coil_radius * 1e-3,
-                    float(osci.measure_vmax("CHAN1")),
+                    float(osci.measure_vmax(1)),
                     frequency * 1e3,
                 )
                 * 1e3
@@ -1250,7 +1329,7 @@ class KoradSource:
                 pf.calculate_magnetic_field_from_Vind(
                     pickup_coil_windings,
                     pickup_coil_radius * 1e-3,
-                    float(osci.measure_vmax("CHAN1")),
+                    float(osci.measure_vmax(1)),
                     frequency * 1e3,
                 )
                 * 1e3

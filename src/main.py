@@ -288,7 +288,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bw_dc_magnetic_field_settling_time_spinBox.setMinimum(0.01)
         self.bw_dc_magnetic_field_settling_time_spinBox.setMaximum(10)
-        self.bw_dc_magnetic_field_settling_time_spinBox.setValue(1)
+        self.bw_dc_magnetic_field_settling_time_spinBox.setValue(2)
 
         self.bw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.bw_autoset_capacitance_toggleSwitch.setChecked(True)
@@ -539,7 +539,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     pf.calculate_magnetic_field_from_Vind(
                         self.initial_global_parameters["pickup_coil_windings"],
                         self.initial_global_parameters["pickup_coil_radius"] * 1e-3,
-                        float(self.oscilloscope.measure_vmax("CHAN1")),
+                        float(self.oscilloscope.measure_vmax(1)),
                         self.arduino.frequency * 1e3,
                     )
                     * 1e3
@@ -1173,7 +1173,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------- Oscilloscope ---------------------------- #
     # -------------------------------------------------------------------- #
     @QtCore.Slot(list, list, list)
-    def plot_oscilloscope(self, time, voltage, time2, voltage2, measurements):
+    def plot_oscilloscope(self, time, voltage, time2, voltage2):
         """
         Function that plots the oscilloscope image
         """
