@@ -175,14 +175,14 @@ class FrequencyScan(QtCore.QThread):
             # Measure the voltage and current (and possibly parameters on the osci)
             voltage, current = self.hf_source.read_values()
 
-            vmax = float(self.oscilloscope.measure_vmax("CHAN2"))
+            vmax = float(self.oscilloscope.measure_vmax(2))
 
             # Calculate the magnetic field using a pickup coil
             magnetic_field = (
                 pf.calculate_magnetic_field_from_Vind(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"] * 1e-3,
-                    float(self.oscilloscope.measure_vmax("CHAN1")),
+                    float(self.oscilloscope.measure_vmax(1)),
                     frequency * 1e3,
                 )
                 * 1e3

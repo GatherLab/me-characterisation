@@ -13,7 +13,7 @@ class OscilloscopeThread(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_oscilloscope = QtCore.Signal(list, list, list, list, list)
+    update_oscilloscope = QtCore.Signal(list, list, list, list)
 
     def __init__(self, osci, parent=None):
         super(OscilloscopeThread, self).__init__()
@@ -40,10 +40,10 @@ class OscilloscopeThread(QtCore.QThread):
             # Measure
             time_data, data = self.osci.get_data("CHAN1")
             time_data2, data2 = self.osci.get_data("CHAN2")
-            variables = self.osci.measure()
+            # variables = self.osci.measure()
 
             self.update_oscilloscope.emit(
-                time_data * 1e6, data, time_data2 * 1e6, data2, variables
+                time_data * 1e6, data, time_data2 * 1e6, data2
             )
 
             # The sleep time here is very important because if it is chosen to

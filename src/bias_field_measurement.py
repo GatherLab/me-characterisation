@@ -166,14 +166,14 @@ class BiasScan(QtCore.QThread):
             self.dc_source.set_magnetic_field(dc_field)
 
             # Measure the voltage and current (and possibly parameters on the osci)
-            me_voltage = float(self.oscilloscope.measure_vmax(channel="CHAN2"))
+            me_voltage = float(self.oscilloscope.measure_vmax(channel=2))
 
             # Calculate the magnetic field using a pickup coil
             magnetic_field = (
                 pf.calculate_magnetic_field_from_Vind(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"] * 1e-3,
-                    float(self.oscilloscope.measure_vmax("CHAN1")),
+                    float(self.oscilloscope.measure_vmax(1)),
                     self.measurement_parameters["frequency"] * 1e3,
                 )
                 * 1e3

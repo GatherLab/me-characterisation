@@ -159,7 +159,7 @@ class PIDScan(QtCore.QThread):
                 pf.calculate_magnetic_field_from_Vind(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"] * 1e-3,
-                    float(self.oscilloscope.measure_vmax("CHAN1")),
+                    float(self.oscilloscope.measure_vmax(1)),
                     self.measurement_parameters["frequency"] * 1e3,
                 )
                 * 1e3
