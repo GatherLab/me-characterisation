@@ -256,10 +256,10 @@ class RigolOscilloscope:
                 break
             print(self.scales)
 
+        self.mutex.unlock()
         return vmax
 
         # cf.log_message(self.osci.read())
-        self.mutex.unlock()
 
     def measure(self, channel=1):
         """

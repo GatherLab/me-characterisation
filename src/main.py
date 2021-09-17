@@ -507,6 +507,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         This might become important in the future. The best idea is probably
         to just kill all unused threads when we change the tab.
         """
+        if self.tabWidget.currentIndex() == 0:
+            self.setup_thread.pause = False
+            self.oscilloscope_thread.pause = True
+        if self.tabWidget.currentIndex() == 1:
+            self.setup_thread.pause = True
+            self.oscilloscope_thread.pause = False
+        if self.tabWidget.currentIndex() >= 2:
+            self.setup_thread.pause = True
+            self.oscilloscope_thread.pause = True
 
         cf.log_message(
             "Switched to tab widget no. " + str(self.tabWidget.currentIndex())

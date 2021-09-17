@@ -111,7 +111,7 @@ class FrequencyScan(QtCore.QThread):
         # Measure time elapsed
         start_time = time.time()
 
-        self.parent.oscilloscope_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.hf_source.set_voltage(1)
@@ -249,7 +249,7 @@ class FrequencyScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
-                self.parent.oscilloscope_thread.pause = False
+                # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
 
@@ -257,7 +257,7 @@ class FrequencyScan(QtCore.QThread):
         self.save_data()
         self.parent.specw_start_measurement_pushButton.setChecked(False)
 
-        self.parent.oscilloscope_thread.pause = False
+        # self.parent.oscilloscope_thread.pause = False
 
         if self.measurement_parameters["constant_magnetic_field_mode"]:
             cf.log_message(

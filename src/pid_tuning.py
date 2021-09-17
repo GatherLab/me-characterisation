@@ -107,7 +107,7 @@ class PIDScan(QtCore.QThread):
 
         pydevd.settrace(suspend=False)
 
-        self.parent.oscilloscope_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
 
         self.hf_source.set_voltage(1)
         self.hf_source.set_current(2)
@@ -205,7 +205,7 @@ class PIDScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
-                self.parent.oscilloscope_thread.pause = False
+                # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
 
@@ -220,7 +220,7 @@ class PIDScan(QtCore.QThread):
         # self.save_data()
         self.parent.pidw_start_measurement_pushButton.setChecked(False)
 
-        self.parent.oscilloscope_thread.pause = False
+        # self.parent.oscilloscope_thread.pause = False
 
         cf.log_message("PID adjustment took " + str(round(total_adjustment_time, 2)))
         # self.parent.setup_thread.pause = False

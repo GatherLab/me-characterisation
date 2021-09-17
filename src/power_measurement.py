@@ -111,7 +111,7 @@ class PowerScan(QtCore.QThread):
         # Measure time elapsed
         start_time = time.time()
 
-        self.parent.oscilloscope_thread.pause = True
+        # self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.hf_source.set_voltage(self.measurement_parameters["voltage"])
@@ -210,7 +210,7 @@ class PowerScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
-                self.parent.oscilloscope_thread.pause = False
+                # self.parent.oscilloscope_thread.pause = False
                 self.arduino.turn_resistor_off()
                 self.quit()
                 return
@@ -224,7 +224,7 @@ class PowerScan(QtCore.QThread):
         self.save_data()
         self.parent.powerw_start_measurement_pushButton.setChecked(False)
 
-        self.parent.oscilloscope_thread.pause = False
+        # self.parent.oscilloscope_thread.pause = False
         self.arduino.turn_resistor_off()
 
     def kill(self):
