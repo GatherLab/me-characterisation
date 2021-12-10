@@ -284,11 +284,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_dc_magnetic_field_step_spinBox.setMinimum(0.1)
         self.bw_dc_magnetic_field_step_spinBox.setMaximum(10)
         self.bw_dc_magnetic_field_step_spinBox.setSingleStep(0.1)
-        self.bw_dc_magnetic_field_step_spinBox.setValue(0.2)
+        self.bw_dc_magnetic_field_step_spinBox.setValue(0.1)
 
         self.bw_dc_magnetic_field_settling_time_spinBox.setMinimum(0.01)
         self.bw_dc_magnetic_field_settling_time_spinBox.setMaximum(10)
-        self.bw_dc_magnetic_field_settling_time_spinBox.setValue(2)
+        self.bw_dc_magnetic_field_settling_time_spinBox.setValue(0.5)
 
         self.bw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.bw_autoset_capacitance_toggleSwitch.setChecked(True)
@@ -703,7 +703,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "batch_name": self.sw_batch_name_lineEdit.text(),
             "device_number": self.sw_device_number_spinBox.value(),
             "device_size": [
-                int(x) for x in self.sw_device_size_lineEdit.text().split(",")
+                float(x) for x in self.sw_device_size_lineEdit.text().split(",")
             ],
         }
 
