@@ -177,12 +177,12 @@ void loop()
       if (digitalRead(12)== 1) {
         digitalWrite(12, LOW);
         digitalWrite(13, LOW);
-        Serial.print("12 high");
+        Serial.print("12 low");
       }
       else if (digitalRead(12)== 0) {
         digitalWrite(12, HIGH);
         digitalWrite(13, HIGH);
-        Serial.print("12 low");
+        Serial.print("12 high");
       }
     }
     // If the input is not a valid number nor a command, return an error
