@@ -196,9 +196,18 @@ class FrequencyScan(QtCore.QThread):
             self.df_data.loc[i, "vmax"] = vmax
 
             # Update progress bar
-            # self.update_progress_bar.emit(
-            #     "value", int((i + 1) / len(frequencies) * 100)
-            # )
+            self.update_progress_bar.emit(
+                "value",
+                int(
+                    (i + 1)
+                    / (
+                        self.measurement_parameters["maximum_frequency"]
+                        - self.measurement_parameters["minimum_frequency"]
+                    )
+                    / self.measurement_parameters["frequency_step"]
+                    * 100
+                ),
+            )
 
             self.update_spectrum_signal.emit(
                 self.df_data["frequency"],
@@ -222,7 +231,8 @@ class FrequencyScan(QtCore.QThread):
                     )
 
                     # If slope is high enough use the minimal step size, if it isn't and the value fell below 2 * baseline, set it to false
-                    if slope > 0.04:
+                    print(slope)
+                    if abs(slope) > 0.1:
                         if not minimal_step:
                             baseline = self.df_data.loc[i, "vmax"]
                             minimal_step = True
@@ -237,7 +247,7 @@ class FrequencyScan(QtCore.QThread):
                         # (10/2=5 is the maximum step size (at zero slope), 40 is the
                         # slope of the logistic function and 0.1 is the minimum step
                         # size (at infinite slope))
-                        frequency += 10 / (1 + np.exp(100 * abs(slope))) + 0.5
+                        frequency += 10 / (1 + np.exp(50 * abs(slope))) + 0.5
             else:
                 frequency += self.measurement_parameters["frequency_step"]
 
@@ -249,6 +259,7 @@ class FrequencyScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
+                self.arduino.set_frequency(1000, True)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -256,6 +267,7 @@ class FrequencyScan(QtCore.QThread):
         self.hf_source.output(False)
         self.save_data()
         self.parent.specw_start_measurement_pushButton.setChecked(False)
+        self.arduino.set_frequency(1000, True)
 
         # self.parent.oscilloscope_thread.pause = False
 

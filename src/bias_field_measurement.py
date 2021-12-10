@@ -210,6 +210,7 @@ class BiasScan(QtCore.QThread):
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(1)
                 self.dc_source.output(False)
+                self.arduino.set_frequency(1000, True)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -223,6 +224,7 @@ class BiasScan(QtCore.QThread):
         self.dc_source.output(False)
         self.save_data()
         self.parent.bw_start_measurement_pushButton.setChecked(False)
+        self.arduino.set_frequency(1000, True)
 
         # self.parent.oscilloscope_thread.pause = False
 
