@@ -116,6 +116,7 @@ class RigolOscilloscope:
 
         # Change the value of the scale in the array
         self.scales[int(channel - 1)] = scale_to_set
+        time.sleep(0.2)
 
         self.mutex.unlock()
 

@@ -1,10 +1,11 @@
 from UI_main_window import Ui_MainWindow
-from bias_field_measurement import BiasScan
 from settings import Settings
 from loading_window import LoadingWindow
 
 from frequency_measurement import FrequencyScan
+from bias_field_measurement import BiasScan
 from power_measurement import PowerScan
+from hf_field_measurement import HFScan
 from capacitance_measurement import CapacitanceScan
 from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
@@ -128,7 +129,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         # -------------------------------------------------------------------- #
-        # ----------------------- Power Sweep Widget ------------------------- #
+        # -------------------- Bias Field Sweep Widget ----------------------- #
         # -------------------------------------------------------------------- #
         self.bw_start_measurement_pushButton.clicked.connect(self.start_dc_field_sweep)
         self.bw_start_measurement_pushButton.setCheckable(True)
@@ -144,6 +145,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.powerw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
             self.change_current_to_magnetic_field
         )
+
+        # -------------------------------------------------------------------- #
+        # --------------------- HF Field Sweep Widget ------------------------ #
+        # -------------------------------------------------------------------- #
+        self.hfw_start_measurement_pushButton.clicked.connect(self.start_hf_field_sweep)
+        self.hfw_start_measurement_pushButton.setCheckable(True)
+        # self.hfw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
+        # self.change_current_to_magnetic_field
+        # )
 
         # -------------------------------------------------------------------- #
         # ------------------ Capacitance Sweep Widget ------------------------ #
@@ -238,14 +248,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.specw_minimum_frequency_spinBox.setMinimum(8)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
-        self.specw_minimum_frequency_spinBox.setValue(62)
+        self.specw_minimum_frequency_spinBox.setValue(135)
 
         self.specw_maximum_frequency_spinBox.setMinimum(8)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
         self.specw_maximum_frequency_spinBox.setValue(310)
 
         self.specw_frequency_step_spinBox.setMinimum(0.05)
-        self.specw_frequency_step_spinBox.setMaximum(1000)
+        self.specw_frequency_step_spinBox.setMaximum(180)
         self.specw_frequency_step_spinBox.setValue(1)
 
         self.specw_frequency_settling_time_spinBox.setMinimum(0.01)
@@ -329,6 +339,35 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.powerw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.powerw_autoset_capacitance_toggleSwitch.setChecked(True)
+
+        # Set standard parameters for hf field measurement
+        self.hfw_voltage_compliance_spinBox.setMinimum(0)
+        self.hfw_voltage_compliance_spinBox.setMaximum(33)
+        self.hfw_voltage_compliance_spinBox.setValue(5)
+
+        self.hfw_dc_magnetic_field_spinBox.setMinimum(0)
+        self.hfw_dc_magnetic_field_spinBox.setMaximum(10)
+        self.hfw_dc_magnetic_field_spinBox.setValue(1.5)
+
+        self.hfw_frequency_spinBox.setMinimum(8)
+        self.hfw_frequency_spinBox.setMaximum(150000)
+        self.hfw_frequency_spinBox.setValue(145)
+
+        self.hfw_minimum_voltage_spinBox.setMinimum(0)
+        self.hfw_minimum_voltage_spinBox.setMaximum(12)
+        self.hfw_minimum_voltage_spinBox.setValue(2)
+
+        self.hfw_maximum_voltage_spinBox.setMinimum(0)
+        self.hfw_maximum_voltage_spinBox.setMaximum(12)
+        self.hfw_maximum_voltage_spinBox.setValue(10)
+
+        self.hfw_voltage_step_spinBox.setMinimum(0)
+        self.hfw_voltage_step_spinBox.setMaximum(12)
+        self.hfw_voltage_step_spinBox.setValue(0.5)
+
+        self.hfw_voltage_settling_time_spinBox.setMinimum(0)
+        self.hfw_voltage_settling_time_spinBox.setMaximum(1000)
+        self.hfw_voltage_settling_time_spinBox.setValue(1)
 
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
@@ -1075,6 +1114,98 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         legend.set_draggable(True)
 
         self.powerw_fig.draw()
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- HF Field Scan --------------------------- #
+    # -------------------------------------------------------------------- #
+
+    def read_hf_field_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        dc_sweep_parameters = {
+            "voltage_compliance": self.hfw_voltage_compliance_spinBox.value(),
+            "dc_magnetic_field": self.hfw_dc_magnetic_field_spinBox.value(),
+            "frequency": self.hfw_frequency_spinBox.value(),
+            "minimum_hf_voltage": self.hfw_minimum_voltage_spinBox.value(),
+            "maximum_hf_voltage": self.hfw_maximum_voltage_spinBox.value(),
+            "hf_voltage_step": self.hfw_voltage_step_spinBox.value(),
+            "hf_field_settling_time": self.hfw_voltage_settling_time_spinBox.value(),
+            "autoset_capacitance": self.hfw_autoset_capacitance_toggleSwitch.isChecked(),
+            "constant_magnetic_field_mode": self.hfw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
+        }
+
+        # Update statusbar
+        cf.log_message("Power sweep parameters read")
+
+        return dc_sweep_parameters
+
+    def start_hf_field_sweep(self):
+        """
+        Function to start the power measurement
+        """
+        if not self.hfw_start_measurement_pushButton.isChecked():
+            self.bias_field_sweep.kill()
+            return
+
+        # Load in setup parameters and make sure that the parameters make sense
+        setup_parameters = self.safe_read_setup_parameters()
+        hf_field_sweep_parameters = self.read_hf_field_sweep_parameters()
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        self.hf_field_sweep = HFScan(
+            self.arduino,
+            self.hf_source,
+            self.dc_source,
+            self.oscilloscope,
+            hf_field_sweep_parameters,
+            setup_parameters,
+            parent=self,
+        )
+
+        self.hf_field_sweep.start()
+
+    @QtCore.Slot(list, list, list, list)
+    def update_hf_plot(self, hf_field, me_voltage):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        try:
+            # Delete two times zero because after the first deletion the first element will be element zero
+            del self.hfw_ax.lines[0]
+            # del self.hfw_ax2.lines[0]
+        except IndexError:
+            cf.log_message("Plot lines could not be deleted")
+
+        # Set x and y limit
+        self.hfw_ax.set_xlim([min(hf_field), max(hf_field)])
+        self.hfw_ax.set_ylim([0, max(me_voltage) + 0.05])
+
+        # Plot current
+        self.hfw_ax.plot(
+            hf_field,
+            me_voltage,
+            color="black",
+            marker="o",
+        )
+
+        # self.hfw_ax2.plot(
+        #     hf_field,
+        #     hf_magnetic_field,
+        #     color=(85 / 255, 170 / 255, 255 / 255),
+        #     marker="o",
+        # )
+
+        # lines, labels = self.hfw_ax.legend(loc="best")
+
+        self.hfw_fig.draw()
 
     # -------------------------------------------------------------------- #
     # -------------------------- Capacitor Sweep ------------------------- #
