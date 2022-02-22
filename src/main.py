@@ -1145,7 +1145,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Function to start the power measurement
         """
         if not self.hfw_start_measurement_pushButton.isChecked():
-            self.bias_field_sweep.kill()
+            self.hf_field_sweep.kill()
             return
 
         # Load in setup parameters and make sure that the parameters make sense
@@ -1206,6 +1206,53 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # lines, labels = self.hfw_ax.legend(loc="best")
 
         self.hfw_fig.draw()
+
+    @QtCore.Slot(str)
+    def pause_hf_measurement(self, status):
+        """
+        Function to ask to turn the PL lamp on before continuing
+        """
+        msgBox = QtWidgets.QMessageBox()
+        # Now check which message to display (turn on or off the lamp)
+        if status == "on":
+            msgBox.setText("You can now insert the OLED")
+        elif status == "off":
+            msgBox.setText("You can now take out the OLED")
+
+        msgBox.setStandardButtons(
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+        )
+        msgBox.setStyleSheet(
+            "QWidget {\n"
+            "            background-color: rgb(44, 49, 60);\n"
+            "            color: rgb(255, 255, 255);\n"
+            '            font: 63 10pt "Segoe UI";\n'
+            "}\n"
+            "QPushButton {\n"
+            "            border: 2px solid rgb(52, 59, 72);\n"
+            "            border-radius: 5px;\n"
+            "            background-color: rgb(52, 59, 72);\n"
+            "}\n"
+            "QPushButton:hover {\n"
+            "            background-color: rgb(57, 65, 80);\n"
+            "            border: 2px solid rgb(61, 70, 86);\n"
+            "}\n"
+            "QPushButton:pressed {\n"
+            "            background-color: rgb(35, 40, 49);\n"
+            "            border: 2px solid rgb(43, 50, 61);\n"
+            "}\n"
+            "QPushButton:checked {\n"
+            "            background-color: rgb(35, 40, 49);\n"
+            "            border: 2px solid rgb(85, 170, 255);\n"
+            "}"
+        )
+        button = msgBox.exec()
+
+        if button == QtWidgets.QMessageBox.Ok:
+            self.hf_field_sweep.pause = "break"
+        elif button == QtWidgets.QMessageBox.Cancel:
+            self.hf_field_sweep.pause = "return"
+            self.hfw_start_measurement_pushButton.setChecked(False)
 
     # -------------------------------------------------------------------- #
     # -------------------------- Capacitor Sweep ------------------------- #
