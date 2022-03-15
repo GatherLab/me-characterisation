@@ -953,7 +953,7 @@ class Arduino:
 
         # Write the frequency to the serial interface
         com.write(str.encode("cap\n"))
-        time.sleep(0.1)
+        time.sleep(0.3)
 
         # Read answer from Arduino
         try:
