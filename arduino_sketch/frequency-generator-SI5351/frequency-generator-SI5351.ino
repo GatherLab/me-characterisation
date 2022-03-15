@@ -185,6 +185,11 @@ void loop()
         Serial.print("12 high");
       }
     }
+    // Check if user enters a frequency
+    else if (command.equals("trig")) {
+        // Zero to disable, 1 to enable
+        si5351.output_enable(SI5351_CLK0, value);
+    }
     // If the input is not a valid number nor a command, return an error
     else
     {
