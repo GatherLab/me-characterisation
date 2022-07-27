@@ -661,19 +661,13 @@ class Ui_MainWindow(object):
         self.pulsew_ax = self.pulsew_fig.figure.subplots()
         # self.pulsew_ax.set_facecolor("#E0E0E0")
         self.pulsew_ax.grid(True)
-        self.pulsew_ax.set_xlabel("Frequency (kHz)", fontsize=14)
-        self.pulsew_ax.set_ylabel("V$_{max,ME}$ (V)", fontsize=14)
-        self.pulsew_ax.set_xlim([50, 600])
+        self.pulsew_ax.set_xlabel("Time (s)", fontsize=14)
+        self.pulsew_ax.set_ylabel("Magnetic Field (V)", fontsize=14)
+        self.pulsew_ax.set_xlim([0, 300])
+        self.pulsew_ax.set_xlim([0, 10])
 
         self.pulsew_ax.axhline(linewidth=1, color="black")
         self.pulsew_ax.axvline(linewidth=1, color="black")
-
-        self.pulsew_ax2 = self.pulsew_ax.twinx()
-        self.pulsew_ax2.set_ylabel(
-            "HF Magnetic Field/Current (mT/A)",
-            fontsize=14,
-            color=(85 / 255, 170 / 255, 255 / 255),
-        )
 
         # self.pulsew_fig.figure.set_facecolor("#E0E0E0")
         self.pulsew_mplToolbar = NavigationToolbar(
