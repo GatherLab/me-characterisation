@@ -627,6 +627,173 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.osci_widget, "")
 
         # -------------------------------------------------------------------- #
+        # ---------------------- Define Pulsing Widget ----------------------- #
+        # -------------------------------------------------------------------- #
+        self.pulsing_widget = QtWidgets.QWidget()
+        self.pulsing_widget.setObjectName("pulsing_widget")
+        self.pulsing_widget_gridLayout = QtWidgets.QGridLayout(self.pulsing_widget)
+        self.pulsing_widget_gridLayout.setObjectName("pulsing_widget_gridLayout")
+
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.pulsew_graph_widget = QtWidgets.QWidget(self.pulsing_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pulsew_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.pulsew_graph_widget.setSizePolicy(sizePolicy)
+        self.pulsew_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.pulsew_graph_widget.setObjectName("pulsew_graph_widget")
+        self.pulsew_mpl_graph_gridLayout = QtWidgets.QGridLayout(
+            self.pulsew_graph_widget
+        )
+        self.pulsew_mpl_graph_gridLayout.setObjectName("pulsew_mpl_graph_gridLayout")
+        self.pulsing_widget_gridLayout.addWidget(self.pulsew_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.pulsew_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.pulsew_mpl_graph_gridLayout.addWidget(self.pulsew_fig)
+
+        self.pulsew_ax = self.pulsew_fig.figure.subplots()
+        # self.pulsew_ax.set_facecolor("#E0E0E0")
+        self.pulsew_ax.grid(True)
+        self.pulsew_ax.set_xlabel("Frequency (kHz)", fontsize=14)
+        self.pulsew_ax.set_ylabel("V$_{max,ME}$ (V)", fontsize=14)
+        self.pulsew_ax.set_xlim([50, 600])
+
+        self.pulsew_ax.axhline(linewidth=1, color="black")
+        self.pulsew_ax.axvline(linewidth=1, color="black")
+
+        self.pulsew_ax2 = self.pulsew_ax.twinx()
+        self.pulsew_ax2.set_ylabel(
+            "HF Magnetic Field/Current (mT/A)",
+            fontsize=14,
+            color=(85 / 255, 170 / 255, 255 / 255),
+        )
+
+        # self.pulsew_fig.figure.set_facecolor("#E0E0E0")
+        self.pulsew_mplToolbar = NavigationToolbar(
+            self.pulsew_fig, self.pulsew_graph_widget
+        )
+        self.pulsew_mplToolbar.setStyleSheet("background-color:white; color: black;")
+        self.pulsew_mpl_graph_gridLayout.addWidget(self.pulsew_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.pulsew_scrollArea = QtWidgets.QScrollArea(self.pulsing_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pulsew_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.pulsew_scrollArea.setSizePolicy(sizePolicy)
+        self.pulsew_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.pulsew_scrollArea.setWidgetResizable(True)
+        self.pulsew_scrollArea.setObjectName("pulsew_scrollArea")
+        self.pulsew_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.pulsew_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pulsew_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.pulsew_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.pulsew_scrollAreaWidgetContents.setObjectName(
+            "pulsew_scrollAreaWidgetContents"
+        )
+        self.pulsew_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.pulsew_scrollAreaWidgetContents
+        )
+        self.pulsew_scrollArea_gridLayout.setObjectName("pulsew_scrollArea_gridLayout")
+
+        self.pulsew_header1_label = QtWidgets.QLabel(
+            self.pulsew_scrollAreaWidgetContents
+        )
+        self.pulsew_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pulsew_header1_label.setObjectName("pulsew_header1_label")
+        self.pulsew_scrollArea_gridLayout.addWidget(
+            self.pulsew_header1_label, 0, 0, 1, 1
+        )
+        self.pulsew_scrollArea.setWidget(self.pulsew_scrollAreaWidgetContents)
+        self.pulsing_widget_gridLayout.addWidget(self.pulsew_scrollArea, 0, 3, 1, 1)
+
+        # Browse pulsing files
+        self.pulsew_folder_path_label = QtWidgets.QLabel(self.setup_widget)
+        self.pulsew_folder_path_label.setObjectName("pulsew_folder_path_label")
+        self.pulsew_folder_path_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pulsew_scrollArea_gridLayout.addWidget(
+            self.pulsew_folder_path_label, 2, 0, 1, 1
+        )
+
+        self.pulsew_folder_path_horizontalLayout = QtWidgets.QHBoxLayout()
+        self.pulsew_folder_path_horizontalLayout.setObjectName(
+            "pulsew_folder_path_horizontalLayout"
+        )
+        self.pulsew_folder_path_lineEdit = QtWidgets.QLineEdit(self.setup_widget)
+        self.pulsew_folder_path_lineEdit.setReadOnly(False)
+        self.pulsew_folder_path_lineEdit.setObjectName("pulsew_folder_path_lineEdit")
+        self.pulsew_folder_path_horizontalLayout.addWidget(
+            self.pulsew_folder_path_lineEdit
+        )
+        self.pulsew_browse_pushButton = QtWidgets.QPushButton(self.setup_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.pulsew_browse_pushButton.sizePolicy().hasHeightForWidth()
+        )
+        self.pulsew_browse_pushButton.setSizePolicy(sizePolicy)
+        self.pulsew_browse_pushButton.setMinimumSize(QtCore.QSize(60, 0))
+        self.pulsew_browse_pushButton.setObjectName("pulsew_browse_pushButton")
+        self.pulsew_folder_path_horizontalLayout.addWidget(
+            self.pulsew_browse_pushButton
+        )
+        self.pulsew_scrollArea_gridLayout.addLayout(
+            self.pulsew_folder_path_horizontalLayout, 3, 0, 1, 1
+        )
+
+        # Set voltage
+        self.pulsew_voltage_label = QtWidgets.QLabel(
+            self.pulsew_scrollAreaWidgetContents
+        )
+        self.pulsew_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.pulsew_voltage_label.setObjectName("pulsew_voltage_label")
+        self.pulsew_scrollArea_gridLayout.addWidget(
+            self.pulsew_voltage_label, 4, 0, 1, 1
+        )
+        self.pulsew_voltage_spinBox = QtWidgets.QDoubleSpinBox(
+            self.pulsew_scrollAreaWidgetContents
+        )
+        self.pulsew_voltage_spinBox.setObjectName("pulsew_voltage_spinBox")
+        self.pulsew_scrollArea_gridLayout.addWidget(
+            self.pulsew_voltage_spinBox, 5, 0, 1, 1
+        )
+
+        # Start measurement push button
+        self.pulsew_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.pulsew_scrollAreaWidgetContents
+        )
+        self.pulsew_start_measurement_pushButton.setObjectName(
+            "pulsew_start_measurement_pushButton"
+        )
+        self.pulsew_scrollArea_gridLayout.addWidget(
+            self.pulsew_start_measurement_pushButton, 18, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.pulsing_widget, "")
+
+        # -------------------------------------------------------------------- #
         # --------------------------- Spacer Tab ----------------------------- #
         # -------------------------------------------------------------------- #
         self.spacer = QtWidgets.QWidget()
@@ -2332,6 +2499,17 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.setup_widget), _translate("MainWindow", "Setup")
         )
+
+        self.pulsew_header1_label.setText(
+            _translate("MainWindow", "Measurement Parameters")
+        )
+        self.pulsew_folder_path_label.setText(
+            _translate("MainWindow", "Pulsing Instructions")
+        )
+        self.pulsew_browse_pushButton.setText(_translate("MainWindow", "Browse"))
+        self.pulsew_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
         # self.pidw_max_voltage_label.setText(
         # _translate("MainWindow", "Max Voltage (V)")
         # )
@@ -2632,6 +2810,11 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.capacitance_tester_widget),
             _translate("MainWindow", "Capacitance Calibration"),
+        )
+
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.pulsing_widget),
+            _translate("MainWindow", "Pulsing"),
         )
 
         # self.tabWidget.setTabText(
