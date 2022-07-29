@@ -804,11 +804,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Read in data
         # raw_pulsing_data=pd.read_csv("C:\\Users\\GatherLab-Julian\\Desktop\\pulsing.txt", delimiter="\t")
         pulsing_data = pd.read_csv(
-            self.pulsew_folder_path_lineEdit.text(), delimiter="\t"
+            self.pulsew_folder_path_lineEdit.text(), delimiter="\t", skiprows=1
         )
 
         # Set the fields to zero in case of off state
-        pulsing_data.loc[pulsing_data["signal"] == "OFF", "field"] = 0
+        pulsing_data.loc[pulsing_data["signal"] == "OFF", "hf_field"] = 0
+        pulsing_data.loc[pulsing_data["signal"] == "OFF", "dc_field"] = 0
         pulsing_data["time"] = np.cumsum(pulsing_data["time"].to_numpy())
         return pulsing_data
 
@@ -820,23 +821,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Clear plot
         # self.specw_ax.cla()
         try:
-            # Delete two times zero because after the first deletion the first element will be element zero
-            del self.pulsew_ax.lines[0]
+            del self.pulsew_ax.lines[:]
         except IndexError:
             cf.log_message("Pulsing line can not be deleted")
 
         # Only for plotting we have to add a line with the zeros
         time = np.append([0], pulsing_data.time.to_list())
-        field = np.append([0], pulsing_data.field.to_list())
+        hf_field = np.append([0], pulsing_data.hf_field.to_list())
 
         # Set x and y limit
         self.pulsew_ax.set_xlim([min(time), max(time)])
-        self.pulsew_ax.set_ylim([0, max(field) + 1])
+        self.pulsew_ax.set_ylim([0, max(hf_field) + 1])
 
         # Do plotting
         self.pulsew_ax.step(
             time,
-            field,
+            hf_field,
             where="pre",
         )
 
@@ -877,9 +877,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         the other thread
         """
         # Do plotting
-        self.pulsew_ax.vlines(current_time, 0, 20, color="red")
+        vline = self.pulsew_ax.vlines(current_time, 0, 20, color="red")
 
         self.pulsew_fig.draw()
+
+        vline.remove()
 
     # -------------------------------------------------------------------- #
     # -------------------------- Frequency Sweep ------------------------- #
