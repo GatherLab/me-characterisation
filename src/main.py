@@ -9,6 +9,7 @@ from hf_field_measurement import HFScan
 from capacitance_measurement import CapacitanceScan
 from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
+from lifetime_measurement import LTScan
 from pid_tuning import PIDScan
 
 from hardware import KoradSource, RigolOscilloscope, VoltcraftSource, Arduino
@@ -151,6 +152,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
         self.hfw_start_measurement_pushButton.clicked.connect(self.start_hf_field_sweep)
         self.hfw_start_measurement_pushButton.setCheckable(True)
+        # self.hfw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
+        # self.change_current_to_magnetic_field
+        # )
+
+        # -------------------------------------------------------------------- #
+        # ------------------------- Lifetime Widget -------------------------- #
+        # -------------------------------------------------------------------- #
+        self.ltw_start_measurement_pushButton.clicked.connect(self.start_lt_sweep)
+        self.ltw_start_measurement_pushButton.setCheckable(True)
         # self.hfw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
         # self.change_current_to_magnetic_field
         # )
@@ -368,6 +378,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.hfw_voltage_settling_time_spinBox.setMinimum(0)
         self.hfw_voltage_settling_time_spinBox.setMaximum(1000)
         self.hfw_voltage_settling_time_spinBox.setValue(1)
+
+        # Set standard parameters for hf field measurement
+        self.ltw_voltage_compliance_spinBox.setMinimum(0)
+        self.ltw_voltage_compliance_spinBox.setMaximum(33)
+        self.ltw_voltage_compliance_spinBox.setValue(12)
+
+        self.ltw_dc_magnetic_field_spinBox.setMinimum(0)
+        self.ltw_dc_magnetic_field_spinBox.setMaximum(10)
+        self.ltw_dc_magnetic_field_spinBox.setValue(1.5)
+
+        self.ltw_frequency_spinBox.setMinimum(8)
+        self.ltw_frequency_spinBox.setMaximum(150000)
+        self.ltw_frequency_spinBox.setValue(150)
+
+        self.ltw_total_time_spinBox.setMinimum(0)
+        self.ltw_total_time_spinBox.setMaximum(100000)
+        self.ltw_total_time_spinBox.setValue(120)
+
+        self.ltw_time_step_spinBox.setMinimum(0)
+        self.ltw_time_step_spinBox.setMaximum(100000)
+        self.ltw_time_step_spinBox.setValue(60)
+
+        self.ltw_hf_magnetic_field_spinBox.setMinimum(0)
+        self.ltw_hf_magnetic_field_spinBox.setMaximum(20)
+        self.ltw_hf_magnetic_field_spinBox.setValue(10)
 
         # Set standard parameters for capacitance measurement
         self.capw_voltage_spinBox.setMinimum(0)
@@ -1253,6 +1288,144 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif button == QtWidgets.QMessageBox.Cancel:
             self.hf_field_sweep.pause = "return"
             self.hfw_start_measurement_pushButton.setChecked(False)
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Lifetime Scan --------------------------- #
+    # -------------------------------------------------------------------- #
+
+    def read_lt_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        dc_sweep_parameters = {
+            "voltage_compliance": self.ltw_voltage_compliance_spinBox.value(),
+            "dc_magnetic_field": self.ltw_dc_magnetic_field_spinBox.value(),
+            "frequency": self.ltw_frequency_spinBox.value(),
+            "hf_voltage": self.ltw_hf_magnetic_field_spinBox.value(),
+            "total_time": self.ltw_total_time_spinBox.value(),
+            "time_step": self.ltw_time_step_spinBox.value(),
+            "autoset_capacitance": self.ltw_autoset_capacitance_toggleSwitch.isChecked(),
+            "constant_magnetic_field_mode": self.ltw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
+        }
+
+        # Update statusbar
+        cf.log_message("Power sweep parameters read")
+
+        return dc_sweep_parameters
+
+    def start_lt_sweep(self):
+        """
+        Function to start the power measurement
+        """
+        if not self.ltw_start_measurement_pushButton.isChecked():
+            self.lt_sweep.kill()
+            return
+
+        # Load in setup parameters and make sure that the parameters make sense
+        setup_parameters = self.safe_read_setup_parameters()
+        lt_sweep_parameters = self.read_lt_sweep_parameters()
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        self.lt_sweep = LTScan(
+            self.arduino,
+            self.hf_source,
+            self.dc_source,
+            self.oscilloscope,
+            lt_sweep_parameters,
+            setup_parameters,
+            parent=self,
+        )
+
+        self.lt_sweep.start()
+
+    @QtCore.Slot(list, list, list, list)
+    def update_lt_plot(self, time, me_voltage):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        try:
+            # Delete two times zero because after the first deletion the first element will be element zero
+            del self.ltw_ax.lines[0]
+            # del self.ltw_ax2.lines[0]
+        except IndexError:
+            cf.log_message("Plot lines could not be deleted")
+
+        # Set x and y limit
+        self.ltw_ax.set_xlim([min(time), max(time)])
+        self.ltw_ax.set_ylim([0, max(me_voltage) * 1.01])
+
+        # Plot current
+        self.ltw_ax.plot(
+            time,
+            me_voltage,
+            color="black",
+            marker="o",
+        )
+
+        # self.ltw_ax2.plot(
+        #     hf_field,
+        #     hf_magnetic_field,
+        #     color=(85 / 255, 170 / 255, 255 / 255),
+        #     marker="o",
+        # )
+
+        # lines, labels = self.ltw_ax.legend(loc="best")
+
+        self.ltw_fig.draw()
+
+    @QtCore.Slot(str)
+    def pause_lt_measurement(self, status):
+        """
+        Function to ask to turn the PL lamp on before continuing
+        """
+        msgBox = QtWidgets.QMessageBox()
+        # Now check which message to display (turn on or off the lamp)
+        if status == "on":
+            msgBox.setText("You can now insert the OLED")
+        elif status == "off":
+            msgBox.setText("You can now take out the OLED")
+
+        msgBox.setStandardButtons(
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+        )
+        msgBox.setStyleSheet(
+            "QWidget {\n"
+            "            background-color: rgb(44, 49, 60);\n"
+            "            color: rgb(255, 255, 255);\n"
+            '            font: 63 10pt "Segoe UI";\n'
+            "}\n"
+            "QPushButton {\n"
+            "            border: 2px solid rgb(52, 59, 72);\n"
+            "            border-radius: 5px;\n"
+            "            background-color: rgb(52, 59, 72);\n"
+            "}\n"
+            "QPushButton:hover {\n"
+            "            background-color: rgb(57, 65, 80);\n"
+            "            border: 2px solid rgb(61, 70, 86);\n"
+            "}\n"
+            "QPushButton:pressed {\n"
+            "            background-color: rgb(35, 40, 49);\n"
+            "            border: 2px solid rgb(43, 50, 61);\n"
+            "}\n"
+            "QPushButton:checked {\n"
+            "            background-color: rgb(35, 40, 49);\n"
+            "            border: 2px solid rgb(85, 170, 255);\n"
+            "}"
+        )
+        button = msgBox.exec()
+
+        if button == QtWidgets.QMessageBox.Ok:
+            self.lt_sweep.pause = "break"
+        elif button == QtWidgets.QMessageBox.Cancel:
+            self.lt_sweep.pause = "return"
+            self.ltw_start_measurement_pushButton.setChecked(False)
 
     # -------------------------------------------------------------------- #
     # -------------------------- Capacitor Sweep ------------------------- #

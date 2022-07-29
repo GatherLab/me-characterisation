@@ -1747,6 +1747,235 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.hf_field_widget, "")
 
         # -------------------------------------------------------------------- #
+        # ----------------- Define Lifetime Field Scan Widget ---------------------- #
+        # -------------------------------------------------------------------- #
+        self.ltw_widget = QtWidgets.QWidget()
+        self.ltw_widget.setObjectName("ltw_widget")
+        self.ltw_field_widget_gridLayout = QtWidgets.QGridLayout(self.ltw_widget)
+        self.ltw_field_widget_gridLayout.setObjectName("ltw_field_gridLayout")
+
+        # --------------- Central Widget with matplotlib graph --------------- #
+        self.ltw_graph_widget = QtWidgets.QWidget(self.ltw_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ltw_graph_widget.sizePolicy().hasHeightForWidth()
+        )
+        self.ltw_graph_widget.setSizePolicy(sizePolicy)
+        self.ltw_graph_widget.setMinimumSize(QtCore.QSize(0, 442))
+        self.ltw_graph_widget.setObjectName("ltw_graph_widget")
+        self.ltw_mpl_graph_gridLayout = QtWidgets.QGridLayout(self.ltw_graph_widget)
+        self.ltw_mpl_graph_gridLayout.setObjectName("ltw_mpl_graph_gridLayout")
+        self.ltw_field_widget_gridLayout.addWidget(self.ltw_graph_widget, 0, 1, 1, 1)
+
+        # Define figure
+        figureSize = (11, 10)
+        self.ltw_fig = FigureCanvas(Figure(figsize=figureSize))
+        self.ltw_mpl_graph_gridLayout.addWidget(self.ltw_fig)
+
+        self.ltw_ax = self.ltw_fig.figure.subplots()
+        # self.ltw_ax.set_facecolor("#E0E0E0")
+        self.ltw_ax.grid(True)
+        self.ltw_ax.set_xlabel("HF Field Voltage (V)", fontsize=14)
+        self.ltw_ax.set_ylabel("Max ME Response (V)", fontsize=14)
+        self.ltw_ax.set_xlim([50, 600])
+
+        self.ltw_ax.axhline(linewidth=1, color="black")
+        self.ltw_ax.axvline(linewidth=1, color="black")
+
+        # self.ltw_ax2 = self.ltw_ax.twinx()
+        # self.ltw_ax2.set_ylabel(
+        #     "HF Magnetic Field (mT)",
+        #     color=(85 / 255, 170 / 255, 255 / 255),
+        #     fontsize=14,
+        # )
+        # self.ltw_ax2.yaxis.label.set_color((43 / 255, 50 / 255, 61 / 255))
+
+        # self.ltw_fig.figure.set_facecolor("#E0E0E0")
+        self.ltw_mplToolbar = NavigationToolbar(self.ltw_fig, self.ltw_graph_widget)
+        self.ltw_mplToolbar.setStyleSheet("background-color:white; color: black;")
+        self.ltw_mpl_graph_gridLayout.addWidget(self.ltw_mplToolbar)
+
+        # ----------------------- Define scroll area ---------------------------
+        self.ltw_scrollArea = QtWidgets.QScrollArea(self.power_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ltw_scrollArea.sizePolicy().hasHeightForWidth()
+        )
+        self.ltw_scrollArea.setSizePolicy(sizePolicy)
+        self.ltw_scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.ltw_scrollArea.setWidgetResizable(True)
+        self.ltw_scrollArea.setObjectName("ltw_scrollArea")
+        self.ltw_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.ltw_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 170, 655))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.ltw_scrollAreaWidgetContents.sizePolicy().hasHeightForWidth()
+        )
+        self.ltw_scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.ltw_scrollAreaWidgetContents.setObjectName("ltw_scrollAreaWidgetContents")
+        self.ltw_scrollArea_gridLayout = QtWidgets.QGridLayout(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_scrollArea_gridLayout.setObjectName("ltw_scrollArea_gridLayout")
+
+        self.ltw_header1_label = QtWidgets.QLabel(self.ltw_scrollAreaWidgetContents)
+        self.ltw_header1_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_header1_label.setObjectName("ltw_header1_label")
+        self.ltw_scrollArea_gridLayout.addWidget(self.ltw_header1_label, 0, 0, 1, 1)
+        self.ltw_scrollArea.setWidget(self.ltw_scrollAreaWidgetContents)
+        self.ltw_field_widget_gridLayout.addWidget(self.ltw_scrollArea, 0, 3, 1, 1)
+
+        self.ltw_voltage_compliance_label = QtWidgets.QLabel(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_voltage_compliance_label.setStyleSheet(
+            'font: 63 bold 10pt "Segoe UI";'
+        )
+        self.ltw_voltage_compliance_label.setObjectName("ltw_voltage_compliance_label")
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_voltage_compliance_label, 1, 0, 1, 1
+        )
+        self.ltw_voltage_compliance_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_voltage_compliance_spinBox.setObjectName(
+            "ltw_voltage_compliance_spinBox"
+        )
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_voltage_compliance_spinBox, 2, 0, 1, 1
+        )
+
+        # Constant magnetic field mode?
+        self.ltw_constant_magnetic_field_mode_HLayout = QtWidgets.QHBoxLayout()
+        self.ltw_constant_magnetic_field_mode_toggleSwitch = ToggleSwitch()
+        self.ltw_constant_magnetic_field_mode_label = QtWidgets.QLabel(
+            "Magnetic Field Mode"
+        )
+        self.ltw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.ltw_constant_magnetic_field_mode_toggleSwitch
+        )
+        self.ltw_constant_magnetic_field_mode_HLayout.addWidget(
+            self.ltw_constant_magnetic_field_mode_label
+        )
+        self.ltw_scrollArea_gridLayout.addLayout(
+            self.ltw_constant_magnetic_field_mode_HLayout, 3, 0, 1, 1
+        )
+
+        # Set DC magnetic field
+        self.ltw_dc_magnetic_field_label = QtWidgets.QLabel(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_dc_magnetic_field_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_dc_magnetic_field_label.setObjectName("ltw_dc_magnetic_field_label")
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_dc_magnetic_field_label, 6, 0, 1, 1
+        )
+        self.ltw_dc_magnetic_field_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_dc_magnetic_field_spinBox.setObjectName(
+            "ltw_dc_magnetic_field_spinBox"
+        )
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_dc_magnetic_field_spinBox, 7, 0, 1, 1
+        )
+
+        # Set frequency
+        self.ltw_frequency_label = QtWidgets.QLabel(self.ltw_scrollAreaWidgetContents)
+        self.ltw_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_frequency_label.setObjectName("ltw_frequency_label")
+        self.ltw_scrollArea_gridLayout.addWidget(self.ltw_frequency_label, 8, 0, 1, 1)
+        self.ltw_frequency_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_frequency_spinBox.setObjectName("ltw_frequency_spinBox")
+        self.ltw_scrollArea_gridLayout.addWidget(self.ltw_frequency_spinBox, 9, 0, 1, 1)
+
+        # Set HF Field
+        self.ltw_hf_magnetic_field_label = QtWidgets.QLabel(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_hf_magnetic_field_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_hf_magnetic_field_label.setObjectName("ltw_hf_magnetic_field_label")
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_hf_magnetic_field_label, 10, 0, 1, 1
+        )
+        self.ltw_hf_magnetic_field_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_hf_magnetic_field_spinBox.setObjectName(
+            "ltw_hf_magnetic_field_spinBox"
+        )
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_hf_magnetic_field_spinBox, 11, 0, 1, 1
+        )
+
+        # Set measurement time
+        self.ltw_total_time_label = QtWidgets.QLabel(self.ltw_scrollAreaWidgetContents)
+        self.ltw_total_time_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_total_time_label.setObjectName("ltw_maximum_voltage_label")
+        self.ltw_scrollArea_gridLayout.addWidget(self.ltw_total_time_label, 12, 0, 1, 1)
+        self.ltw_total_time_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_total_time_spinBox.setObjectName("ltw_total_time_spinBox")
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_total_time_spinBox, 13, 0, 1, 1
+        )
+
+        # Set measurement time step
+        self.ltw_time_step_label = QtWidgets.QLabel(self.ltw_scrollAreaWidgetContents)
+        self.ltw_time_step_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
+        self.ltw_time_step_label.setObjectName("ltw_time_step_label")
+        self.ltw_scrollArea_gridLayout.addWidget(self.ltw_time_step_label, 14, 0, 1, 1)
+        self.ltw_time_step_spinBox = QtWidgets.QDoubleSpinBox(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_time_step_spinBox.setObjectName("ltw_time_step_spinBox")
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_time_step_spinBox, 15, 0, 1, 1
+        )
+
+        # Auto set capacitance?
+        self.ltw_autoset_capacitance_HLayout = QtWidgets.QHBoxLayout()
+        self.ltw_autoset_capacitance_toggleSwitch = ToggleSwitch()
+        self.ltw_autoset_capacitance_label = QtWidgets.QLabel("Autoset Capacitance")
+        self.ltw_autoset_capacitance_HLayout.addWidget(
+            self.ltw_autoset_capacitance_toggleSwitch
+        )
+        self.ltw_autoset_capacitance_HLayout.addWidget(
+            self.ltw_autoset_capacitance_label
+        )
+        self.ltw_scrollArea_gridLayout.addLayout(
+            self.ltw_autoset_capacitance_HLayout, 18, 0, 1, 1
+        )
+
+        # Save Power button
+        self.ltw_start_measurement_pushButton = QtWidgets.QPushButton(
+            self.ltw_scrollAreaWidgetContents
+        )
+        self.ltw_start_measurement_pushButton.setObjectName(
+            "ltw_start_measurement_pushButton"
+        )
+        self.ltw_scrollArea_gridLayout.addWidget(
+            self.ltw_start_measurement_pushButton, 19, 0, 1, 1
+        )
+
+        self.tabWidget.addTab(self.ltw_widget, "")
+
+        # -------------------------------------------------------------------- #
         # --------------------------- Spacer Tab ----------------------------- #
         # -------------------------------------------------------------------- #
         self.spacer2 = QtWidgets.QWidget()
@@ -2497,17 +2726,41 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Magnetic Field Mode")
         )
 
-        # self.hfw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
-        self.hfw_dc_magnetic_field_spinBox.setSuffix(_translate("MainWindow", " mT"))
-        self.hfw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
-        self.hfw_minimum_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
-        self.hfw_maximum_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
-        self.hfw_voltage_step_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.ltw_voltage_compliance_label.setText(
+            _translate("MainWindow", "Voltage Compliance (V)")
+        )
+        self.ltw_dc_magnetic_field_label.setText(
+            _translate("MainWindow", "DC Magnetic Field (mT)")
+        )
+        self.ltw_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
+        self.ltw_total_time_label.setText(
+            _translate("MainWindow", "Total Measurement Time (s)")
+        )
+        self.ltw_time_step_label.setText(
+            _translate("MainWindow", "Measurement Interval (s)")
+        )
+        self.ltw_hf_magnetic_field_label.setText(
+            _translate("MainWindow", "Magnetic Field (V)")
+        )
+        self.ltw_autoset_capacitance_toggleSwitch.setText(
+            _translate("MainWindow", "Autoset Capacitance")
+        )
 
-        self.hfw_start_measurement_pushButton.setText(
+        self.ltw_constant_magnetic_field_mode_toggleSwitch.setText(
+            _translate("MainWindow", "Magnetic Field Mode")
+        )
+
+        # self.ltw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        self.ltw_dc_magnetic_field_spinBox.setSuffix(_translate("MainWindow", " mT"))
+        self.ltw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
+        self.ltw_hf_magnetic_field_spinBox.setSuffix(_translate("MainWindow", " V"))
+        self.ltw_total_time_spinBox.setSuffix(_translate("MainWindow", " s"))
+        self.ltw_time_step_spinBox.setSuffix(_translate("MainWindow", " s"))
+
+        self.ltw_start_measurement_pushButton.setText(
             _translate("MainWindow", "Start Measurement")
         )
-        self.hfw_header1_label.setText(
+        self.ltw_header1_label.setText(
             _translate("MainWindow", "Measurement Parameters")
         )
 
@@ -2628,6 +2881,10 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.hf_field_widget),
             _translate("MainWindow", "HF Field"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.ltw_widget),
+            _translate("MainWindow", "Lifetime"),
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.capacitance_tester_widget),
