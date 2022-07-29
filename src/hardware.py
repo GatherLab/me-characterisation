@@ -660,6 +660,8 @@ class Arduino:
 
         # Frequency in kHz
         self.frequency = 1000
+        self.frequency_on = True
+
         self.resistor_on = False
 
         self.init_caps()
@@ -1109,6 +1111,23 @@ class Arduino:
             self.resistor_on = False
         else:
             cf.log_message("Resistor is already off")
+
+        self.mutex.unlock()
+
+    def trigger_frequency_generation(self, state):
+        """
+        Function that turns on the frequency generator SI5351A
+        """
+        self.mutex.lock()
+        com = self.arduino
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the command to turn on/off the frequency generation (true to enable, false to disable)
+        com.write(str.encode("trig " + str(int(state)) + "\n"))
+
+        self.frequency_on = state
 
         self.mutex.unlock()
 
