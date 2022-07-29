@@ -757,23 +757,6 @@ class Ui_MainWindow(object):
             self.pulsew_folder_path_horizontalLayout, 3, 0, 1, 1
         )
 
-        # Set voltage
-        self.pulsew_voltage_label = QtWidgets.QLabel(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.pulsew_voltage_label.setObjectName("pulsew_voltage_label")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_voltage_label, 4, 0, 1, 1
-        )
-        self.pulsew_voltage_spinBox = QtWidgets.QDoubleSpinBox(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_voltage_spinBox.setObjectName("pulsew_voltage_spinBox")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_voltage_spinBox, 5, 0, 1, 1
-        )
-
         # Start measurement push button
         self.pulsew_start_measurement_pushButton = QtWidgets.QPushButton(
             self.pulsew_scrollAreaWidgetContents
@@ -782,7 +765,7 @@ class Ui_MainWindow(object):
             "pulsew_start_measurement_pushButton"
         )
         self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_start_measurement_pushButton, 18, 0, 1, 1
+            self.pulsew_start_measurement_pushButton, 4, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.pulsing_widget, "")
