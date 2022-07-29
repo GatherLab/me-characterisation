@@ -88,14 +88,8 @@ class PulsingSweep(QtCore.QThread):
         start_time = time.time()
         for index, row in self.pulsing_data.iterrows():
             if row["signal"] == "ON":
-                self.dc_source.set_voltage(float(row["dc_field"]))
-                self.hf_source.set_voltage(float(row["hf_field"]))
 
-                self.arduino.set_frequency(
-                    float(row["frequency"]),
-                    True,
-                )
-
+                # Takes about 5ms
                 self.arduino.trigger_frequency_generation(1)
 
                 while (time.time() - start_time) < float(row["time"]):
@@ -117,11 +111,46 @@ class PulsingSweep(QtCore.QThread):
 
             elif row["signal"] == "OFF":
                 self.arduino.trigger_frequency_generation(0)
+                set_bool = True
 
                 while (time.time() - start_time) < float(row["time"]):
                     # Update graph with current position in time
                     self.update_time_position_signal.emit(time.time() - start_time)
                     # print(str(time.time() - start_time) + " OFF")
+
+                    # Make sure the adjustment of the sources is preparing
+                    # already the next on cycle
+                    ref = time.time()
+                    if (time.time() - start_time) > (
+                        float(row["time"]) - 1
+                    ) and set_bool:
+                        try:
+                            # Takes about 0.2 s
+                            self.dc_source.set_magnetic_field(
+                                float(self.pulsing_data.iloc[index + 1]["dc_field"])
+                            )
+
+                            # Takes about 20 ms
+                            self.hf_source.set_voltage(
+                                float(self.pulsing_data.iloc[index + 1]["hf_field"])
+                            )
+
+                            # Takes about 0.5s
+                            self.arduino.set_frequency(
+                                float(self.pulsing_data.iloc[index + 1]["frequency"]),
+                                True,
+                            )
+
+                            set_bool = False
+                        except:
+                            cf.log_message("Last off cycle reached")
+
+                        set_bool = False
+                        cf.log_message(
+                            "Setting dc and hf field source and frequency took "
+                            + str(time.time() - ref)
+                            + " s"
+                        )
 
                     if self.is_killed:
                         # Close the connection to the spectrometer
