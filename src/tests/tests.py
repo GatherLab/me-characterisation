@@ -151,3 +151,6 @@ class MockArduino:
 
     def set_capacitance(self, capacitance):
         self.real_capacitance = capacitance
+
+    def trigger_frequency_generation(self, state):
+        print("Frequency generation triggered with " + str(state))

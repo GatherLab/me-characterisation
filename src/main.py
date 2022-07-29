@@ -11,6 +11,7 @@ from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
 from lifetime_measurement import LTScan
 from pid_tuning import PIDScan
+from pulsing_sweep import PulsingSweep
 
 from hardware import KoradSource, RigolOscilloscope, VoltcraftSource, Arduino
 
@@ -117,6 +118,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.sw_source_output_pushButton.clicked.connect(self.toggle_source_output)
         self.sw_source_output_pushButton.setCheckable(True)
+
+        # -------------------------------------------------------------------- #
+        # ------------------------ Pulsing Widget ---------------------------- #
+        # -------------------------------------------------------------------- #
+        self.pulsew_browse_pushButton.clicked.connect(self.pulsing_browse_folder)
+        self.pulsew_start_measurement_pushButton.setCheckable(True)
+
+        self.pulsew_start_measurement_pushButton.clicked.connect(
+            self.start_pulsing_sweep
+        )
 
         # -------------------------------------------------------------------- #
         # -------------------- Frequency Sweep Widget ------------------------ #
@@ -798,6 +809,114 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.hf_source.output(True)
             self.specw_start_measurement_pushButton.setChecked(True)
+
+    # -------------------------------------------------------------------- #
+    # -------------------------- Pulsing Widget -------------------------- #
+    # -------------------------------------------------------------------- #
+
+    def pulsing_browse_folder(self):
+        """
+        Open file dialog to browse through directories
+        """
+        global_variables = cf.read_global_settings()
+
+        file_path = QtWidgets.QFileDialog.getOpenFileName(
+            QtWidgets.QFileDialog(),
+            "Select a Pulsing File",
+            global_variables["default_saving_path"],
+        )
+        self.pulsew_folder_path_lineEdit.setText(file_path[0])
+
+        pulsing_data = self.read_pulse()
+
+        self.update_pulse_plot(pulsing_data)
+        self.update_time_position(0)
+
+    def read_pulse(self):
+        """
+        Function that translates the pulse code to time vs magnetic field data
+        """
+        # Read in data
+        # raw_pulsing_data=pd.read_csv("C:\\Users\\GatherLab-Julian\\Desktop\\pulsing.txt", delimiter="\t")
+        pulsing_data = pd.read_csv(
+            self.pulsew_folder_path_lineEdit.text(), delimiter="\t", skiprows=1
+        )
+
+        # Set the fields to zero in case of off state
+        pulsing_data.loc[pulsing_data["signal"] == "OFF", "hf_field"] = 0
+        pulsing_data.loc[pulsing_data["signal"] == "OFF", "dc_field"] = 0
+        pulsing_data["time"] = np.cumsum(pulsing_data["time"].to_numpy())
+        return pulsing_data
+
+    def update_pulse_plot(self, pulsing_data):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Clear plot
+        # self.specw_ax.cla()
+        try:
+            del self.pulsew_ax.lines[:]
+        except IndexError:
+            cf.log_message("Pulsing line can not be deleted")
+
+        # Only for plotting we have to add a line with the zeros
+        time = np.append([0], pulsing_data.time.to_list())
+        hf_field = np.append([0], pulsing_data.hf_field.to_list())
+
+        # Set x and y limit
+        self.pulsew_ax.set_xlim([min(time), max(time)])
+        self.pulsew_ax.set_ylim([0, max(hf_field) + 1])
+
+        # Do plotting
+        self.pulsew_ax.step(
+            time,
+            hf_field,
+            where="pre",
+        )
+
+        self.pulsew_fig.draw()
+
+    def start_pulsing_sweep(self):
+        """
+        Function that saves the spectrum (probably by doing another
+        measurement and shortly turning on the OLED for a background
+        measurement and then saving this into a single file)
+        """
+        if not self.pulsew_start_measurement_pushButton.isChecked():
+            self.pulsing_sweep.kill()
+            return
+
+        self.progressBar.show()
+
+        # self.arduino.set_capacitance(False)
+        time.sleep(1)
+
+        pulsing_data = self.read_pulse()
+
+        self.pulsing_sweep = PulsingSweep(
+            self.arduino,
+            self.hf_source,
+            self.dc_source,
+            self.oscilloscope,
+            pulsing_data,
+            parent=self,
+        )
+
+        self.pulsing_sweep.start()
+
+    @QtCore.Slot(float)
+    def update_time_position(self, current_time):
+        """
+        Function that is continuously evoked when the spectrum is updated by
+        the other thread
+        """
+        # Do plotting
+        vline = self.pulsew_ax.vlines(current_time, 0, 20, color="red")
+
+        self.pulsew_fig.draw()
+
+        vline.remove()
 
     # -------------------------------------------------------------------- #
     # -------------------------- Frequency Sweep ------------------------- #
