@@ -194,7 +194,7 @@ class HFScan(QtCore.QThread):
             for hf_field in hf_field_list:
                 self.hf_source.set_voltage(hf_field)
                 time.sleep(self.measurement_parameters["hf_field_settling_time"])
-                self.oscilloscope.auto_scale(1)
+                # self.oscilloscope.auto_scale(1)
                 (
                     self.osci_data[str(hf_field) + "_cal_time"],
                     osci_data_raw,
@@ -236,7 +236,7 @@ class HFScan(QtCore.QThread):
 
             # Measure the voltage and current (and possibly parameters on the osci)
             # me_voltage = float(self.oscilloscope.measure_vmax(channel=1))
-            self.oscilloscope.auto_scale(1)
+            # self.oscilloscope.auto_scale(1)
             (
                 self.osci_data[str(hf_field) + "_time"],
                 osci_data_raw,
@@ -337,22 +337,22 @@ class HFScan(QtCore.QThread):
             )
         else:
             line03 += (
-                "Constant Current:   "
-                + str(self.measurement_parameters["voltage_compliance"])
+                "DC Magnetic Field Bias:   "
+                + str(self.measurement_parameters["dc_magnetic_field"])
                 + " A"
             )
 
         line04 = (
             "Frequency: " + str(self.measurement_parameters["frequency"]) + " kHz \t"
-            "Min. Bias Field:   "
+            "Min. HF Field Voltage:   "
             + str(self.measurement_parameters["minimum_hf_voltage"])
-            + " kHz \t"
-            + "Max. Bias Field:   "
+            + " V \t"
+            + "Max. HF Field Voltage:   "
             + str(self.measurement_parameters["maximum_hf_voltage"])
-            + " kHz \t"
-            + "Bias Field Step:   "
+            + " V \t"
+            + "HF Field Voltage Step:   "
             + str(self.measurement_parameters["hf_voltage_step"])
-            + " kHz \t"
+            + " V \t"
         )
         line05 = "### Measurement data ###"
         line06 = "Current\t HF Voltage\t ME Voltage"
