@@ -1125,7 +1125,7 @@ class Arduino:
             self.init_serial_connection()
 
         # Write the command to turn on/off the frequency generation (true to enable, false to disable)
-        com.write(str.encode("trig " + str(int(state)) + "\n"))
+        com.write(str.encode("trig_" + str(int(state)) + "\n"))
 
         self.frequency_on = state
 
@@ -1203,6 +1203,7 @@ class KoradSource:
 
         self.output(False)
         self.set_voltage(20)
+        self.current_voltage_value = 20
         self.set_current(0.05)
 
         cf.log_message("Korad Source successfully initialised")
