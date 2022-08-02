@@ -104,6 +104,7 @@ class PulsingSweep(QtCore.QThread):
             )
 
         start_time = time.time()
+        time_step = 0.01
         for index, row in self.pulsing_data.iterrows():
             if row["signal"] == "ON":
 
@@ -112,11 +113,6 @@ class PulsingSweep(QtCore.QThread):
                 i = 0
 
                 while (time.time() - start_time) < float(row["time"]):
-                    # Update graph with current position in time
-                    if i % 5 == 0:
-                        self.update_time_position_signal.emit(time.time() - start_time)
-                    # print(str(time.time() - start_time) + " ON")
-                    i += 1
 
                     if self.is_killed:
                         # Close the connection to the spectrometer
@@ -128,7 +124,13 @@ class PulsingSweep(QtCore.QThread):
                         self.quit()
                         return
 
-                    time.sleep(0.01)
+                    time.sleep(time_step)
+
+                    # Update graph with current position in time
+                    if i % 5 == 0:
+                        self.update_time_position_signal.emit(time.time() - start_time)
+                    # print(str(time.time() - start_time) + " ON")
+                    i += 1
 
             elif row["signal"] == "OFF":
                 self.arduino.trigger_frequency_generation(0)
@@ -136,14 +138,6 @@ class PulsingSweep(QtCore.QThread):
 
                 i = 0
                 while (time.time() - start_time) < float(row["time"]):
-                    if i % 5 == 0:
-                        self.update_time_position_signal.emit(time.time() - start_time)
-                    # print(str(time.time() - start_time) + " ON")
-                    i += 1
-
-                    # Update graph with current position in time
-                    # self.update_time_position_signal.emit(time.time() - start_time)
-                    # print(str(time.time() - start_time) + " OFF")
 
                     # Make sure the adjustment of the sources is preparing
                     # already the next on cycle
@@ -192,13 +186,19 @@ class PulsingSweep(QtCore.QThread):
                         self.quit()
                         return
 
-                    time.sleep(0.01)
+                    time.sleep(time_step)
+
+                    if i % 5 == 0:
+                        self.update_time_position_signal.emit(time.time() - start_time)
+                    # print(str(time.time() - start_time) + " ON")
+                    i += 1
             else:
                 cf.log_message(
                     "The signal command in row "
                     + str(index)
                     + " is not a valid command!"
                 )
+            print(time.time() - start_time)
 
         self.hf_source.output(False)
         self.dc_source.output(False)

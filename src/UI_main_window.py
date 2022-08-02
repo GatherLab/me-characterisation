@@ -662,7 +662,7 @@ class Ui_MainWindow(object):
         # self.pulsew_ax.set_facecolor("#E0E0E0")
         self.pulsew_ax.grid(True)
         self.pulsew_ax.set_xlabel("Time (s)", fontsize=14)
-        self.pulsew_ax.set_ylabel("Magnetic Field (V)", fontsize=14)
+        self.pulsew_ax.set_ylabel("HF Magnetic Field (V)", fontsize=14)
         self.pulsew_ax.set_xlim([0, 300])
         self.pulsew_ax.set_xlim([0, 10])
 

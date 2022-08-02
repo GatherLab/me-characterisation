@@ -268,6 +268,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_autoset_capacitance_toggleSwitch.setChecked(True)
 
         # Set standard parameters for spectral measurement
+        self.pulsew_hf_voltage_spinBox.setMinimum(0)
+        self.pulsew_hf_voltage_spinBox.setMaximum(30)
+        self.pulsew_hf_voltage_spinBox.setValue(10)
+
+        self.pulsew_dc_field_spinBox.setMinimum(0)
+        self.pulsew_dc_field_spinBox.setMaximum(20)
+        self.pulsew_dc_field_spinBox.setValue(2)
+
         self.pulsew_frequency_spinBox.setMinimum(10)
         self.pulsew_frequency_spinBox.setMaximum(10000)
         self.pulsew_frequency_spinBox.setValue(145)
@@ -835,10 +843,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.pulsew_dc_field_spinBox.setEnabled(True)
             self.pulsew_hf_voltage_spinBox.setEnabled(True)
             self.pulsew_frequency_spinBox.setEnabled(True)
+
+            # Update the plot
+            pulsing_data = self.read_pulse()
+            pulsing_data.loc[pulsing_data.signal == "ON", "hf_field"] = float(
+                self.pulsew_hf_voltage_spinBox.value()
+            )
+            pulsing_data.loc[pulsing_data.signal == "ON", "dc_field"] = float(
+                self.pulsew_dc_field_spinBox.value()
+            )
+            pulsing_data.loc[pulsing_data.signal == "ON", "frequency"] = float(
+                self.pulsew_frequency_spinBox.value()
+            )
+            self.update_pulse_plot(pulsing_data)
         else:
             self.pulsew_dc_field_spinBox.setEnabled(False)
             self.pulsew_hf_voltage_spinBox.setEnabled(False)
             self.pulsew_frequency_spinBox.setEnabled(False)
+
+            # Update the plot
+            pulsing_data = self.read_pulse()
+            self.update_pulse_plot(pulsing_data)
 
     def pulsing_browse_folder(self):
         """
@@ -899,6 +924,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             time,
             hf_field,
             where="pre",
+            color=(85 / 255, 170 / 255, 255 / 255),
         )
 
         self.pulsew_fig.draw()
