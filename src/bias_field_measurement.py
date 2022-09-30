@@ -155,10 +155,10 @@ class BiasScan(QtCore.QThread):
         )
 
         # In the future set this as an external variable
-        reverse = True
+        reverse = False
 
         if reverse:
-            dc_field_list += np.append(dc_field_list, np.flip(dc_field_list))
+            dc_field_list = np.append(dc_field_list, np.flip(dc_field_list))
 
         self.dc_source.output(True)
 
