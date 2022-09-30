@@ -675,6 +675,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Function that changes frequency on arduino when it is changed on spinbox
         """
         frequency = self.sw_frequency_spinBox.value()
+        self.arduino.trigger_frequency_generation(False)
 
         self.arduino.set_frequency(
             frequency,
@@ -682,6 +683,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         self.sw_frequency_lcdNumber.display(frequency)
+
+        self.arduino.trigger_frequency_generation(True)
 
         if self.sw_autoset_capacitance_toggleSwitch.isChecked():
             self.sw_capacitance_lcdNumber.display(self.arduino.real_capacitance)
