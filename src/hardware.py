@@ -116,6 +116,7 @@ class RigolOscilloscope:
 
         # Change the value of the scale in the array
         self.scales[int(channel - 1)] = scale_to_set
+        time.sleep(0.2)
 
         self.mutex.unlock()
 
@@ -659,6 +660,8 @@ class Arduino:
 
         # Frequency in kHz
         self.frequency = 1000
+        self.frequency_on = True
+
         self.resistor_on = False
 
         self.init_caps()
@@ -952,7 +955,7 @@ class Arduino:
 
         # Write the frequency to the serial interface
         com.write(str.encode("cap\n"))
-        time.sleep(0.1)
+        time.sleep(0.3)
 
         # Read answer from Arduino
         try:
@@ -1111,6 +1114,23 @@ class Arduino:
 
         self.mutex.unlock()
 
+    def trigger_frequency_generation(self, state):
+        """
+        Function that turns on the frequency generator SI5351A
+        """
+        self.mutex.lock()
+        com = self.arduino
+        # Check if serial connection was already established
+        if self.serial_connection_open == False:
+            self.init_serial_connection()
+
+        # Write the command to turn on/off the frequency generation (true to enable, false to disable)
+        com.write(str.encode("trig_" + str(int(state)) + "\n"))
+
+        self.frequency_on = state
+
+        self.mutex.unlock()
+
     # The capacitances can now be matched to resonance frequencies using a fit of capacitance over resonance frequency
     # def capacitance_to_resonance_frequency(self, capacitance):
     # """
@@ -1183,6 +1203,7 @@ class KoradSource:
 
         self.output(False)
         self.set_voltage(20)
+        self.current_voltage_value = 20
         self.set_current(0.05)
 
         cf.log_message("Korad Source successfully initialised")

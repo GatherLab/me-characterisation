@@ -9,7 +9,12 @@ from hardware import (
     KoradSource,
     Arduino,
 )
-from tests.tests import MockRigoOscilloscope, MockVoltcraftSource, MockArduino
+from tests.tests import (
+    MockRigoOscilloscope,
+    MockKoradSource,
+    MockVoltcraftSource,
+    MockArduino,
+)
 
 
 class InitThread(QtCore.QThread):
@@ -87,16 +92,16 @@ class InitThread(QtCore.QThread):
 
         # Try if Voltcraft Source can be initialised
         try:
+            dc_source = KoradSource(
+                self.dc_source_address, self.dc_field_conversion_factor
+            )
+            cf.log_message("Korad Source successfully initialised")
+            dc_source_init = True
+        except:
+            # In the case that there was already a connection established,
+            # it could happen that the hf_source does not allow to establish
+            # a new one. Therefore, close the old one first.
             try:
-                dc_source = KoradSource(
-                    self.dc_source_address, self.dc_field_conversion_factor
-                )
-                cf.log_message("Korad Source successfully initialised")
-                dc_source_init = True
-            except:
-                # In the case that there was already a connection established,
-                # it could happen that the hf_source does not allow to establish
-                # a new one. Therefore, close the old one first.
                 self.widget.parent.setup_thread.pause = True
                 self.widget.parent.hf_source.close()
 
@@ -106,15 +111,15 @@ class InitThread(QtCore.QThread):
                 cf.log_message("Korad Source successfully initialised")
                 dc_source_init = True
 
-        except Exception as e:
-            dc_source = KoradSource(
-                self.dc_source_address, self.dc_field_conversion_factor
-            )
-            cf.log_message(
-                "The Korad dc source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
-            )
-            cf.log_message(e)
-            dc_source_init = False
+            except Exception as e:
+                dc_source = MockKoradSource(
+                    self.dc_source_address, self.dc_field_conversion_factor
+                )
+                cf.log_message(
+                    "The Korad dc source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
+                )
+                cf.log_message(e)
+                dc_source_init = False
 
         self.emit_dc_source.emit(dc_source)
         time.sleep(0.1)
@@ -126,19 +131,19 @@ class InitThread(QtCore.QThread):
             hf_source = VoltcraftSource(self.hf_source_address)
             cf.log_message("Voltcraft Source successfully initialised")
             hf_source_init = True
-        except:
+        except Exception as e:
             # In the case that there was already a connection established,
             # it could happen that the hf_source does not allow to establish
             # a new one. Therefore, close the old one first.
             # self.widget.parent.setup_thread.pause = True
             # self.widget.parent.hf_source.close()
 
-            dc_source = MockVoltcraftSource(self.hf_source_address)
+            hf_source = MockVoltcraftSource(self.hf_source_address)
             cf.log_message(
                 "The Voltcraft hf source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
             )
             cf.log_message(e)
-            dc_source_init = False
+            hf_source_init = False
 
         # except Exception as e:
         #     hf_source = MockKoradSource(self.source_address)
