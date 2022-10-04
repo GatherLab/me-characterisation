@@ -129,6 +129,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.start_pulsing_sweep
         )
 
+        self.pulsew_constant_parameter_mode_toggleSwitch.clicked.connect(
+            self.toggle_pulsing_constant_parameter_mode
+        )
+
+        self.pulsew_constant_parameter_mode_toggleSwitch.setChecked(False)
+        self.pulsew_dc_field_spinBox.setEnabled(False)
+        self.pulsew_hf_voltage_spinBox.setEnabled(False)
+        self.pulsew_frequency_spinBox.setEnabled(False)
+
         # -------------------------------------------------------------------- #
         # -------------------- Frequency Sweep Widget ------------------------ #
         # -------------------------------------------------------------------- #
@@ -257,6 +266,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_resistance_spinBox.setSingleStep(10)
 
         self.sw_autoset_capacitance_toggleSwitch.setChecked(True)
+
+        # Set standard parameters for spectral measurement
+        self.pulsew_hf_voltage_spinBox.setMinimum(0)
+        self.pulsew_hf_voltage_spinBox.setMaximum(30)
+        self.pulsew_hf_voltage_spinBox.setValue(10)
+
+        self.pulsew_dc_field_spinBox.setMinimum(0)
+        self.pulsew_dc_field_spinBox.setMaximum(20)
+        self.pulsew_dc_field_spinBox.setValue(2)
+
+        self.pulsew_frequency_spinBox.setMinimum(10)
+        self.pulsew_frequency_spinBox.setMaximum(10000)
+        self.pulsew_frequency_spinBox.setValue(145)
 
         # Set standard parameters for spectral measurement
         self.specw_voltage_spinBox.setMinimum(0)
@@ -816,6 +838,35 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------------------------------------------------- #
     # -------------------------- Pulsing Widget -------------------------- #
     # -------------------------------------------------------------------- #
+    def toggle_pulsing_constant_parameter_mode(self):
+        """
+        Toggle the pulsing
+        """
+        if self.pulsew_constant_parameter_mode_toggleSwitch.isChecked():
+            self.pulsew_dc_field_spinBox.setEnabled(True)
+            self.pulsew_hf_voltage_spinBox.setEnabled(True)
+            self.pulsew_frequency_spinBox.setEnabled(True)
+
+            # Update the plot
+            pulsing_data = self.read_pulse()
+            pulsing_data.loc[pulsing_data.signal == "ON", "hf_field"] = float(
+                self.pulsew_hf_voltage_spinBox.value()
+            )
+            pulsing_data.loc[pulsing_data.signal == "ON", "dc_field"] = float(
+                self.pulsew_dc_field_spinBox.value()
+            )
+            pulsing_data.loc[pulsing_data.signal == "ON", "frequency"] = float(
+                self.pulsew_frequency_spinBox.value()
+            )
+            self.update_pulse_plot(pulsing_data)
+        else:
+            self.pulsew_dc_field_spinBox.setEnabled(False)
+            self.pulsew_hf_voltage_spinBox.setEnabled(False)
+            self.pulsew_frequency_spinBox.setEnabled(False)
+
+            # Update the plot
+            pulsing_data = self.read_pulse()
+            self.update_pulse_plot(pulsing_data)
 
     def pulsing_browse_folder(self):
         """
@@ -876,9 +927,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             time,
             hf_field,
             where="pre",
+            color=(85 / 255, 170 / 255, 255 / 255),
         )
 
         self.pulsew_fig.draw()
+
+    def read_pulsing_sweep_parameters(self):
+        """
+        Function to read out the current fields entered in the frequency sweep tab
+        """
+        pulsing_sweep_parameters = {
+            "constant_mode": self.pulsew_constant_parameter_mode_toggleSwitch.isChecked(),
+            "hf_voltage": self.pulsew_hf_voltage_spinBox.value(),
+            "dc_field": self.pulsew_dc_field_spinBox.value(),
+            "frequency": self.pulsew_frequency_spinBox.value(),
+        }
+
+        # Update statusbar
+        cf.log_message("Pulsing mode parameters read")
+
+        return pulsing_sweep_parameters
 
     def start_pulsing_sweep(self):
         """
@@ -892,6 +960,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.progressBar.show()
 
+        pulsing_sweep_parameters = self.read_pulsing_sweep_parameters()
+
         # self.arduino.set_capacitance(False)
         time.sleep(1)
 
@@ -903,6 +973,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.dc_source,
             self.oscilloscope,
             pulsing_data,
+            pulsing_sweep_parameters,
             parent=self,
         )
 
