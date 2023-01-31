@@ -771,57 +771,6 @@ class Ui_MainWindow(object):
             self.pulsew_constant_parameter_mode_HLayout, 4, 0, 1, 1
         )
 
-        # Set HF field voltage
-        self.pulsew_hf_voltage_label = QtWidgets.QLabel(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_hf_voltage_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.pulsew_hf_voltage_label.setObjectName("pulsew_hf_voltage_label")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_hf_voltage_label, 5, 0, 1, 1
-        )
-        self.pulsew_hf_voltage_spinBox = QtWidgets.QDoubleSpinBox(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_hf_voltage_spinBox.setObjectName("pulsew_hf_voltage_spinBox")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_hf_voltage_spinBox, 6, 0, 1, 1
-        )
-
-        # Set DC field
-        self.pulsew_dc_field_label = QtWidgets.QLabel(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_dc_field_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.pulsew_dc_field_label.setObjectName("pulsew_dc_field_label")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_dc_field_label, 7, 0, 1, 1
-        )
-        self.pulsew_dc_field_spinBox = QtWidgets.QDoubleSpinBox(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_dc_field_spinBox.setObjectName("pulsew_dc_field_spinBox")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_dc_field_spinBox, 8, 0, 1, 1
-        )
-
-        # Set HF frequency
-        self.pulsew_frequency_label = QtWidgets.QLabel(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_frequency_label.setStyleSheet('font: 63 bold 10pt "Segoe UI";')
-        self.pulsew_frequency_label.setObjectName("pulsew_frequency_label")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_frequency_label, 9, 0, 1, 1
-        )
-        self.pulsew_frequency_spinBox = QtWidgets.QDoubleSpinBox(
-            self.pulsew_scrollAreaWidgetContents
-        )
-        self.pulsew_frequency_spinBox.setObjectName("pulsew_frequency_spinBox")
-        self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_frequency_spinBox, 10, 0, 1, 1
-        )
-
         # Start measurement push button
         self.pulsew_start_measurement_pushButton = QtWidgets.QPushButton(
             self.pulsew_scrollAreaWidgetContents
@@ -830,7 +779,7 @@ class Ui_MainWindow(object):
             "pulsew_start_measurement_pushButton"
         )
         self.pulsew_scrollArea_gridLayout.addWidget(
-            self.pulsew_start_measurement_pushButton, 11, 0, 1, 1
+            self.pulsew_start_measurement_pushButton, 5, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.pulsing_widget, "")
@@ -2778,16 +2727,10 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Pulsing Instructions")
         )
         self.pulsew_browse_pushButton.setText(_translate("MainWindow", "Browse"))
-        self.pulsew_dc_field_label.setText(_translate("MainWindow", "DC Field (mT)"))
-        self.pulsew_hf_voltage_label.setText(_translate("MainWindow", "HF Field (V)"))
-        self.pulsew_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
         self.pulsew_start_measurement_pushButton.setText(
             _translate("MainWindow", "Start Measurement")
         )
 
-        self.pulsew_dc_field_spinBox.setSuffix(_translate("MainWindow", " mT"))
-        self.pulsew_hf_voltage_spinBox.setSuffix(_translate("MainWindow", " V"))
-        self.pulsew_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         # self.pidw_max_voltage_label.setText(
         # _translate("MainWindow", "Max Voltage (V)")
         # )
