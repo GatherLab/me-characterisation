@@ -159,15 +159,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         # -------------------------------------------------------------------- #
-        # ----------------------- Power Sweep Widget ------------------------- #
-        # -------------------------------------------------------------------- #
-        self.powerw_start_measurement_pushButton.clicked.connect(self.start_power_sweep)
-        self.powerw_start_measurement_pushButton.setCheckable(True)
-        self.powerw_constant_magnetic_field_mode_toggleSwitch.clicked.connect(
-            self.change_current_to_magnetic_field
-        )
-
-        # -------------------------------------------------------------------- #
         # --------------------- HF Field Sweep Widget ------------------------ #
         # -------------------------------------------------------------------- #
         self.hfw_start_measurement_pushButton.clicked.connect(self.start_hf_field_sweep)
@@ -333,43 +324,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.bw_autoset_capacitance_toggleSwitch.setChecked(True)
         self.bw_reverse_sweep_toggleSwitch.setChecked(True)
-
-        # Set standard parameters for power measurement
-        self.powerw_voltage_spinBox.setMinimum(0)
-        self.powerw_voltage_spinBox.setMaximum(33)
-        self.powerw_voltage_spinBox.setValue(5)
-
-        self.powerw_current_spinBox.setMinimum(0)
-        self.powerw_current_spinBox.setMaximum(12)
-        self.powerw_current_spinBox.setValue(1)
-
-        self.powerw_frequency_spinBox.setMinimum(8)
-        self.powerw_frequency_spinBox.setMaximum(150000)
-        self.powerw_frequency_spinBox.setValue(145)
-
-        self.powerw_minimum_resistance_spinBox.setMinimum(70)
-        self.powerw_minimum_resistance_spinBox.setMaximum(2600)
-        self.powerw_minimum_resistance_spinBox.setValue(100)
-
-        self.powerw_maximum_resistance_spinBox.setMinimum(70)
-        self.powerw_maximum_resistance_spinBox.setMaximum(2600)
-        self.powerw_maximum_resistance_spinBox.setValue(2600)
-
-        self.powerw_resistance_step_spinBox.setMinimum(10)
-        self.powerw_resistance_step_spinBox.setMaximum(2500)
-        self.powerw_resistance_step_spinBox.setSingleStep(10)
-        self.powerw_resistance_step_spinBox.setValue(100)
-
-        self.powerw_resistance_settling_time_spinBox.setMinimum(0.01)
-        self.powerw_resistance_settling_time_spinBox.setMaximum(10)
-        self.powerw_resistance_settling_time_spinBox.setValue(1)
-
-        self.powerw_dc_magnetic_field_spinBox.setMinimum(0.01)
-        self.powerw_dc_magnetic_field_spinBox.setMaximum(10)
-        self.powerw_dc_magnetic_field_spinBox.setValue(1.5)
-
-        self.powerw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
-        self.powerw_autoset_capacitance_toggleSwitch.setChecked(True)
 
         # Set standard parameters for hf field measurement
         self.hfw_voltage_compliance_spinBox.setMinimum(0)
@@ -1018,22 +972,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             )
             self.specw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
 
-            self.powerw_current_label.setText(
-                _translate("MainWindow", "Magnetic Field (mT)")
-            )
-            self.powerw_current_spinBox.setSuffix(_translate("MainWindow", " mT"))
-            self.powerw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         else:
             self.specw_current_label.setText(
                 _translate("MainWindow", "Maximum Current (A)")
             )
             self.specw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
-
-            self.powerw_current_label.setText(
-                _translate("MainWindow", "Maximum Current (A)")
-            )
-            self.powerw_current_spinBox.setSuffix(_translate("MainWindow", " A"))
-            self.powerw_constant_magnetic_field_mode_toggleSwitch.setChecked(False)
 
     def read_frequency_sweep_parameters(self):
         """
@@ -1169,13 +1112,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         }
 
         # Update statusbar
-        cf.log_message("Power sweep parameters read")
+        cf.log_message("Bias field sweep parameters read")
 
         return dc_sweep_parameters
 
     def start_dc_field_sweep(self):
         """
-        Function to start the power measurement
+        Function to start the dc field measurement
         """
         if not self.bw_start_measurement_pushButton.isChecked():
             self.bias_field_sweep.kill()
@@ -1183,7 +1126,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Load in setup parameters and make sure that the parameters make sense
         setup_parameters = self.safe_read_setup_parameters()
-        power_sweep_parameters = self.read_dc_field_sweep_parameters()
+        dc_sweep_parameters = self.read_dc_field_sweep_parameters()
 
         self.progressBar.show()
 
@@ -1195,7 +1138,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.hf_source,
             self.dc_source,
             self.oscilloscope,
-            power_sweep_parameters,
+            dc_sweep_parameters,
             setup_parameters,
             parent=self,
         )
@@ -1241,120 +1184,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_fig.draw()
 
     # -------------------------------------------------------------------- #
-    # ----------------------------- Power Sweep -------------------------- #
-    # -------------------------------------------------------------------- #
-
-    def read_power_sweep_parameters(self):
-        """
-        Function to read out the current fields entered in the frequency sweep tab
-        """
-        power_sweep_parameters = {
-            "voltage": self.powerw_voltage_spinBox.value(),
-            "current_compliance": self.powerw_current_spinBox.value(),
-            "frequency": self.powerw_frequency_spinBox.value(),
-            "dc_magnetic_field": self.powerw_dc_magnetic_field_spinBox.value(),
-            "minimum_resistance": self.powerw_minimum_resistance_spinBox.value(),
-            "maximum_resistance": self.powerw_maximum_resistance_spinBox.value(),
-            "resistance_step": self.powerw_resistance_step_spinBox.value(),
-            "resistance_settling_time": self.powerw_resistance_settling_time_spinBox.value(),
-            "autoset_capacitance": self.powerw_autoset_capacitance_toggleSwitch.isChecked(),
-            "constant_magnetic_field_mode": self.powerw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
-        }
-
-        # Update statusbar
-        cf.log_message("Power sweep parameters read")
-
-        return power_sweep_parameters
-
-    def start_power_sweep(self):
-        """
-        Function to start the power measurement
-        """
-        if not self.powerw_start_measurement_pushButton.isChecked():
-            self.power_sweep.kill()
-            return
-
-        # Load in setup parameters and make sure that the parameters make sense
-        setup_parameters = self.safe_read_setup_parameters()
-        power_sweep_parameters = self.read_power_sweep_parameters()
-
-        self.progressBar.show()
-
-        # self.arduino.set_capacitance(False)
-        time.sleep(1)
-
-        self.power_sweep = PowerScan(
-            self.arduino,
-            self.hf_source,
-            self.dc_source,
-            self.oscilloscope,
-            power_sweep_parameters,
-            setup_parameters,
-            parent=self,
-        )
-
-        self.power_sweep.start()
-
-    @QtCore.Slot(list, list, list, list)
-    def update_power_plot(self, resistance, voltage, power, magnetic_field):
-        """
-        Function that is continuously evoked when the spectrum is updated by
-        the other thread
-        """
-        # Clear plot
-        # self.specw_ax.cla()
-        try:
-            # Delete two times zero because after the first deletion the first element will be element zero
-            del self.powerw_ax.lines[0]
-            del self.powerw_ax.lines[0]
-            del self.powerw_ax2.lines[0]
-        except IndexError:
-            cf.log_message("Oscilloscope line can not be deleted")
-
-        # Set x and y limit
-        self.powerw_ax.set_xlim([min(resistance), max(resistance)])
-        self.powerw_ax.set_ylim([0, max(np.append(voltage, magnetic_field)) + 0.05])
-
-        self.powerw_ax2.set_ylim(
-            [
-                min(power) - 0.05,
-                max(power) + 0.05,
-            ]
-        )
-
-        # Plot current
-        self.powerw_ax.plot(
-            resistance,
-            voltage,
-            marker="o",
-            color="black",
-            label="ME Voltage",
-        )
-
-        self.powerw_ax.plot(
-            resistance,
-            power,
-            color="red",
-            marker="o",
-            label="Power Density",
-        )
-
-        self.powerw_ax2.plot(
-            resistance,
-            magnetic_field,
-            color=(85 / 255, 170 / 255, 255 / 255),
-            marker="o",
-            label="Magnetic Field",
-        )
-
-        lines, labels = self.powerw_ax.get_legend_handles_labels()
-        lines2, labels2 = self.powerw_ax2.get_legend_handles_labels()
-        legend = self.powerw_ax2.legend(lines + lines2, labels + labels2, loc="best")
-        legend.set_draggable(True)
-
-        self.powerw_fig.draw()
-
-    # -------------------------------------------------------------------- #
     # -------------------------- HF Field Scan --------------------------- #
     # -------------------------------------------------------------------- #
 
@@ -1362,7 +1191,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Function to read out the current fields entered in the frequency sweep tab
         """
-        dc_sweep_parameters = {
+        hf_sweep_parameters = {
             "voltage_compliance": self.hfw_voltage_compliance_spinBox.value(),
             "dc_magnetic_field": self.hfw_dc_magnetic_field_spinBox.value(),
             "frequency": self.hfw_frequency_spinBox.value(),
@@ -1375,9 +1204,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         }
 
         # Update statusbar
-        cf.log_message("Power sweep parameters read")
+        cf.log_message("HF field sweep parameters read")
 
-        return dc_sweep_parameters
+        return hf_sweep_parameters
 
     def start_hf_field_sweep(self):
         """
