@@ -4,7 +4,6 @@ from loading_window import LoadingWindow
 
 from frequency_measurement import FrequencyScan
 from bias_field_measurement import BiasScan
-from power_measurement import PowerScan
 
 from hf_field_measurement import HFScan
 
