@@ -62,7 +62,9 @@ class HFScan(QtCore.QThread):
         self.pause_thread_hf_field.connect(parent.pause_hf_measurement)
 
         # Define dataframe to store data in
-        self.df_data = pd.DataFrame(columns=["current", "hf_field", "me_voltage"])
+        self.df_data = pd.DataFrame(
+            columns=["current", "hf_field", "hf_field_pickup", "me_voltage"]
+        )
 
         self.is_killed = False
 
@@ -162,6 +164,7 @@ class HFScan(QtCore.QThread):
         self.dc_source.output(True)
         time.sleep(1)
 
+        """
         self.osci_data = pd.DataFrame(
             columns=np.concatenate(
                 (
@@ -225,6 +228,7 @@ class HFScan(QtCore.QThread):
                     return
 
             self.hf_source.output(True)
+        """
 
         for hf_field in hf_field_list:
             # for frequency in self.df_data["frequency"]:
@@ -237,31 +241,36 @@ class HFScan(QtCore.QThread):
             # Measure the voltage and current (and possibly parameters on the osci)
             # me_voltage = float(self.oscilloscope.measure_vmax(channel=1))
             # self.oscilloscope.auto_scale(1)
-            (
-                self.osci_data[str(hf_field) + "_time"],
-                osci_data_raw,
-            ) = self.oscilloscope.get_data("CHAN2")
-            (
-                time_data,
-                self.osci_data[str(hf_field) + "_field"],
-            ) = self.oscilloscope.get_data("CHAN1")
 
-            self.osci_data[str(hf_field)] = uniform_filter1d(osci_data_raw, 20)
+            """
+            if calibration:
+                (
+                    self.osci_data[str(hf_field) + "_time"],
+                    osci_data_raw,
+                ) = self.oscilloscope.get_data("CHAN2")
+                (
+                    time_data,
+                    self.osci_data[str(hf_field) + "_field"],
+                ) = self.oscilloscope.get_data("CHAN1")
 
-            me_voltage = np.max(
-                self.osci_data[str(hf_field)] - self.osci_data[str(hf_field) + "_cal"]
-            )
+                self.osci_data[str(hf_field)] = uniform_filter1d(osci_data_raw, 20)
+
+                me_voltage = np.max(
+                    self.osci_data[str(hf_field)] - self.osci_data[str(hf_field) + "_cal"]
+                )
+            """
+            me_voltage = float(self.oscilloscope.measure_vmax(2))
 
             # Calculate the magnetic field using a pickup coil
-            # magnetic_field = (
-            #     pf.calculate_magnetic_field_from_Vind(
-            #         self.global_parameters["pickup_coil_windings"],
-            #         self.global_parameters["pickup_coil_radius"] * 1e-3,
-            #         float(self.oscilloscope.measure_vmax(1)),
-            #         self.measurement_parameters["frequency"] * 1e3,
-            #     )
-            #     * 1e3
-            # )
+            magnetic_field = (
+                pf.calculate_magnetic_field_from_Vind(
+                    self.global_parameters["pickup_coil_windings"],
+                    self.global_parameters["pickup_coil_radius"] * 1e-3,
+                    float(self.oscilloscope.measure_vmax(1)),
+                    self.measurement_parameters["frequency"] * 1e3,
+                )
+                * 1e3
+            )
 
             # Set the variables in the dataframe
             (
@@ -269,6 +278,7 @@ class HFScan(QtCore.QThread):
                 self.df_data.loc[i, "current"],
             ) = self.hf_source.read_values()
             self.df_data.loc[i, "hf_field"] = voltage  # magnetic_field
+            self.df_data.loc[i, "hf_field_pickup"] = magnetic_field  # magnetic_field
             self.df_data.loc[i, "me_voltage"] = me_voltage
 
             # Update progress bar
@@ -329,18 +339,11 @@ class HFScan(QtCore.QThread):
             + str(self.measurement_parameters["maximum_hf_voltage"])
             + " V   "
         )
-        if self.measurement_parameters["constant_magnetic_field_mode"]:
-            line03 += (
-                "Constant HF Magnetic Field:   "
-                + str(self.measurement_parameters["voltage_compliance"])
-                + " mT"
-            )
-        else:
-            line03 += (
-                "DC Magnetic Field Bias:   "
-                + str(self.measurement_parameters["dc_magnetic_field"])
-                + " A"
-            )
+        line03 += (
+            "DC Magnetic Field Bias:   "
+            + str(self.measurement_parameters["dc_magnetic_field"])
+            + " A"
+        )
 
         line04 = (
             "Frequency: " + str(self.measurement_parameters["frequency"]) + " kHz \t"
@@ -355,8 +358,8 @@ class HFScan(QtCore.QThread):
             + " V \t"
         )
         line05 = "### Measurement data ###"
-        line06 = "Current\t HF Voltage\t ME Voltage"
-        line07 = "A\t V\t V\n"
+        line06 = "Current\t HF Voltage\t HF Field pickup\t ME Voltage"
+        line07 = "A\t V\t mT\t V\n"
 
         header_lines = [
             line02,
@@ -397,12 +400,18 @@ class HFScan(QtCore.QThread):
         self.df_data["hf_field"] = self.df_data["hf_field"].map(
             lambda x: "{0:.3f}".format(x)
         )
+        self.df_data["hf_field_pickup"] = self.df_data["hf_field_pickup"].map(
+            lambda x: "{0:.3f}".format(x)
+        )
 
         cf.save_file(self.df_data, file_path, header_lines)
 
-        cf.save_file(
-            self.osci_data, file_path_full, header_lines_full, save_header=True
-        )
+        """
+        if calibration:
+            cf.save_file(
+                self.osci_data, file_path_full, header_lines_full, save_header=True
+            )
+        """
 
         # with open(file_path, "a") as the_file:
         #     the_file.write("\n".join(header_lines))
