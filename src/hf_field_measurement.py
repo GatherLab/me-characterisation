@@ -198,11 +198,11 @@ class HFScan(QtCore.QThread):
                 (
                     self.osci_data[str(hf_field) + "_cal_time"],
                     osci_data_raw,
-                ) = self.oscilloscope.get_data("CHAN1")
+                ) = self.oscilloscope.get_data("CHAN2")
                 (
                     time_data,
                     self.osci_data[str(hf_field) + "_cal_field"],
-                ) = self.oscilloscope.get_data("CHAN2")
+                ) = self.oscilloscope.get_data("CHAN1")
                 # Function to do moving average
 
                 self.osci_data[str(hf_field) + "_cal"] = uniform_filter1d(
@@ -240,11 +240,11 @@ class HFScan(QtCore.QThread):
             (
                 self.osci_data[str(hf_field) + "_time"],
                 osci_data_raw,
-            ) = self.oscilloscope.get_data()
+            ) = self.oscilloscope.get_data("CHAN2")
             (
                 time_data,
                 self.osci_data[str(hf_field) + "_field"],
-            ) = self.oscilloscope.get_data("CHAN2")
+            ) = self.oscilloscope.get_data("CHAN1")
 
             self.osci_data[str(hf_field)] = uniform_filter1d(osci_data_raw, 20)
 
