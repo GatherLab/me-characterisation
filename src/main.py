@@ -5,7 +5,10 @@ from loading_window import LoadingWindow
 from frequency_measurement import FrequencyScan
 from bias_field_measurement import BiasScan
 from power_measurement import PowerScan
+
 from hf_field_measurement import HFScan
+
+# from osci_frequency_scan import HFScan
 from capacitance_measurement import CapacitanceScan
 from setup import SetupThread
 from oscilloscope_measurement import OscilloscopeThread
@@ -392,20 +395,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.hfw_dc_magnetic_field_spinBox.setMaximum(10)
         self.hfw_dc_magnetic_field_spinBox.setValue(1.5)
 
-        self.hfw_frequency_spinBox.setMinimum(8)
+        self.hfw_frequency_spinBox.setMinimum(1)
         self.hfw_frequency_spinBox.setMaximum(150000)
         self.hfw_frequency_spinBox.setValue(145)
 
         self.hfw_minimum_voltage_spinBox.setMinimum(0)
-        self.hfw_minimum_voltage_spinBox.setMaximum(12)
+        self.hfw_minimum_voltage_spinBox.setMaximum(1000)
         self.hfw_minimum_voltage_spinBox.setValue(2)
 
         self.hfw_maximum_voltage_spinBox.setMinimum(0)
-        self.hfw_maximum_voltage_spinBox.setMaximum(12)
+        self.hfw_maximum_voltage_spinBox.setMaximum(1000)
         self.hfw_maximum_voltage_spinBox.setValue(10)
 
         self.hfw_voltage_step_spinBox.setMinimum(0)
-        self.hfw_voltage_step_spinBox.setMaximum(12)
+        self.hfw_voltage_step_spinBox.setMaximum(1000)
         self.hfw_voltage_step_spinBox.setValue(0.5)
 
         self.hfw_voltage_settling_time_spinBox.setMinimum(0)
