@@ -217,13 +217,11 @@ class InitThread(QtCore.QThread):
                 b = a + " and " + device_not_loading_message[-1]
             elif len(device_not_loading_message) == 1:
                 b = device_not_loading_message[0]
-            elif len(device_not_loading_message) == 4:
-                b = "None"
 
             c = b + " could not be initialised."
 
             if len(device_not_loading_message) == 4:
-                c = "None of the devices could be initialised."
+                c = "None of the hardware could be initialised."
 
             self.update_loading_dialog.emit(
                 100,
