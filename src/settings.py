@@ -131,7 +131,6 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         # Add the default parameters to the new settings json
         settings_data["default"] = []
         settings_data["default"] = data["default"]
-        print(settings_data)
 
         # Save the entire thing again to the settings.json file
         with open(
@@ -147,10 +146,41 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
 
         # Before closing the window, reinstanciate the devices with the new
         # parameters
-        loading_window = LoadingWindow(self.parent)
+        reload_window_comparison = {
+            k: settings_data["overwrite"][0][k]
+            for k in data["overwrite"][0]
+            if k in settings_data["overwrite"][0]
+            and data["overwrite"][0][k] != settings_data["overwrite"][0][k]
+        }
+        # If any of the parameters that require a reinitialisation has been changed, then do one
+        if any(
+            key in reload_window_comparison.keys()
+            for key in [
+                "dc_source_address",
+                "hf_source_address",
+                "arduino_com_address",
+                "rigol_oscilloscope_address",
+            ]
+        ):
+            loading_window = LoadingWindow(self.parent)
 
-        # Execute loading dialog
-        loading_window.exec()
+            # Execute loading dialog
+            loading_window.exec()
+        elif any(
+            key in reload_window_comparison.keys()
+            for key in [
+                "dc_field_conversion_factor",
+                "capacitances",
+                "base_capacitance",
+                "arduino_pins",
+                "calibration_file_path",
+            ]
+        ):
+            # Only reinit caps and dc field conversion factor
+            self.parent.arduino.init_caps()
+            self.parent.dc_source.dc_field_conversion_factor = settings_data[
+                "overwrite"
+            ]["dc_field_conversion_factor"]
 
     def load_defaults(self):
         """
