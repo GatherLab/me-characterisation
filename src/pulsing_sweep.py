@@ -79,29 +79,32 @@ class PulsingSweep(QtCore.QThread):
         pydevd.settrace(suspend=False)
 
         # Measure time elapsed
-        self.hf_source.set_current(2)
+        if not self.pulsing_sweep_parameters["constant_mode"]:
+            self.hf_source.set_current(2)
+
+        self.arduino.trigger_frequency_generation(0)
 
         # Activation can not be done via the HF output since it is simply too
         # slow
         self.dc_source.output(True)
         self.hf_source.output(True)
-        time.sleep(1)
-        if self.pulsing_sweep_parameters["constant_mode"]:
-            # Takes about 0.2 s
-            self.dc_source.set_magnetic_field(
-                float(self.pulsing_sweep_parameters["dc_field"])
-            )
+        # time.sleep(1)
+        # if self.pulsing_sweep_parameters["constant_mode"]:
+        #     # Takes about 0.2 s
+        #     self.dc_source.set_magnetic_field(
+        #         float(self.pulsing_sweep_parameters["dc_field"])
+        #     )
 
-            # Takes about 20 ms
-            self.hf_source.set_voltage(
-                float(self.pulsing_sweep_parameters["hf_voltage"])
-            )
+        #     # Takes about 20 ms
+        #     self.hf_source.set_voltage(
+        #         float(self.pulsing_sweep_parameters["hf_voltage"])
+        #     )
 
-            # Takes about 0.5s
-            self.arduino.set_frequency(
-                float(self.pulsing_sweep_parameters["frequency"]),
-                True,
-            )
+        #     # Takes about 0.5s
+        #     self.arduino.set_frequency(
+        #         float(self.pulsing_sweep_parameters["frequency"]),
+        #         True,
+        #     )
 
         start_time = time.time()
         time_step = 0.01
@@ -117,9 +120,8 @@ class PulsingSweep(QtCore.QThread):
                     if self.is_killed:
                         # Close the connection to the spectrometer
                         self.hf_source.output(False)
-                        self.hf_source.set_voltage(1)
                         self.dc_source.output(False)
-                        self.arduino.set_frequency(1000, True)
+                        # self.arduino.set_frequency(1000, True)
                         # self.parent.oscilloscope_thread.pause = False
                         self.quit()
                         return
@@ -148,22 +150,44 @@ class PulsingSweep(QtCore.QThread):
                         ) and set_bool:
                             try:
                                 # Takes about 0.2 s
-                                self.dc_source.set_magnetic_field(
-                                    float(self.pulsing_data.iloc[index + 1]["dc_field"])
-                                )
+                                if (
+                                    self.pulsing_data.iloc[index - 1]["dc_field"]
+                                    != self.pulsing_data.iloc[index + 1]["dc_field"]
+                                ):
+                                    self.dc_source.set_magnetic_field(
+                                        float(
+                                            self.pulsing_data.iloc[index + 1][
+                                                "dc_field"
+                                            ]
+                                        )
+                                    )
 
                                 # Takes about 20 ms
-                                self.hf_source.set_voltage(
-                                    float(self.pulsing_data.iloc[index + 1]["hf_field"])
-                                )
+                                if (
+                                    self.pulsing_data.iloc[index - 1]["hf_field"]
+                                    != self.pulsing_data.iloc[index + 1]["hf_field"]
+                                ):
+                                    self.hf_source.set_voltage(
+                                        float(
+                                            self.pulsing_data.iloc[index + 1][
+                                                "hf_field"
+                                            ]
+                                        )
+                                    )
 
                                 # Takes about 0.5s
-                                self.arduino.set_frequency(
-                                    float(
-                                        self.pulsing_data.iloc[index + 1]["frequency"]
-                                    ),
-                                    True,
-                                )
+                                if (
+                                    self.pulsing_data.iloc[index - 1]["frequency"]
+                                    != self.pulsing_data.iloc[index + 1]["frequency"]
+                                ):
+                                    self.arduino.set_frequency(
+                                        float(
+                                            self.pulsing_data.iloc[index + 1][
+                                                "frequency"
+                                            ]
+                                        ),
+                                        True,
+                                    )
 
                                 set_bool = False
                             except:
@@ -179,9 +203,8 @@ class PulsingSweep(QtCore.QThread):
                     if self.is_killed:
                         # Close the connection to the spectrometer
                         self.hf_source.output(False)
-                        self.hf_source.set_voltage(1)
                         self.dc_source.output(False)
-                        self.arduino.set_frequency(1000, True)
+                        # self.arduino.set_frequency(1000, True)
                         # self.parent.oscilloscope_thread.pause = False
                         self.quit()
                         return
@@ -202,7 +225,7 @@ class PulsingSweep(QtCore.QThread):
 
         self.hf_source.output(False)
         self.dc_source.output(False)
-        self.arduino.set_frequency(1000, True)
+        # self.arduino.set_frequency(1000, True)
 
         self.parent.pulsew_start_measurement_pushButton.setChecked(False)
 
