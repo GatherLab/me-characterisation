@@ -662,7 +662,7 @@ class Ui_MainWindow(object):
         # self.pulsew_ax.set_facecolor("#E0E0E0")
         self.pulsew_ax.grid(True)
         self.pulsew_ax.set_xlabel("Time (s)", fontsize=14)
-        self.pulsew_ax.set_ylabel("HF Magnetic Field (V)", fontsize=14)
+        self.pulsew_ax.set_ylabel("AC Magnetic Field (V)", fontsize=14)
         self.pulsew_ax.set_xlim([0, 300])
         self.pulsew_ax.set_xlim([0, 10])
 
@@ -833,7 +833,7 @@ class Ui_MainWindow(object):
 
         self.specw_ax2 = self.specw_ax.twinx()
         self.specw_ax2.set_ylabel(
-            "HF Magnetic Field/Current (mT/A)",
+            "AC Magnetic Field/Current (mT/A)",
             fontsize=14,
             color=(85 / 255, 170 / 255, 255 / 255),
         )
@@ -1123,7 +1123,7 @@ class Ui_MainWindow(object):
 
         self.bw_ax2 = self.bw_ax.twinx()
         self.bw_ax2.set_ylabel(
-            "HF Magnetic Field (mT)",
+            "AC Magnetic Field (mT)",
             fontsize=14,
             color=(85 / 255, 170 / 255, 255 / 255),
         )
@@ -1348,7 +1348,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.bias_field_widget, "")
 
         # -------------------------------------------------------------------- #
-        # ----------------- Define HF Field Scan Widget ---------------------- #
+        # ----------------- Define AC Field Scan Widget ---------------------- #
         # -------------------------------------------------------------------- #
         self.hf_field_widget = QtWidgets.QWidget()
         self.hf_field_widget.setObjectName("hf_field_widget")
@@ -1380,7 +1380,7 @@ class Ui_MainWindow(object):
         self.hfw_ax = self.hfw_fig.figure.subplots()
         # self.hfw_ax.set_facecolor("#E0E0E0")
         self.hfw_ax.grid(True)
-        self.hfw_ax.set_xlabel("HF Field Voltage (V)", fontsize=14)
+        self.hfw_ax.set_xlabel("AC Field Voltage (V)", fontsize=14)
         self.hfw_ax.set_ylabel("Max ME Response (V)", fontsize=14)
         self.hfw_ax.set_xlim([50, 600])
 
@@ -1638,7 +1638,7 @@ class Ui_MainWindow(object):
         self.ltw_ax = self.ltw_fig.figure.subplots()
         # self.ltw_ax.set_facecolor("#E0E0E0")
         self.ltw_ax.grid(True)
-        self.ltw_ax.set_xlabel("HF Field Voltage (V)", fontsize=14)
+        self.ltw_ax.set_xlabel("AC Field Voltage (V)", fontsize=14)
         self.ltw_ax.set_ylabel("Max ME Response (V)", fontsize=14)
         self.ltw_ax.set_xlim([50, 600])
 
@@ -2146,7 +2146,7 @@ class Ui_MainWindow(object):
         # self.pidw_ax.set_facecolor("#E0E0E0")
         self.pidw_ax.grid(True)
         self.pidw_ax.set_xlabel("Time (s)", fontsize=14)
-        self.pidw_ax.set_ylabel("HF Magnetic Field (mT)", fontsize=14)
+        self.pidw_ax.set_ylabel("AC Magnetic Field (mT)", fontsize=14)
         self.pidw_ax.set_xlim([50, 600])
 
         self.pidw_ax.axhline(linewidth=1, color="black")
@@ -2437,7 +2437,7 @@ class Ui_MainWindow(object):
         # )
         self.specw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.specw_current_label.setText(
-            _translate("MainWindow", "HF Magnetic Field (mT)")
+            _translate("MainWindow", "AC Magnetic Field (mT)")
         )
         self.specw_dc_magnetic_field_label.setText(
             _translate("MainWindow", "DC Magnetic Field (mT)")
@@ -2481,7 +2481,7 @@ class Ui_MainWindow(object):
 
         self.bw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.bw_current_label.setText(
-            _translate("MainWindow", "HF Magnetic Field (mT)")
+            _translate("MainWindow", "AC Magnetic Field (mT)")
         )
         self.bw_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
         self.bw_minimum_dc_magnetic_field_label.setText(
@@ -2650,7 +2650,7 @@ class Ui_MainWindow(object):
 
         self.pidw_voltage_label.setText(_translate("MainWindow", "Voltage (V)"))
         self.pidw_current_label.setText(
-            _translate("MainWindow", "HF Magnetic Field (mT)")
+            _translate("MainWindow", "AC Magnetic Field (mT)")
         )
         self.pidw_frequency_label.setText(_translate("MainWindow", "Frequency (kHz)"))
         self.pidw_autoset_capacitance_toggleSwitch.setText(
@@ -2704,7 +2704,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.hf_field_widget),
-            _translate("MainWindow", "HF Field"),
+            _translate("MainWindow", "AC Field"),
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.ltw_widget),
