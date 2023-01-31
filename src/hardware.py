@@ -59,8 +59,8 @@ class RigolOscilloscope:
         )
 
         self.scales = np.repeat(2.0, 2)
-        self.change_scale(1, 2)
-        self.change_scale(2, 2)
+        # self.change_scale(1, 2)
+        # self.change_scale(2, 2)
 
         # Also set both to zero
         self.osci.write(":CHAN1:OFFSET 0")
@@ -635,6 +635,9 @@ class Arduino:
         """
         Init arduino
         """
+        import pydevd
+
+        pydevd.settrace(suspend=False)
 
         # Define a mutex
         self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
