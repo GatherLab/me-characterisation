@@ -126,6 +126,31 @@ class MockVoltcraftSource:
         """
         print("Voltcraft output triggered")
 
+    def start_constant_magnetic_field_mode(
+        self, pid_parameters, set_point, maximum_voltage
+    ):
+        """
+        Start constant magnetic field mode according to a set value
+        """
+        print("Constant magnetic field mode started")
+
+    def adjust_magnetic_field(
+        self,
+        pickup_coil_windings,
+        pickup_coil_radius,
+        frequency,
+        osci,
+        break_if_too_long=False,
+    ):
+        """
+        Does the adjustment to a constant magnetic field according to an input
+        magnetic field and measurements using an external device (e.g. osci).
+        magnetic field in mT, frequency in kHz
+        """
+        pid_voltage = 1
+        elapsed_time = 0.0001
+        return pid_voltage, elapsed_time
+
 
 class MockArduino:
     """

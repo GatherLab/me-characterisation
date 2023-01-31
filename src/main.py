@@ -332,6 +332,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bw_constant_magnetic_field_mode_toggleSwitch.setChecked(True)
         self.bw_autoset_capacitance_toggleSwitch.setChecked(True)
+        self.bw_reverse_sweep_toggleSwitch.setChecked(True)
 
         # Set standard parameters for power measurement
         self.powerw_voltage_spinBox.setMinimum(0)
@@ -743,7 +744,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
 
         # Read out measurement and setup parameters from GUI
-        setup_parameters = self.read_setup_parameters()
+        try:
+            setup_parameters = self.read_setup_parameters()
+        except ValueError:
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setText(
+                "Please set valid device dimensions first in the format 11.5,3.5"
+            )
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.setStyleSheet(
+                "background-color: rgb(44, 49, 60);\n"
+                "color: rgb(255, 255, 255);\n"
+                'font: 63 bold 10pt "Segoe UI";\n'
+                ""
+            )
+            msgBox.exec()
+
+            self.specw_start_measurement_pushButton.setChecked(False)
+
+            cf.log_message("No valid device dimensions given")
+            raise UserWarning(
+                "Please set valid device dimensions first in the format 11.5,3.5"
+            )
 
         # Check if folder path exists
         if (
@@ -751,7 +773,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             or setup_parameters["batch_name"] == ""
         ):
             msgBox = QtWidgets.QMessageBox()
-            msgBox.setText("Please set folder path and batch name first!")
+            msgBox.setText(
+                "Please set folder path, batch name and device dimensions first!"
+            )
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msgBox.setStyleSheet(
                 "background-color: rgb(44, 49, 60);\n"
@@ -764,7 +788,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.specw_start_measurement_pushButton.setChecked(False)
 
             cf.log_message("Folder path or batchname not defined")
-            raise UserWarning("Please set folder path and batchname first!")
+            raise UserWarning(
+                "Please set folder path, batchname and device dimensions first!"
+            )
 
         # Now check if the folder path ends on a / otherwise try to add it
         if not setup_parameters["folder_path"][-1] == "/":
@@ -1139,6 +1165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             "bias_field_settling_time": self.bw_dc_magnetic_field_settling_time_spinBox.value(),
             "autoset_capacitance": self.bw_autoset_capacitance_toggleSwitch.isChecked(),
             "constant_magnetic_field_mode": self.bw_constant_magnetic_field_mode_toggleSwitch.isChecked(),
+            "reverse_sweep": self.bw_reverse_sweep_toggleSwitch.isChecked(),
         }
 
         # Update statusbar

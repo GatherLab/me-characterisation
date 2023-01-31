@@ -155,9 +155,7 @@ class BiasScan(QtCore.QThread):
         )
 
         # In the future set this as an external variable
-        reverse = False
-
-        if reverse:
+        if self.measurement_parameters["reverse_sweep"]:
             dc_field_list = np.append(dc_field_list, np.flip(dc_field_list))
 
         self.dc_source.output(True)

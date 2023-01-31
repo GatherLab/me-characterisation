@@ -1325,6 +1325,16 @@ class Ui_MainWindow(object):
             self.bw_autoset_capacitance_HLayout, 18, 0, 1, 1
         )
 
+        # Include reverse sweep?
+        self.bw_reverse_sweep_HLayout = QtWidgets.QHBoxLayout()
+        self.bw_reverse_sweep_toggleSwitch = ToggleSwitch()
+        self.bw_reverse_sweep_label = QtWidgets.QLabel("Reverse Sweep")
+        self.bw_reverse_sweep_HLayout.addWidget(self.bw_reverse_sweep_toggleSwitch)
+        self.bw_reverse_sweep_HLayout.addWidget(self.bw_reverse_sweep_label)
+        self.bw_scrollArea_gridLayout.addLayout(
+            self.bw_reverse_sweep_HLayout, 19, 0, 1, 1
+        )
+
         # Save Power button
         self.bw_start_measurement_pushButton = QtWidgets.QPushButton(
             self.bw_scrollAreaWidgetContents
@@ -1333,7 +1343,7 @@ class Ui_MainWindow(object):
             "bw_start_measurement_pushButton"
         )
         self.bw_scrollArea_gridLayout.addWidget(
-            self.bw_start_measurement_pushButton, 19, 0, 1, 1
+            self.bw_start_measurement_pushButton, 20, 0, 1, 1
         )
 
         self.tabWidget.addTab(self.bias_field_widget, "")
@@ -2797,6 +2807,9 @@ class Ui_MainWindow(object):
         )
         self.bw_autoset_capacitance_toggleSwitch.setText(
             _translate("MainWindow", "Autoset Capacitance")
+        )
+        self.bw_reverse_sweep_toggleSwitch.setText(
+            _translate("MainWindow", "Reverse Sweep")
         )
 
         self.bw_constant_magnetic_field_mode_toggleSwitch.setText(
