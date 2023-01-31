@@ -149,13 +149,13 @@ class FrequencyScan(QtCore.QThread):
             )
             time.sleep(0.5)
 
+            self.arduino.trigger_frequency_generation(True)
+
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached
             if not self.measurement_parameters["constant_magnetic_field_mode"]:
                 self.hf_source.set_voltage(self.measurement_parameters["voltage"])
 
-                # Wait for the settling time so that current can be adjusted
-                time.sleep(self.measurement_parameters["frequency_settling_time"])
             else:
                 # Adjust the magnetic field
                 pid_voltage, elapsed_time = self.hf_source.adjust_magnetic_field(
@@ -169,8 +169,8 @@ class FrequencyScan(QtCore.QThread):
                 # Return total adjustment time to let user know how long it took
                 total_adjustment_time += elapsed_time
 
-                # Sleep for the settling time
-                time.sleep(self.measurement_parameters["frequency_settling_time"])
+            # Sleep for the settling time
+            time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
             voltage, current = self.hf_source.read_values()
@@ -187,6 +187,8 @@ class FrequencyScan(QtCore.QThread):
                 )
                 * 1e3
             )
+
+            self.arduino.trigger_frequency_generation(False)
 
             # Set the variables in the dataframe
             self.df_data.loc[i, "voltage"] = voltage
