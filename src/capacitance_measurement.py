@@ -162,6 +162,7 @@ class CapacitanceScan(QtCore.QThread):
                 max_frequency,
                 self.measurement_parameters["frequency_step"],
             )
+            self.arduino.trigger_frequency_generation(True)
 
             # frequency = self.measurement_parameters["minimum_frequency"]
             for frequency in frequencies:
@@ -240,12 +241,14 @@ class CapacitanceScan(QtCore.QThread):
                     # Close the connection to the spectrometer
                     self.hf_source.output(False)
                     self.hf_source.set_voltage(5)
+                    self.arduino.trigger_frequency_generation(False)
                     # Save all resonance data you have
                     self.save_resonance_data()
                     self.quit()
                     return
 
-            self.hf_source.output(False)
+            self.arduino.trigger_frequency_generation(True)
+            # self.hf_source.output(False)
             self.save_data(str(capacitance) + "pF")
 
             # Helper variable for correct plotting
@@ -293,6 +296,7 @@ class CapacitanceScan(QtCore.QThread):
 
             color_counter += 1
 
+        self.arduino.trigger_frequency_generation(False)
         self.save_resonance_data()
         self.parent.capw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_capacitance(self.arduino.base_capacitance)
