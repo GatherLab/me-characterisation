@@ -164,36 +164,45 @@ class HFScan(QtCore.QThread):
         self.dc_source.output(True)
         time.sleep(1)
 
-        """
-        self.osci_data = pd.DataFrame(
-            columns=np.concatenate(
-                (
-                    np.concatenate(
-                        np.stack(
-                            (
-                                [s + "_cal_time" for s in hf_field_list.astype(str)],
-                                [s + "_cal_field" for s in hf_field_list.astype(str)],
-                                [s + "_cal" for s in hf_field_list.astype(str)],
-                            ),
-                            axis=-1,
-                        )
+        # Luminance mode
+        if self.global_settings["luminance_mode"]:
+            # Define a dataframe for the oscilloscope data that has columns for
+            # calibration and the actual field
+            self.osci_data = pd.DataFrame(
+                columns=np.concatenate(
+                    (
+                        np.concatenate(
+                            np.stack(
+                                (
+                                    [
+                                        s + "_cal_time"
+                                        for s in hf_field_list.astype(str)
+                                    ],
+                                    [
+                                        s + "_cal_field"
+                                        for s in hf_field_list.astype(str)
+                                    ],
+                                    [s + "_cal" for s in hf_field_list.astype(str)],
+                                ),
+                                axis=-1,
+                            )
+                        ),
+                        np.concatenate(
+                            np.stack(
+                                (
+                                    [s + "_time" for s in hf_field_list.astype(str)],
+                                    [s + "_field" for s in hf_field_list.astype(str)],
+                                    hf_field_list.astype(str),
+                                ),
+                                axis=-1,
+                            )
+                        ),
                     ),
-                    np.concatenate(
-                        np.stack(
-                            (
-                                [s + "_time" for s in hf_field_list.astype(str)],
-                                [s + "_field" for s in hf_field_list.astype(str)],
-                                hf_field_list.astype(str),
-                            ),
-                            axis=-1,
-                        )
-                    ),
-                ),
+                )
             )
-        )
 
-        calibration = True
-        if calibration:
+            # Now do the actual calibration scan where the iteration over the hf
+            # field is done
             for hf_field in hf_field_list:
                 self.hf_source.set_voltage(hf_field)
                 time.sleep(self.measurement_parameters["hf_field_settling_time"])
@@ -213,6 +222,7 @@ class HFScan(QtCore.QThread):
                 )
 
             self.hf_source.output(False)
+
             # After calibration, tell user to insert OLED
             self.pause = "True"
             self.pause_thread_hf_field.emit("on")
@@ -228,8 +238,8 @@ class HFScan(QtCore.QThread):
                     return
 
             self.hf_source.output(True)
-        """
 
+        # Now this is the real measurement
         for hf_field in hf_field_list:
             # for frequency in self.df_data["frequency"]:
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
@@ -242,8 +252,9 @@ class HFScan(QtCore.QThread):
             # me_voltage = float(self.oscilloscope.measure_vmax(channel=1))
             # self.oscilloscope.auto_scale(1)
 
-            """
-            if calibration:
+            # If luminance mode was selected, get the full osci data and not
+            # only the max
+            if self.global_parameters["luminance_mode"]:
                 (
                     self.osci_data[str(hf_field) + "_time"],
                     osci_data_raw,
@@ -256,29 +267,34 @@ class HFScan(QtCore.QThread):
                 self.osci_data[str(hf_field)] = uniform_filter1d(osci_data_raw, 20)
 
                 me_voltage = np.max(
-                    self.osci_data[str(hf_field)] - self.osci_data[str(hf_field) + "_cal"]
+                    self.osci_data[str(hf_field)]
+                    - self.osci_data[str(hf_field) + "_cal"]
                 )
-            """
-            me_voltage = float(self.oscilloscope.measure_vmax(2))
+            else:
+                me_voltage = float(self.oscilloscope.measure_vmax(2))
 
-            # Calculate the magnetic field using a pickup coil
-            magnetic_field = (
-                pf.calculate_magnetic_field_from_Vind(
-                    self.global_parameters["pickup_coil_windings"],
-                    self.global_parameters["pickup_coil_radius"] * 1e-3,
-                    float(self.oscilloscope.measure_vmax(1)),
-                    self.measurement_parameters["frequency"] * 1e3,
+                # Magnetic field is only relevant if the pickup coil holder is used
+                # Calculate the magnetic field using a pickup coil
+                # A magnetic field mode should be implemented where the scan is
+                # done over hf fields instead of voltages
+
+                magnetic_field = (
+                    pf.calculate_magnetic_field_from_Vind(
+                        self.global_parameters["pickup_coil_windings"],
+                        self.global_parameters["pickup_coil_radius"] * 1e-3,
+                        float(self.oscilloscope.measure_vmax(1)),
+                        self.measurement_parameters["frequency"] * 1e3,
+                    )
+                    * 1e3
                 )
-                * 1e3
-            )
+
+                self.df_data.loc[i, "hf_field_pickup"] = magnetic_field
 
             # Set the variables in the dataframe
             (
-                voltage,
+                self.df_data.loc[i, "hf_field"],
                 self.df_data.loc[i, "current"],
             ) = self.hf_source.read_values()
-            self.df_data.loc[i, "hf_field"] = voltage  # magnetic_field
-            self.df_data.loc[i, "hf_field_pickup"] = magnetic_field  # magnetic_field
             self.df_data.loc[i, "me_voltage"] = me_voltage
 
             # Update progress bar
@@ -406,12 +422,10 @@ class HFScan(QtCore.QThread):
 
         cf.save_file(self.df_data, file_path, header_lines)
 
-        """
-        if calibration:
+        if self.global_parameters["luminance_mode"]:
             cf.save_file(
                 self.osci_data, file_path_full, header_lines_full, save_header=True
             )
-        """
 
         # with open(file_path, "a") as the_file:
         #     the_file.write("\n".join(header_lines))
