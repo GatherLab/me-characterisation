@@ -121,6 +121,7 @@ class PIDScan(QtCore.QThread):
 
         # Activate output only when frequency was set
         self.hf_source.output(True)
+        self.arduino.trigger_frequency_generation(True)
 
         # In constant magnetic field mode, regulate the voltage until a
         # magnetic field is reached
@@ -205,6 +206,7 @@ class PIDScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.hf_source.output(False)
                 self.hf_source.set_voltage(5)
+                self.arduino.trigger_frequency_generation(False)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -217,6 +219,7 @@ class PIDScan(QtCore.QThread):
         # self.update_progress_bar.emit("value", int((i + 1) / len(frequencies) * 100))
 
         self.hf_source.output(False)
+        self.arduino.trigger_frequency_generation(False)
         # self.save_data()
         self.parent.pidw_start_measurement_pushButton.setChecked(False)
 
