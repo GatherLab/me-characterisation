@@ -34,6 +34,10 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
             default_settings["default_saving_path"]
         )
         self.pid_parameters_lineEdit.setText(default_settings["pid_parameters"])
+        self.luminance_mode_toggleSwitch.setChecked(
+            bool(default_settings["luminance_mode"])
+        )
+        # isChecked()
         self.base_capacitance_lineEdit.setText(
             str(default_settings["base_capacitance"])
         )
@@ -108,6 +112,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
                 "arduino_address": self.arduino_com_address_lineEdit.text(),
                 "default_saving_path": self.default_saving_path_lineEdit.text(),
                 "pid_parameters": self.pid_parameters_lineEdit.text(),
+                "luminance_mode": self.luminance_mode_toggleSwitch.isChecked(),
                 "base_capacitance": self.base_capacitance_lineEdit.text(),
                 "coil_inductance": self.coil_inductance_lineEdit.text(),
                 "coil_windings": self.coil_windings_lineEdit.text(),
@@ -204,14 +209,50 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
             default_settings["default_saving_path"]
         )
         self.pid_parameters_lineEdit.setText(default_settings["pid_parameters"])
+        self.luminance_mode_toggleSwitch.setChecked(
+            bool(default_settings["luminance_mode"])
+        )
+        # isChecked()
+        self.base_capacitance_lineEdit.setText(
+            str(default_settings["base_capacitance"])
+        )
+        self.capacitances_lineEdit.setText(str(default_settings["capacitances"]))
+        self.coil_inductance_lineEdit.setText(str(default_settings["coil_inductance"]))
+        self.coil_windings_lineEdit.setText(str(default_settings["coil_windings"]))
+        self.pickup_coil_windings_lineEdit.setText(
+            str(default_settings["pickup_coil_windings"])
+        )
+        self.pickup_coil_radius_lineEdit.setText(
+            str(default_settings["pickup_coil_radius"])
+        )
+        self.coil_radius_lineEdit.setText(str(default_settings["coil_radius"]))
+        self.circuit_resistance_lineEdit.setText(
+            str(default_settings["circuit_resistance"])
+        )
+        self.arduino_pins_lineEdit.setText(str(default_settings["arduino_pins"]))
+        self.resonance_frequency_calibration_path_lineEdit.setText(
+            str(default_settings["calibration_file_path"])
+        )
+        self.dc_field_conversion_lineEdit.setText(
+            str(default_settings["dc_field_conversion_factor"])
+        )
+
+        self.load_rlc_settings_pushButton.clicked.connect(self.load_rlc_settings)
+
+        # Connect buttons to functions
+        self.load_defaults_pushButton.clicked.connect(self.load_defaults)
+        self.save_settings_pushButton.clicked.connect(self.save_settings)
+
         self.base_capacitance_lineEdit.setText(default_settings["base_capacitance"])
 
         self.capacitances_lineEdit.setText(default_settings["capacitances"])
 
         self.coil_inductance_lineEdit.setText(default_settings["coil_inductance"])
         self.coil_windings_lineEdit.setText(default_settings["coil_windings"])
-        self.pickup_coil_windings_lineEdit.setText(default_settings["coil_windings"])
-        self.pickup_coil_radius_lineEdit.setText(default_settings["coil_windings"])
+        self.pickup_coil_windings_lineEdit.setText(
+            default_settings["pickup_coil_windings"]
+        )
+        self.pickup_coil_radius_lineEdit.setText(default_settings["pickup_coil_radius"])
         self.coil_radius_lineEdit.setText(default_settings["coil_radius"])
         self.circuit_resistance_lineEdit.setText(default_settings["circuit_resistance"])
         self.arduino_pins_lineEdit.setText(default_settings["arduino_pins"])
