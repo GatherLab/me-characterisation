@@ -185,7 +185,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
             self.parent.arduino.init_caps()
             self.parent.dc_source.dc_field_conversion_factor = settings_data[
                 "overwrite"
-            ]["dc_field_conversion_factor"]
+            ][0]["dc_field_conversion_factor"]
 
     def load_defaults(self):
         """

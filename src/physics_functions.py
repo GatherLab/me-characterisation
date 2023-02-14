@@ -27,9 +27,9 @@ class ResonanceFit:
         """
         # Set initial voltage and resistance
         return self.v0 / np.sqrt(
-            self.R ** 2
-            + Q ** 2
-            * self.R ** 2
+            self.R**2
+            + Q**2
+            * self.R**2
             / (w0 * 2 * np.pi * 1e5) ** 2
             / (w * 2 * np.pi * 1e5) ** 2
             * (((w * 2 * np.pi * 1e5) ** 2 - (w0 * 2 * np.pi * 1e5) ** 2)) ** 2
@@ -49,7 +49,7 @@ class ResonanceFit:
             x,
             y,
             p0=[freq_at_max, 120],
-            bounds=([50, 0], [1000, 1000]),
+            bounds=([10, 0], [1000, 1000]),
         )
         return popt, pcov
 
@@ -65,7 +65,7 @@ def calculate_magnetic_field(current, inductance, windings, coil_radius):
     """
     Calculate magnetic field from current in SI units (tesla)
     """
-    return current * inductance / (windings * np.pi * coil_radius ** 2)
+    return current * inductance / (windings * np.pi * coil_radius**2)
 
 
 def calculate_magnetic_field_from_Vind(
@@ -75,7 +75,7 @@ def calculate_magnetic_field_from_Vind(
     For a measured induced voltage calculate the magnetic field (faradays law)
     """
     return maximum_induced_voltage / (
-        windings * (radius ** 2 * np.pi) * 2 * np.pi * frequency
+        windings * (radius**2 * np.pi) * 2 * np.pi * frequency
     )
 
 
