@@ -129,6 +129,8 @@ class BiasScan(QtCore.QThread):
             self.measurement_parameters["autoset_capacitance"],
         )
 
+        self.arduino.trigger_frequency_generation(True)
+
         # Activate output (necessary to adjust field)
         self.hf_source.output(True)
         time.sleep(1)
@@ -215,6 +217,7 @@ class BiasScan(QtCore.QThread):
                 self.hf_source.set_voltage(1)
                 self.dc_source.output(False)
                 self.arduino.set_frequency(1000, True)
+                self.arduino.trigger_frequency_generation(False)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -229,6 +232,7 @@ class BiasScan(QtCore.QThread):
         self.save_data()
         self.parent.bw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)
+        self.arduino.trigger_frequency_generation(False)
 
         # self.parent.oscilloscope_thread.pause = False
 
