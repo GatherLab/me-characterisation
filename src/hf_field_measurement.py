@@ -162,10 +162,11 @@ class HFScan(QtCore.QThread):
         )
 
         self.dc_source.output(True)
+        self.arduino.trigger_frequency_generation(True)
         time.sleep(1)
 
         # Luminance mode
-        if self.global_settings["luminance_mode"]:
+        if self.global_parameters["luminance_mode"]:
             # Define a dataframe for the oscilloscope data that has columns for
             # calibration and the actual field
             self.osci_data = pd.DataFrame(
@@ -313,6 +314,7 @@ class HFScan(QtCore.QThread):
                 self.hf_source.set_voltage(1)
                 self.dc_source.output(False)
                 self.arduino.set_frequency(1000, True)
+                self.arduino.trigger_frequency_generation(False)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
@@ -324,6 +326,7 @@ class HFScan(QtCore.QThread):
 
         self.hf_source.output(False)
         self.dc_source.output(False)
+        self.arduino.trigger_frequency_generation(False)
         self.save_data()
         self.parent.hfw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)

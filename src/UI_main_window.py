@@ -2554,6 +2554,10 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "Magnetic Field Mode")
         )
 
+        self.hfw_start_measurement_pushButton.setText(
+            _translate("MainWindow", "Start Measurement")
+        )
+
         self.ltw_voltage_compliance_label.setText(
             _translate("MainWindow", "Voltage Compliance (V)")
         )

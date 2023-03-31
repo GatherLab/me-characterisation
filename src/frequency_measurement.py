@@ -150,6 +150,7 @@ class FrequencyScan(QtCore.QThread):
             time.sleep(0.5)
 
             self.arduino.trigger_frequency_generation(True)
+            time.sleep(0.5)
 
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached

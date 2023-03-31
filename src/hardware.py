@@ -1384,7 +1384,7 @@ class KoradSource:
             # takes. If it already took longer than 10 s, break
             elapsed_time = time.time() - start_time
             if break_if_too_long:
-                if elapsed_time >= 6:
+                if elapsed_time >= 8:
                     break
 
         print(elapsed_time)
