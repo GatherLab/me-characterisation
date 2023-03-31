@@ -429,6 +429,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # -------------------------------------------------------------------- #
     # ------------------------- Global Functions ------------------------- #
     # -------------------------------------------------------------------- #
+    def make_format(self, current, other):
+        """
+        function to allow display of both coordinates for figures with two axis
+        """
+        # current and other are axes
+        def format_coord(x, y):
+            # x, y are data coordinates
+            # convert to display coords
+            display_coord = current.transData.transform((x, y))
+            inv = other.transData.inverted()
+            # convert back to data coords with respect to ax
+            ax_coord = inv.transform(display_coord)
+            coords = [ax_coord, (x, y)]
+            return "Left: {:<40}    Right: {:<}".format(
+                *["({:.3f}, {:.3f})".format(x, y) for x, y in coords]
+            )
+
+        return format_coord
+
     def browse_folder(self):
         """
         Open file dialog to browse through directories
@@ -1081,6 +1100,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             marker="o",
             label="Current (A)",
         )
+        self.specw_ax2.format_coord = self.make_format(self.specw_ax2, self.specw_ax)
 
         lines, labels = self.specw_ax.get_legend_handles_labels()
         lines2, labels2 = self.specw_ax2.get_legend_handles_labels()
@@ -1179,6 +1199,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
         # lines, labels = self.bw_ax.legend(loc="best")
+        self.bw_ax2.format_coord = self.make_format(self.bw_ax2, self.bw_ax)
 
         self.bw_fig.draw()
 
