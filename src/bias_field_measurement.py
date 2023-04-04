@@ -149,11 +149,18 @@ class BiasScan(QtCore.QThread):
         i = 0
 
         # Sweep over all frequencies
-        dc_field_list = np.arange(
+        # Use linspace instead of arange to allow going from higher to lower values
+        dc_field_list = np.linspace(
             self.measurement_parameters["minimum_dc_field"],
-            self.measurement_parameters["maximum_dc_field"]
-            + self.measurement_parameters["dc_field_step"],
-            self.measurement_parameters["dc_field_step"],
+            self.measurement_parameters["maximum_dc_field"],
+            int(
+                np.abs(
+                    self.measurement_parameters["minimum_dc_field"]
+                    - self.measurement_parameters["maximum_dc_field"]
+                )
+                / self.measurement_parameters["dc_field_step"]
+            )
+            + 1,
         )
 
         # In the future set this as an external variable
