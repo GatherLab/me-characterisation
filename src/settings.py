@@ -174,6 +174,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         elif any(
             key in reload_window_comparison.keys()
             for key in [
+                "coil_inductance",
                 "dc_field_conversion_factor",
                 "capacitances",
                 "base_capacitance",
