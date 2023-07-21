@@ -15,7 +15,13 @@ from lifetime_measurement import LTScan
 from pid_tuning import PIDScan
 from pulsing_sweep import PulsingSweep
 
-from hardware import KoradSource, RigolOscilloscope, VoltcraftSource, Arduino
+from hardware import (
+    KoradKD3305PSource,
+    KoradSource,
+    RigolOscilloscope,
+    VoltcraftSource,
+    Arduino,
+)
 
 import core_functions as cf
 import physics_functions as pf
@@ -106,9 +112,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Setup and start setup thread that continuously reads out the voltage
         # and current of the hf_source as well as the frequency of the Arduino
-        self.setup_thread = SetupThread(
-            self.hf_source, self.arduino, self.dc_source, self
-        )
+        self.setup_thread = SetupThread(self.source, self.arduino, self)
         self.setup_thread.start()
 
         self.sw_voltage_spinBox.valueChanged.connect(self.voltage_changed)
@@ -226,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_voltage_spinBox.setSingleStep(0.1)
         self.sw_voltage_spinBox.setKeyboardTracking(False)
         self.sw_voltage_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.sw_voltage_spinBox.setValue(1)
+        self.sw_voltage_spinBox.setValue(5)
 
         self.sw_current_spinBox.setMinimum(0)
         self.sw_current_spinBox.setMaximum(5)
@@ -433,6 +437,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         function to allow display of both coordinates for figures with two axis
         """
+
         # current and other are axes
         def format_coord(x, y):
             # x, y are data coordinates
@@ -460,7 +465,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             global_variables["default_saving_path"],
             QtWidgets.QFileDialog.ShowDirsOnly,
         )
-        print(self.global_path)
+        # print(self.global_path)
         # file_dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
 
         # if file_dialog1.exec():
@@ -496,19 +501,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.oscilloscope = oscilloscope_object
 
-    @QtCore.Slot(VoltcraftSource)
-    def init_hf_source(self, source_object):
+    @QtCore.Slot(KoradKD3305PSource)
+    def init_source(self, source_object):
         """
         Receives a hf_source object from the init thread
         """
-        self.hf_source = source_object
-
-    @QtCore.Slot(KoradSource)
-    def init_dc_source(self, source_object):
-        """
-        Receives a hf_source object from the init thread
-        """
-        self.dc_source = source_object
+        self.source = source_object
 
     @QtCore.Slot(Arduino)
     def init_arduino(self, arduino_object):
@@ -543,15 +541,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.oscilloscope.close()
         except Exception as e:
             cf.log_message("Oscilloscope thread could not be killed")
-            cf.log_message(e)
-
-        # Kill Source
-        try:
-            self.hf_source.close()
-        except Exception as e:
-            cf.log_message(
-                "I am not yet sure how to close the Rigol hf_source correctly"
-            )
             cf.log_message(e)
 
         # Kill arduino connection
@@ -636,7 +625,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return
         else:
             voltage = self.sw_voltage_spinBox.value()
-            self.hf_source.set_voltage(voltage)
+            self.source.set_voltage(voltage, channel=2)
             # self.hf_source.output(True)
             # cf.log_message("Source voltage set to " + str(voltage) + " V")
 
@@ -649,7 +638,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return
         else:
             current = self.sw_current_spinBox.value()
-            self.hf_source.set_current(current)
+            self.source.set_current(current, channel=2)
             cf.log_message("Source current set to " + str(current) + " A")
 
     def frequency_changed(self):
@@ -689,12 +678,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Function that changes dc current on dc hf_source when it is changed on spinbox
         """
         dc_current = self.sw_dc_current_spinBox.value()
-        self.dc_source.set_current(dc_current)
+        self.source.set_current(dc_current, channel=1)
 
-        if dc_current > 0 and self.dc_source.output_state == False:
-            self.dc_source.output(True)
-        elif dc_current == 0 and self.dc_source.output_state == True:
-            self.dc_source.output(False)
+        if dc_current > 0 and self.source.dc_output_state == False:
+            self.source.output(True, channel=1)
+        elif dc_current == 0 and self.source.dc_output_state == True:
+            self.source.output(False, channel=1)
 
         self.sw_dc_current_lcdNumber.display(str(dc_current))
         self.sw_dc_field_lcdNumber.display(str(dc_current * 0.37))
@@ -813,11 +802,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         # Currently this only works independently of other functions but it
         # checks for the true state of the hf_source
-        if self.hf_source.output_state:
-            self.hf_source.output(False)
+        if self.source.hf_output_state:
+            self.source.output(False, channel=2)
             self.specw_start_measurement_pushButton.setChecked(False)
         else:
-            self.hf_source.output(True)
+            self.source.output(True, channel=2)
             self.specw_start_measurement_pushButton.setChecked(True)
 
     # -------------------------------------------------------------------- #
@@ -845,7 +834,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 60,
             )
         else:
-
             # Update the plot
             pulsing_data = self.read_pulse()
             self.update_pulse_plot(pulsing_data)
@@ -951,8 +939,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pulsing_sweep = PulsingSweep(
             self.arduino,
-            self.hf_source,
-            self.dc_source,
+            self.source,
             self.oscilloscope,
             pulsing_data,
             pulsing_sweep_parameters,
@@ -1039,8 +1026,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.frequency_sweep = FrequencyScan(
             self.arduino,
-            self.hf_source,
-            self.dc_source,
+            self.source,
             self.oscilloscope,
             frequency_sweep_parameters,
             setup_parameters,
@@ -1154,8 +1140,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bias_field_sweep = BiasScan(
             self.arduino,
-            self.hf_source,
-            self.dc_source,
+            self.source,
             self.oscilloscope,
             dc_sweep_parameters,
             setup_parameters,
@@ -1247,8 +1232,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.hf_field_sweep = HFScan(
             self.arduino,
-            self.hf_source,
-            self.dc_source,
+            self.source,
             self.oscilloscope,
             hf_field_sweep_parameters,
             setup_parameters,
@@ -1385,8 +1369,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.lt_sweep = LTScan(
             self.arduino,
-            self.hf_source,
-            self.dc_source,
+            self.source,
             self.oscilloscope,
             lt_sweep_parameters,
             setup_parameters,
@@ -1524,7 +1507,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.capacitance_sweep = CapacitanceScan(
             self.arduino,
-            self.hf_source,
+            self.source,
             # self.oscilloscope,
             capacitance_sweep_parameters,
             setup_parameters,
@@ -1742,7 +1725,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pid_sweep = PIDScan(
             self.arduino,
-            self.hf_source,
+            self.source,
             self.oscilloscope,
             pid_parameters,
             # setup_parameters,

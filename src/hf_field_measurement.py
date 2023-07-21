@@ -33,8 +33,7 @@ class HFScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        hf_source,
-        dc_source,
+        source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -46,8 +45,7 @@ class HFScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.hf_source = hf_source
-        self.dc_source = dc_source
+        self.source = source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -68,12 +66,12 @@ class HFScan(QtCore.QThread):
 
         self.is_killed = False
 
-        self.hf_source.set_current(2)
+        self.source.set_current(2, channel=2)
         if measurement_parameters["constant_magnetic_field_mode"]:
             pid_parameters = np.array(
                 self.global_parameters["pid_parameters"].split(","), dtype=float
             )
-            self.hf_source.start_constant_magnetic_field_mode(
+            self.source.start_constant_magnetic_field_mode(
                 pid_parameters,
                 self.measurement_parameters["current_compliance"],
                 self.measurement_parameters["voltage"],
@@ -117,11 +115,11 @@ class HFScan(QtCore.QThread):
 
         # self.parent.oscilloscope_thread.pause = True
         # self.parent.oscilloscope_thread.pause = True
-        self.dc_source.set_voltage(20)
-        self.dc_source.set_magnetic_field(
-            self.measurement_parameters["dc_magnetic_field"]
+        self.source.set_voltage(20, channel=1)
+        self.source.set_magnetic_field(
+            self.measurement_parameters["dc_magnetic_field"], channel=1
         )
-        self.dc_source.output(True)
+        self.source.output(True, channel=1)
 
         # # Set voltage and current (they shall remain constant over the entire sweep)
         # self.hf_source.set_voltage(self.measurement_parameters["voltage"])
@@ -137,7 +135,7 @@ class HFScan(QtCore.QThread):
         )
 
         # Activate output (necessary to adjust field)
-        self.hf_source.output(True)
+        self.source.output(True, channel=2)
         time.sleep(1)
 
         # # If constant magnetic field was chosen, adjust it
@@ -161,7 +159,7 @@ class HFScan(QtCore.QThread):
             self.measurement_parameters["hf_voltage_step"],
         )
 
-        self.dc_source.output(True)
+        self.source.output(True, channel=1)
         self.arduino.trigger_frequency_generation(True)
         time.sleep(1)
 
@@ -205,7 +203,7 @@ class HFScan(QtCore.QThread):
             # Now do the actual calibration scan where the iteration over the hf
             # field is done
             for hf_field in hf_field_list:
-                self.hf_source.set_voltage(hf_field)
+                self.source.set_voltage(hf_field, channel=2)
                 time.sleep(self.measurement_parameters["hf_field_settling_time"])
                 # self.oscilloscope.auto_scale(1)
                 (
@@ -222,7 +220,7 @@ class HFScan(QtCore.QThread):
                     osci_data_raw, 20
                 )
 
-            self.hf_source.output(False)
+            self.source.output(False, channel=2)
 
             # After calibration, tell user to insert OLED
             self.pause = "True"
@@ -238,7 +236,7 @@ class HFScan(QtCore.QThread):
                 elif self.pause == "return":
                     return
 
-            self.hf_source.output(True)
+            self.source.output(True, channel=2)
 
         # Now this is the real measurement
         for hf_field in hf_field_list:
@@ -246,7 +244,7 @@ class HFScan(QtCore.QThread):
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set DC Field
-            self.hf_source.set_voltage(hf_field)
+            self.source.set_voltage(hf_field, channel=2)
             time.sleep(self.measurement_parameters["hf_field_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
@@ -295,7 +293,7 @@ class HFScan(QtCore.QThread):
             (
                 self.df_data.loc[i, "hf_field"],
                 self.df_data.loc[i, "current"],
-            ) = self.hf_source.read_values()
+            ) = self.source.read_values(channel=2)
             self.df_data.loc[i, "me_voltage"] = me_voltage
 
             # Update progress bar
@@ -310,9 +308,9 @@ class HFScan(QtCore.QThread):
 
             if self.is_killed:
                 # Close the connection to the spectrometer
-                self.hf_source.output(False)
-                self.hf_source.set_voltage(1)
-                self.dc_source.output(False)
+                self.source.output(False, channel=2)
+                self.source.set_voltage(1, channel=2)
+                self.source.output(False, channel=1)
                 self.arduino.set_frequency(1000, True)
                 self.arduino.trigger_frequency_generation(False)
                 # self.parent.oscilloscope_thread.pause = False
@@ -324,8 +322,8 @@ class HFScan(QtCore.QThread):
 
             time.sleep(self.measurement_parameters["hf_field_settling_time"])
 
-        self.hf_source.output(False)
-        self.dc_source.output(False)
+        self.source.output(False, channel=2)
+        self.source.output(False, channel=1)
         self.arduino.trigger_frequency_generation(False)
         self.save_data()
         self.parent.hfw_start_measurement_pushButton.setChecked(False)

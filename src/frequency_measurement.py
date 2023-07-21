@@ -30,8 +30,7 @@ class FrequencyScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        hf_source,
-        dc_source,
+        source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -43,8 +42,7 @@ class FrequencyScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.hf_source = hf_source
-        self.dc_source = dc_source
+        self.source = source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -69,7 +67,7 @@ class FrequencyScan(QtCore.QThread):
             pid_parameters = np.array(
                 self.global_parameters["pid_parameters"].split(","), dtype=float
             )
-            self.hf_source.start_constant_magnetic_field_mode(
+            self.source.start_constant_magnetic_field_mode(
                 pid_parameters,
                 self.measurement_parameters["current_compliance"],
                 self.measurement_parameters["voltage"],
@@ -114,20 +112,20 @@ class FrequencyScan(QtCore.QThread):
         # self.parent.oscilloscope_thread.pause = True
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.hf_source.set_voltage(1)
+        self.source.set_voltage(1, channel=2)
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
-            self.hf_source.set_current(
-                self.measurement_parameters["current_compliance"]
+            self.source.set_current(
+                self.measurement_parameters["current_compliance"], channel=2
             )
         else:
             # Calculate the average time it took to adjust the magnetic field
-            self.hf_source.set_current(2)
+            self.source.set_current(2, channel=2)
             total_adjustment_time = 0
 
-        self.dc_source.set_magnetic_field(
-            self.measurement_parameters["dc_magnetic_field"]
+        self.source.set_magnetic_field(
+            self.measurement_parameters["dc_magnetic_field"], channel=1
         )
-        self.dc_source.output(True)
+        self.source.output(True, channel=1)
 
         i = 0
         minimal_step = False
@@ -140,7 +138,7 @@ class FrequencyScan(QtCore.QThread):
 
             # Activate output only when frequency was set
             if i == 0:
-                self.hf_source.output(True)
+                self.source.output(True, channel=2)
                 time.sleep(0.5)
 
             # Set frequency
@@ -155,16 +153,19 @@ class FrequencyScan(QtCore.QThread):
             # In constant magnetic field mode, regulate the voltage until a
             # magnetic field is reached
             if not self.measurement_parameters["constant_magnetic_field_mode"]:
-                self.hf_source.set_voltage(self.measurement_parameters["voltage"])
+                self.source.set_voltage(
+                    self.measurement_parameters["voltage"], channel=2
+                )
 
             else:
                 # Adjust the magnetic field
-                pid_voltage, elapsed_time = self.hf_source.adjust_magnetic_field(
+                pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
                     self.global_parameters["pickup_coil_windings"],
                     self.global_parameters["pickup_coil_radius"],
                     frequency,
                     self.oscilloscope,
                     break_if_too_long=True,
+                    channel=2,
                 )
 
                 # Return total adjustment time to let user know how long it took
@@ -174,7 +175,7 @@ class FrequencyScan(QtCore.QThread):
             time.sleep(self.measurement_parameters["frequency_settling_time"])
 
             # Measure the voltage and current (and possibly parameters on the osci)
-            voltage, current = self.hf_source.read_values()
+            voltage, current = self.source.read_values(channel=2)
 
             vmax = float(self.oscilloscope.measure_vmax(2))
 
@@ -234,7 +235,7 @@ class FrequencyScan(QtCore.QThread):
                     )
 
                     # If slope is high enough use the minimal step size, if it isn't and the value fell below 2 * baseline, set it to false
-                    print(slope)
+                    # print(slope)
                     if abs(slope) > 0.1:
                         if not minimal_step:
                             baseline = self.df_data.loc[i, "vmax"]
@@ -254,20 +255,20 @@ class FrequencyScan(QtCore.QThread):
             else:
                 frequency += self.measurement_parameters["frequency_step"]
 
-            self.hf_source.set_voltage(voltage)
+            self.source.set_voltage(voltage, channel=2)
 
             i += 1
 
             if self.is_killed:
                 # Close the connection to the spectrometer
-                self.hf_source.output(False)
-                self.hf_source.set_voltage(5)
+                self.source.output(False, channel=2)
+                self.source.set_voltage(5, channel=2)
                 self.arduino.set_frequency(1000, True)
                 # self.parent.oscilloscope_thread.pause = False
                 self.quit()
                 return
 
-        self.hf_source.output(False)
+        self.source.output(False, channel=2)
         self.save_data()
         self.parent.specw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)

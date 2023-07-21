@@ -7,6 +7,7 @@ from hardware import (
     RigolOscilloscope,
     VoltcraftSource,
     KoradSource,
+    KoradKD3305PSource,
     Arduino,
 )
 from tests.tests import (
@@ -26,8 +27,7 @@ class InitThread(QtCore.QThread):
     kill_dialog = QtCore.Signal()
     ask_retry = QtCore.Signal()
     emit_oscilloscope = QtCore.Signal(RigolOscilloscope)
-    emit_dc_source = QtCore.Signal(KoradSource)
-    emit_hf_source = QtCore.Signal(VoltcraftSource)
+    emit_source = QtCore.Signal(KoradKD3305PSource)
     emit_arduino = QtCore.Signal(Arduino)
 
     def __init__(self, widget=None):
@@ -41,13 +41,11 @@ class InitThread(QtCore.QThread):
         self.kill_dialog.connect(widget.kill_dialog)
         self.ask_retry.connect(widget.ask_retry)
         self.emit_oscilloscope.connect(widget.parent.init_oscilloscope)
-        self.emit_hf_source.connect(widget.parent.init_hf_source)
-        self.emit_dc_source.connect(widget.parent.init_dc_source)
+        self.emit_source.connect(widget.parent.init_source)
         self.emit_arduino.connect(widget.parent.init_arduino)
 
         self.oscilloscope_address = settings["rigol_oscilloscope_address"]
-        self.dc_source_address = settings["dc_source_address"]
-        self.hf_source_address = settings["hf_source_address"]
+        self.source_address = settings["source_address"]
         self.arduino_address = settings["arduino_address"]
 
         self.dc_field_conversion_factor = settings["dc_field_conversion_factor"]
@@ -88,49 +86,16 @@ class InitThread(QtCore.QThread):
 
         time.sleep(0.1)
 
-        self.update_loading_dialog.emit(25, "Initialising DC Source")
-
-        # Try if Voltcraft Source can be initialised
-        try:
-            dc_source = KoradSource(
-                self.dc_source_address, self.dc_field_conversion_factor
-            )
-            cf.log_message("Korad Source successfully initialised")
-            dc_source_init = True
-        except:
-            # In the case that there was already a connection established,
-            # it could happen that the hf_source does not allow to establish
-            # a new one. Therefore, close the old one first.
-            try:
-                self.widget.parent.setup_thread.pause = True
-                self.widget.parent.hf_source.close()
-
-                dc_source = KoradSource(
-                    self.dc_source_address, self.dc_field_conversion_factor
-                )
-                cf.log_message("Korad Source successfully initialised")
-                dc_source_init = True
-
-            except Exception as e:
-                dc_source = MockKoradSource(
-                    self.dc_source_address, self.dc_field_conversion_factor
-                )
-                cf.log_message(
-                    "The Korad dc source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
-                )
-                cf.log_message(e)
-                dc_source_init = False
-
-        self.emit_dc_source.emit(dc_source)
-        time.sleep(0.1)
-        self.update_loading_dialog.emit(50, "Initialising HF Source")
+        self.update_loading_dialog.emit(50, "Initialising Voltage Source")
 
         # Try if KORAD Source can be initialised
         # try:
         try:
-            hf_source = VoltcraftSource(self.hf_source_address)
-            cf.log_message("Voltcraft Source successfully initialised")
-            hf_source_init = True
+            source = KoradKD3305PSource(
+                self.source_address, self.dc_field_conversion_factor
+            )
+            cf.log_message("Voltage source")
+            source_init = True
         except Exception as e:
             # In the case that there was already a connection established,
             # it could happen that the hf_source does not allow to establish
@@ -138,12 +103,12 @@ class InitThread(QtCore.QThread):
             # self.widget.parent.setup_thread.pause = True
             # self.widget.parent.hf_source.close()
 
-            hf_source = MockVoltcraftSource(self.hf_source_address)
+            source = MockVoltcraftSource(self.source_address)
             cf.log_message(
                 "The Voltcraft hf source could not be initialised! Please reconnect the device and check the serial number in the settings file!"
             )
             cf.log_message(e)
-            hf_source_init = False
+            source_init = False
 
         # except Exception as e:
         #     hf_source = MockKoradSource(self.source_address)
@@ -153,7 +118,7 @@ class InitThread(QtCore.QThread):
         #     cf.log_message(e)
         #     source_init = False
 
-        self.emit_hf_source.emit(hf_source)
+        self.emit_source.emit(source)
         time.sleep(0.1)
         self.update_loading_dialog.emit(75, "Initialising Arduino")
 
@@ -175,7 +140,6 @@ class InitThread(QtCore.QThread):
 
             # motor.move_to(-45)
         except Exception as e:
-
             arduino = MockArduino(self.arduino_address)
             cf.log_message(
                 "The Arduino could not be initialised! Please reconnect the device and check the serial number in the settings file!"
@@ -193,19 +157,12 @@ class InitThread(QtCore.QThread):
         # If one of the devices could not be initialised for whatever reason,
         # ask the user if she wants to retry after reconnecting the devices or
         # continue without some of the devices
-        if (
-            oscilloscope_init == False
-            or dc_source_init == False
-            or hf_source_init == False
-            or arduino_init == False
-        ):
+        if oscilloscope_init == False or source == False or arduino_init == False:
             device_not_loading_message = []
             if oscilloscope_init == False:
                 device_not_loading_message.append("Oscilloscope")
-            if dc_source_init == False:
-                device_not_loading_message.append("DC Source")
-            if hf_source_init == False:
-                device_not_loading_message.append("HF Source")
+            if source_init == False:
+                device_not_loading_message.append("Voltage Source")
             if arduino_init == False:
                 device_not_loading_message.append("Arduino")
 

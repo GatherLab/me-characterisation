@@ -18,7 +18,7 @@ from simple_pid import PID
 from scipy.ndimage.filters import uniform_filter1d
 
 
-class LTScan(QtCore.QThread):
+class HFScan(QtCore.QThread):
     """
     Class thread that handles the spectrum measurement
     """
@@ -26,9 +26,9 @@ class LTScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_lt_scan_plot = QtCore.Signal(list, list)
+    update_hf_scan_plot = QtCore.Signal(list, list)
     update_progress_bar = QtCore.Signal(str, float)
-    pause_thread_lt_scan = QtCore.Signal(str)
+    pause_thread_hf_field = QtCore.Signal(str)
 
     def __init__(
         self,
@@ -39,7 +39,7 @@ class LTScan(QtCore.QThread):
         setup_parameters,
         parent=None,
     ):
-        super(LTScan, self).__init__()
+        super(HFScan, self).__init__()
         # Variable to kill thread
 
         # Assign hardware and reset
@@ -55,14 +55,12 @@ class LTScan(QtCore.QThread):
         self.global_parameters = cf.read_global_settings()
 
         # Connect signal to the updater from the parent class
-        self.update_lt_scan_plot.connect(parent.update_lt_plot)
+        self.update_hf_scan_plot.connect(parent.update_hf_plot)
         self.update_progress_bar.connect(parent.progressBar.setProperty)
-        self.pause_thread_lt_scan.connect(parent.pause_lt_measurement)
+        self.pause_thread_hf_field.connect(parent.pause_hf_measurement)
 
         # Define dataframe to store data in
-        self.df_data = pd.DataFrame(
-            columns=["time", "current", "me_voltage", "hf_field"]
-        )
+        self.df_data = pd.DataFrame(columns=["current", "hf_field", "me_voltage"])
 
         self.is_killed = False
 
@@ -121,7 +119,7 @@ class LTScan(QtCore.QThread):
         )
         self.source.output(True, channel=1)
 
-        # # Set voltage and current (they shall remain constant over the entire sweep)
+        # Set voltage and current (they shall remain constant over the entire sweep)
         # self.hf_source.set_voltage(self.measurement_parameters["voltage"])
         # if not self.measurement_parameters["constant_magnetic_field_mode"]:
         #     self.hf_source.set_current(
@@ -136,9 +134,6 @@ class LTScan(QtCore.QThread):
 
         # Activate output (necessary to adjust field)
         self.source.output(True, channel=2)
-        self.source.set_voltage(self.measurement_parameters["hf_voltage"], channel=2)
-
-        self.source.output(True, channel=1)
         time.sleep(1)
 
         # # If constant magnetic field was chosen, adjust it
@@ -152,22 +147,38 @@ class LTScan(QtCore.QThread):
         #     )
 
         # Counter to iterate over array where data is stored
-        time_step_list = np.arange(
-            0,
-            self.measurement_parameters["total_time"] + 1,
-            self.measurement_parameters["time_step"],
+        i = 0
+
+        # Sweep over all frequencies
+        hf_field_list = np.arange(
+            self.measurement_parameters["minimum_hf_voltage"],
+            self.measurement_parameters["maximum_hf_voltage"]
+            + self.measurement_parameters["hf_voltage_step"],
+            self.measurement_parameters["hf_voltage_step"],
         )
+
+        self.source.output(True, channel=1)
+        time.sleep(1)
 
         self.osci_data = pd.DataFrame(
             columns=np.concatenate(
                 (
-                    np.array(["cal_time", "cal_field", "cal"]),
                     np.concatenate(
                         np.stack(
                             (
-                                [s + "_time" for s in time_step_list.astype(str)],
-                                [s + "_field" for s in time_step_list.astype(str)],
-                                time_step_list.astype(str),
+                                [s + "_cal_time" for s in hf_field_list.astype(str)],
+                                [s + "_cal_field" for s in hf_field_list.astype(str)],
+                                [s + "_cal" for s in hf_field_list.astype(str)],
+                            ),
+                            axis=-1,
+                        )
+                    ),
+                    np.concatenate(
+                        np.stack(
+                            (
+                                [s + "_time" for s in hf_field_list.astype(str)],
+                                [s + "_field" for s in hf_field_list.astype(str)],
+                                hf_field_list.astype(str),
                             ),
                             axis=-1,
                         )
@@ -176,109 +187,133 @@ class LTScan(QtCore.QThread):
             )
         )
 
-        # First do one calibration field measurement (to subtract in the end)
+        self.source.set_voltage(self.measurement_parameters["frequency"], channel=2)
 
-        # self.oscilloscope.auto_scale(1)
-        (
-            self.osci_data["cal_time"],
-            osci_data_raw,
-        ) = self.oscilloscope.get_data("CHAN1")
-        (
-            time_data,
-            self.osci_data["cal_field"],
-        ) = self.oscilloscope.get_data("CHAN2")
-        # Function to do moving average
-
-        self.osci_data["cal"] = uniform_filter1d(osci_data_raw, 20)
-
-        self.source.output(False, channel=2)
-        # After calibration, tell user to insert OLED
-        self.pause = "True"
-        self.pause_thread_lt_scan.emit("on")
-
-        while self.pause == "True":
-            time.sleep(0.1)
-            if self.pause == "break":
-                # Take the time at the beginning to measure the length of the entire
-                # measurement
-                absolute_starting_time = time.time()
-                break
-            elif self.pause == "return":
-                return
-
-        self.source.output(True, channel=2)
-
-        initial_time = time.time()
-        i = 0
-
-        while (time.time() - initial_time) <= (
-            self.measurement_parameters["total_time"] + 0.1
-        ):
-            if (time.time() - initial_time) >= time_step_list[i]:
-                self.df_data.loc[i, "time"] = time.time() - initial_time
-
-                # Measure the voltage and current (and possibly parameters on the osci)
-                # me_voltage = float(self.oscilloscope.measure_vmax(channel=1))
+        calibration = True
+        if calibration:
+            for hf_field in hf_field_list:
+                # self.hf_source.set_voltage(hf_field)
+                self.arduino.set_frequency(
+                    hf_field,
+                    self.measurement_parameters["autoset_capacitance"],
+                )
+                self.arduino.trigger_frequency_generation(True)
+                time.sleep(self.measurement_parameters["hf_field_settling_time"])
                 # self.oscilloscope.auto_scale(1)
                 (
-                    self.osci_data[str(time_step_list[i]) + "_time"],
+                    self.osci_data[str(hf_field) + "_cal_time"],
                     osci_data_raw,
-                ) = self.oscilloscope.get_data()
+                ) = self.oscilloscope.get_data("CHAN2")
                 (
                     time_data,
-                    self.osci_data[str(time_step_list[i]) + "_field"],
-                ) = self.oscilloscope.get_data("CHAN2")
+                    self.osci_data[str(hf_field) + "_cal_field"],
+                ) = self.oscilloscope.get_data("CHAN1")
+                # Function to do moving average
 
-                self.osci_data[str(time_step_list[i])] = uniform_filter1d(
+                self.arduino.trigger_frequency_generation(False)
+                time.sleep(self.measurement_parameters["hf_field_settling_time"])
+
+                self.osci_data[str(hf_field) + "_cal"] = uniform_filter1d(
                     osci_data_raw, 20
                 )
 
-                me_voltage = np.max(
-                    self.osci_data[str(time_step_list[i])] - self.osci_data["cal"]
-                )
+            self.source.output(False, channel=2)
+            # After calibration, tell user to insert OLED
+            self.pause = "True"
+            self.pause_thread_hf_field.emit("on")
 
-                # Set the variables in the dataframe
-                (
-                    voltage,
-                    self.df_data.loc[i, "current"],
-                ) = self.source.read_values(channel=2)
-
-                self.df_data.loc[i, "me_voltage"] = me_voltage
-                self.df_data.loc[i, "hf_field"] = np.max(
-                    self.osci_data[str(time_step_list[i]) + "_field"]
-                )
-
-                # Update progress bar
-                self.update_progress_bar.emit(
-                    "value", int((i + 1) / len(time_step_list) * 100)
-                )
-
-                self.update_lt_scan_plot.emit(
-                    self.df_data["time"],
-                    self.df_data["me_voltage"],
-                )
-
-                # Increase iterator
-                i += 1
-
-            else:
-                if self.is_killed:
-                    # Close the connection to the spectrometer
-                    self.source.output(False, channel=2)
-                    self.source.set_voltage(1, channel=2)
-                    self.source.output(False, channel=1)
-                    self.arduino.set_frequency(1000, True)
-                    self.save_data()
-                    # self.parent.oscilloscope_thread.pause = False
-                    self.quit()
+            while self.pause == "True":
+                time.sleep(0.1)
+                if self.pause == "break":
+                    # Take the time at the beginning to measure the length of the entire
+                    # measurement
+                    absolute_starting_time = time.time()
+                    break
+                elif self.pause == "return":
                     return
 
-                time.sleep(0.1)
+            self.source.output(True, channel=2)
+
+        for hf_field in hf_field_list:
+            # for frequency in self.df_data["frequency"]:
+            # cf.log_message("Frequency set to " + str(frequency) + " kHz")
+
+            # Set DC Field
+            # self.hf_source.set_voltage(hf_field)
+            self.arduino.set_frequency(
+                hf_field,
+                self.measurement_parameters["autoset_capacitance"],
+            )
+            self.arduino.trigger_frequency_generation(True)
+            time.sleep(self.measurement_parameters["hf_field_settling_time"])
+
+            # Measure the voltage and current (and possibly parameters on the osci)
+            # me_voltage = float(self.oscilloscope.measure_vmax(channel=1))
+            # self.oscilloscope.auto_scale(1)
+            (
+                self.osci_data[str(hf_field) + "_time"],
+                osci_data_raw,
+            ) = self.oscilloscope.get_data("CHAN2")
+            (
+                time_data,
+                self.osci_data[str(hf_field) + "_field"],
+            ) = self.oscilloscope.get_data("CHAN1")
+
+            self.osci_data[str(hf_field)] = uniform_filter1d(osci_data_raw, 20)
+
+            me_voltage = np.max(
+                self.osci_data[str(hf_field)] - self.osci_data[str(hf_field) + "_cal"]
+            )
+            self.arduino.trigger_frequency_generation(False)
+
+            # Calculate the magnetic field using a pickup coil
+            # magnetic_field = (
+            #     pf.calculate_magnetic_field_from_Vind(
+            #         self.global_parameters["pickup_coil_windings"],
+            #         self.global_parameters["pickup_coil_radius"] * 1e-3,
+            #         float(self.oscilloscope.measure_vmax(1)),
+            #         self.measurement_parameters["frequency"] * 1e3,
+            #     )
+            #     * 1e3
+            # )
+
+            # Set the variables in the dataframe
+            (
+                voltage,
+                self.df_data.loc[i, "current"],
+            ) = self.source.read_values(channel=2)
+            self.df_data.loc[i, "hf_field"] = hf_field  # magnetic_field
+            self.df_data.loc[i, "me_voltage"] = me_voltage
+
+            # Update progress bar
+            self.update_progress_bar.emit(
+                "value", int((i + 1) / len(hf_field_list) * 100)
+            )
+
+            self.update_hf_scan_plot.emit(
+                self.df_data["hf_field"],
+                self.df_data["me_voltage"],
+            )
+
+            if self.is_killed:
+                # Close the connection to the spectrometer
+                self.source.output(False, channel=2)
+                self.source.set_voltage(1, channel=2)
+                self.source.output(False, channel=1)
+                self.arduino.set_frequency(1000, True)
+                # self.parent.oscilloscope_thread.pause = False
+                self.quit()
+                return
+
+            # Increase iterator
+            i += 1
+
+            time.sleep(self.measurement_parameters["hf_field_settling_time"])
 
         self.source.output(False, channel=2)
         self.source.output(False, channel=1)
         self.save_data()
-        self.parent.ltw_start_measurement_pushButton.setChecked(False)
+        self.parent.hfw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)
 
         # self.parent.oscilloscope_thread.pause = False
@@ -305,14 +340,14 @@ class LTScan(QtCore.QThread):
         )
         line03 = (
             "Maximum Voltage:   "
-            + str(self.measurement_parameters["voltage_compliance"])
+            + str(self.measurement_parameters["maximum_hf_voltage"])
             + " V   "
         )
         if self.measurement_parameters["constant_magnetic_field_mode"]:
             line03 += (
                 "Constant HF Magnetic Field:   "
-                + str(self.measurement_parameters["hf_voltage"])
-                + " V"
+                + str(self.measurement_parameters["voltage_compliance"])
+                + " mT"
             )
         else:
             line03 += (
@@ -323,18 +358,19 @@ class LTScan(QtCore.QThread):
 
         line04 = (
             "Frequency: " + str(self.measurement_parameters["frequency"]) + " kHz \t"
-            "Measurement Interval:   "
-            + str(self.measurement_parameters["time_step"])
-            + " s \t"
-            + "Total Measurement Time:   "
-            + str(self.measurement_parameters["total_time"])
-            + " s \t"
+            "Min. HF Field Voltage:   "
+            + str(self.measurement_parameters["minimum_hf_voltage"])
+            + " V \t"
+            + "Max. HF Field Voltage:   "
+            + str(self.measurement_parameters["maximum_hf_voltage"])
+            + " V \t"
+            + "HF Field Voltage Step:   "
+            + str(self.measurement_parameters["hf_voltage_step"])
+            + " V \t"
         )
-        line05 = "### Measurement data ###"
-        line06 = (
-            "Time\t Current\t ME Voltage\t HF Field (pickup not necessarily centred)"
-        )
-        line07 = "s\t A\t V\t V (a.u.)\n"
+        line05 = "### Measurement data ###\n"
+        line06 = "Current\t HF Voltage\t ME Voltage"
+        line07 = "A\t V\t V\n"
 
         header_lines = [
             line02,
@@ -359,7 +395,7 @@ class LTScan(QtCore.QThread):
             + self.setup_parameters["batch_name"]
             + "_d"
             + str(self.setup_parameters["device_number"])
-            + "_lt"
+            + "_hf"
             + ".csv"
         )
 
@@ -369,10 +405,12 @@ class LTScan(QtCore.QThread):
             + self.setup_parameters["batch_name"]
             + "_d"
             + str(self.setup_parameters["device_number"])
-            + "_lt-osci"
+            + "_hf-osci"
             + ".csv"
         )
-        self.df_data["time"] = self.df_data["time"].map(lambda x: "{0:.3f}".format(x))
+        self.df_data["hf_field"] = self.df_data["hf_field"].map(
+            lambda x: "{0:.3f}".format(x)
+        )
 
         cf.save_file(self.df_data, file_path, header_lines)
 

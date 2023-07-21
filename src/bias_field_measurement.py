@@ -30,7 +30,6 @@ class BiasScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        hf_source,
         dc_source,
         oscilloscope,
         measurement_parameters,
@@ -43,7 +42,6 @@ class BiasScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.hf_source = hf_source
         self.dc_source = dc_source
         self.oscilloscope = oscilloscope
         self.parent = parent
@@ -69,7 +67,7 @@ class BiasScan(QtCore.QThread):
             pid_parameters = np.array(
                 self.global_parameters["pid_parameters"].split(","), dtype=float
             )
-            self.hf_source.start_constant_magnetic_field_mode(
+            self.source.start_constant_magnetic_field_mode(
                 pid_parameters,
                 self.measurement_parameters["current_compliance"],
                 self.measurement_parameters["voltage"],
@@ -116,11 +114,11 @@ class BiasScan(QtCore.QThread):
         self.dc_source.set_voltage(20)
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.hf_source.set_voltage(self.measurement_parameters["voltage"])
-        self.hf_source.set_current(2)
+        self.source.set_voltage(self.measurement_parameters["voltage"], channel=2)
+        self.source.set_current(20, channel=2)
         if not self.measurement_parameters["constant_magnetic_field_mode"]:
-            self.hf_source.set_current(
-                self.measurement_parameters["current_compliance"]
+            self.source.set_current(
+                self.measurement_parameters["current_compliance"], channel=2
             )
 
         # Set frequency
@@ -132,17 +130,18 @@ class BiasScan(QtCore.QThread):
         self.arduino.trigger_frequency_generation(True)
 
         # Activate output (necessary to adjust field)
-        self.hf_source.output(True)
+        self.source.output(True, channel=2)
         time.sleep(1)
 
         # If constant magnetic field was chosen, adjust it
         if self.measurement_parameters["constant_magnetic_field_mode"]:
-            self.hf_source.adjust_magnetic_field(
+            self.source.adjust_magnetic_field(
                 self.global_parameters["pickup_coil_windings"],
                 self.global_parameters["pickup_coil_radius"],
                 self.measurement_parameters["frequency"],
                 self.oscilloscope,
                 break_if_too_long=True,
+                channel=2,
             )
 
         # Counter to iterate over array where data is stored
@@ -220,8 +219,8 @@ class BiasScan(QtCore.QThread):
 
             if self.is_killed:
                 # Close the connection to the spectrometer
-                self.hf_source.output(False)
-                self.hf_source.set_voltage(1)
+                self.source.output(False, channel=2)
+                self.source.set_voltage(1, channel=2)
                 self.dc_source.output(False)
                 self.arduino.set_frequency(1000, True)
                 self.arduino.trigger_frequency_generation(False)
@@ -234,7 +233,7 @@ class BiasScan(QtCore.QThread):
 
             time.sleep(self.measurement_parameters["bias_field_settling_time"])
 
-        self.hf_source.output(False)
+        self.source.output(False, channel=2)
         self.dc_source.output(False)
         self.save_data()
         self.parent.bw_start_measurement_pushButton.setChecked(False)
@@ -275,7 +274,7 @@ class BiasScan(QtCore.QThread):
             + str(optimum_bias_current)
             + " A"
         )
-        print(line01)
+        # print(line01)
 
         line02 = (
             "Base Capacitance: "

@@ -78,22 +78,13 @@ class Ui_Settings(object):
         )
 
         # Source address
-        self.dc_source_address_label = QtWidgets.QLabel(Settings)
-        self.dc_source_address_label.setObjectName("dc_source_address_label")
-        self.gridLayout.addWidget(self.dc_source_address_label, 2, 0, 1, 1)
-        self.dc_source_address_lineEdit = QtWidgets.QLineEdit(Settings)
-        self.dc_source_address_lineEdit.setObjectName("dc_source_address_lineEdit")
-        self.dc_source_address_lineEdit.setMinimumSize(QtCore.QSize(270, 0))
-        self.gridLayout.addWidget(self.dc_source_address_lineEdit, 2, 1, 1, 1)
-
-        # HF hf_source address
-        self.hf_source_address_label = QtWidgets.QLabel(Settings)
-        self.hf_source_address_label.setObjectName("hf_source_address_label")
-        self.gridLayout.addWidget(self.hf_source_address_label, 3, 0, 1, 1)
-        self.hf_source_address_lineEdit = QtWidgets.QLineEdit(Settings)
-        self.hf_source_address_lineEdit.setObjectName("hf_source_address_lineEdit")
-        self.hf_source_address_lineEdit.setMinimumSize(QtCore.QSize(270, 0))
-        self.gridLayout.addWidget(self.hf_source_address_lineEdit, 3, 1, 1, 1)
+        self.source_address_label = QtWidgets.QLabel(Settings)
+        self.source_address_label.setObjectName("source_address_label")
+        self.gridLayout.addWidget(self.source_address_label, 2, 0, 1, 1)
+        self.source_address_lineEdit = QtWidgets.QLineEdit(Settings)
+        self.source_address_lineEdit.setObjectName("source_address_lineEdit")
+        self.source_address_lineEdit.setMinimumSize(QtCore.QSize(270, 0))
+        self.gridLayout.addWidget(self.source_address_lineEdit, 2, 1, 1, 1)
 
         # Keithley multimeter address
         self.rigol_oscilloscope_address_label = QtWidgets.QLabel(Settings)
@@ -352,11 +343,8 @@ class Ui_Settings(object):
         self.device_settings_header_label.setText(
             _translate("Settings", "Device Settings")
         )
-        self.dc_source_address_label.setText(
-            _translate("Settings", "DC Source Address")
-        )
-        self.hf_source_address_label.setText(
-            _translate("Settings", "HF Source Address")
+        self.source_address_label.setText(
+            _translate("Settings", "Voltage Source Address")
         )
         self.rigol_oscilloscope_address_label.setText(
             _translate("Settings", "Rigol Oscilloscope Address")

@@ -255,7 +255,7 @@ class RigolOscilloscope:
                 self.change_scale(channel, next_smaller_scale)
             else:
                 break
-            print(self.scales)
+            # print(self.scales)
 
         self.mutex.unlock()
         return vmax
@@ -580,7 +580,7 @@ class VoltcraftSource:
                 if elapsed_time >= 6:
                     break
 
-        print(elapsed_time)
+        # print(elapsed_time)
 
         self.mutex.unlock()
         return pid_voltage, elapsed_time
@@ -968,7 +968,7 @@ class Arduino:
 
         # This is no universal ordering yet, I have to do this later on
         self.cap_states = cap_states[self.arduino_pins - 1]
-        print(self.cap_states)
+        # print(self.cap_states)
         self.mutex.unlock()
 
     def switch_cap(self, cap_no, state):
@@ -1206,7 +1206,6 @@ class KoradSource:
 
         self.output(False)
         self.set_voltage(20)
-        self.current_voltage_value = 20
         self.set_current(0.05)
 
         cf.log_message("Korad Source successfully initialised")
@@ -1387,7 +1386,7 @@ class KoradSource:
                 if elapsed_time >= 8:
                     break
 
-        print(elapsed_time)
+        # print(elapsed_time)
 
         self.mutex.unlock()
         return pid_voltage, elapsed_time
@@ -1448,3 +1447,279 @@ class KoradSource:
         time.sleep(1)
 
         self.mutex.unlock()
+
+
+class KoradKD3305PSource:
+    """
+    Class to control the KORAD KA3005P source
+    The korad source is controlled via the serial interface
+    A usefull source for this is
+    https://github.com/vb0/korad/blob/master/kcontrol.py and
+    https://sigrok.org/wiki/Korad_KAxxxxP_series#Protocol
+    """
+
+    def __init__(self, source_address, dc_field_conversion_factor):
+        """
+        Initialise KORAD source
+        """
+
+        rm = pyvisa.ResourceManager()
+        # The actual addresses for the devices can be accessed via rm.list_resources()
+        visa_resources = rm.list_resources()
+
+        # Check if source is present at the given address
+        if source_address not in visa_resources:
+            cf.log_message("The Korad Source seems to be absent or switched off.")
+
+        # Time out is in ms
+        source_port = "COM" + re.findall(r"\d+", source_address)[0]
+
+        self.source = serial.Serial(source_port, timeout=1)
+
+        self.dc_output_state = False
+        self.hf_output_state = False
+
+        self.dc_field_conversion_factor = dc_field_conversion_factor
+
+        # # Now query details about the instrument
+        # gmax = self.query("GMAX")
+        self.maximum_voltage = 30
+        self.maximum_current = 5
+
+        self.output(False, channel=1)
+        self.set_voltage(20, channel=1)
+        self.output(False, channel=2)
+
+        cf.log_message("Korad Source successfully initialised")
+
+    def read_values(self, channel):
+        """
+        Function that returns the display readings of the source in volt and
+        ampere. This takes about 20 - 25 ms to run
+        """
+        # The source will return something liek 119700020 which translates to:
+        # U = 11.97 V, I = 0.00 A and it is in C.V. mode (constant voltage)
+        self.source.write(str.encode("VOUT{0}?\n".format(channel)))
+        raw_voltage = self.source.readline(7).decode()
+        try:
+            voltage = float(raw_voltage)
+        except:
+            cf.log_message("Couldn't read out voltage")
+            voltage = 0
+
+        time.sleep(0.2)
+        self.source.write(str.encode("IOUT{0}?\n".format(channel)))
+        raw_current = self.source.read(7).decode()
+        try:
+            current = float(raw_current)
+        except:
+            cf.log_message("Couldn't read out current")
+            current = 0
+
+        if channel == 1:
+            magnetic_field = current * self.dc_field_conversion_factor
+            return voltage, current, magnetic_field
+
+        elif channel == 2:
+            return voltage, current
+
+    def set_voltage(self, voltage, channel):
+        """
+        Function to set the voltage of the device
+        """
+        # The voltcraft device, however can not deal with floats. Therefore, we
+        # have to convert the input first
+        voltage = np.round(voltage, 2)
+
+        if voltage > self.maximum_voltage:
+            cf.log_message(
+                "You are attempting to exceed the maximum voltage rating of your device of "
+                + str(np.round(self.maximum_voltage, 2))
+                + " V. I set the voltage to this value for you instead."
+            )
+            voltage = np.round(self.maximum_voltage, 2)
+        elif voltage < 0:
+            cf.log_message(
+                "You are attempting to set the voltage to a negative value. This is not possible. I set the voltage to 0 V for you instead"
+            )
+            voltage = 0
+
+        try:
+            self.source.write(str.encode("VSET{0}:{1}\n".format(channel, voltage)))
+        except SerialTimeoutException as err:
+            cf.log_message(err)
+            time.sleep(0.2)
+            self.source.write(str.encode("VSET{0}:{1}\n".format(channel, voltage)))
+
+        time.sleep(0.2)
+
+    def set_current(self, current, channel):
+        """
+        Set current of the device
+        """
+        # The voltcraft device, however can not deal with floats. Therefore, we
+        # have to convert the input first
+        current = np.round(current, 3)
+
+        if current > self.maximum_current:
+            cf.log_message(
+                "You are attempting to exceed the maximum voltage rating of your device of "
+                + str(np.round(self.maximum_current, 1))
+                + " V. I set the voltage to this value for you instead."
+            )
+            current = np.round(self.maximum_current, 1)
+        elif current < 0:
+            cf.log_message(
+                "You are attempting to set the voltage to a negative value. This is not possible. I set the voltage to 0 V for you instead"
+            )
+            current = 0
+
+        self.source.write(str.encode("ISET{0}:{1}\n".format(channel, current)))
+        time.sleep(0.2)
+
+    def set_magnetic_field(self, magnetic_field, channel):
+        """
+        Function that converts a value for a magnetic field to a current that
+        can be set on the source
+        """
+        current = magnetic_field / self.dc_field_conversion_factor
+
+        self.set_current(current, channel)
+
+    def start_constant_magnetic_field_mode(
+        self, pid_parameters, set_point, maximum_voltage
+    ):
+        """
+        Start constant magnetic field mode according to a set value
+        """
+        try:
+            del self.pid
+        except:
+            print("PID did not yet exist")
+
+        self.pid = PID(
+            pid_parameters[0],
+            pid_parameters[1],
+            pid_parameters[2],
+            setpoint=set_point,
+        )
+        # Minimum of one volt is required by the voltcraft source
+        self.pid.output_limits = (1, maximum_voltage)
+
+    def adjust_magnetic_field(
+        self,
+        pickup_coil_windings,
+        pickup_coil_radius,
+        frequency,
+        osci,
+        channel,
+        break_if_too_long=False,
+    ):
+        """
+        Does the adjustment to a constant magnetic field according to an input
+        magnetic field and measurements using an external device (e.g. osci).
+        magnetic field in mT, frequency in kHz
+        """
+        a = 0
+        start_time = time.time()
+        while True:
+            # Calculate the magnetic field using a pickup coil
+            magnetic_field = (
+                pf.calculate_magnetic_field_from_Vind(
+                    pickup_coil_windings,
+                    pickup_coil_radius * 1e-3,
+                    float(osci.measure_vmax(1)),
+                    frequency * 1e3,
+                )
+                * 1e3
+            )
+
+            # ask for optimum value of pid
+            pid_voltage = self.pid(magnetic_field)
+
+            # Set the voltage to that value (rounded to the accuracy of the
+            # source)
+            self.set_voltage(round(pid_voltage, 2), channel)
+
+            # Wait for a bit so that the hardware can react
+            time.sleep(0.05)
+
+            # If the magnetic field and the setpoint deviate by less than 0.02,
+            # increase a else set it back to zero
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
+                a += 1
+            else:
+                a = 0
+
+            # Only break if this is the case for several iterations
+            if a >= 5:
+                break
+
+            # Measure the elapsed time to keep track of how long the adjustment
+            # takes. If it already took longer than 10 s, break
+            elapsed_time = time.time() - start_time
+            if break_if_too_long:
+                if elapsed_time >= 8:
+                    break
+
+        # print(elapsed_time)
+
+        return pid_voltage, elapsed_time
+
+    def output(self, state, channel, slow=False):
+        """
+        Activate or deactivate output:
+        state = True: output on
+        state = False: output off
+        The device communication fails if the device is already on and one
+        asks it to turn on. This possbile error must be checked for first
+        (maybe class variable).
+        """
+        # The logic of the voltcraft source is just the other way around than
+        # my logic (true means off)
+        if slow:
+            voltage, current = self.read_values()
+            self.set_voltage(round(voltage / 4, 2))
+
+            self.source.write(str.encode("OUT{0}:{1}\n".format(channel, int(state))))
+            time.sleep(1)
+
+            self.set_voltage(round(voltage / 2, 2), channel)
+            time.sleep(0.2)
+            self.set_voltage(round(voltage, 2), channel)
+            time.sleep(0.2)
+        else:
+            try:
+                self.source.write(
+                    str.encode("OUT{0}:{1}\n".format(channel, int(state)))
+                )
+
+            except SerialTimeoutException as err:
+                cf.log_message(err)
+                time.sleep(0.2)
+                self.source.write(
+                    str.encode("OUT{0}:{1}\n".format(channel, int(state)))
+                )
+
+            # Wait shortly because the source needs a bit until the final voltage is reached
+            time.sleep(1)
+
+        # Set the state variable
+        if channel == 1:
+            self.dc_output_state = state
+        elif channel == 2:
+            self.hf_output_state = state
+
+    def close(self):
+        """
+        Savely close the source
+        """
+
+        # Deactivate output
+        self.output(False)
+
+        # Close serial connection
+        self.source.close()
+
+        # Wait shortly to make sure the connection is closed
+        time.sleep(1)

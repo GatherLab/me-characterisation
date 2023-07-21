@@ -26,7 +26,7 @@ class CapacitanceScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        hf_source,
+        source,
         # oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -38,7 +38,7 @@ class CapacitanceScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.hf_source = hf_source
+        self.source = source
         # self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -73,8 +73,10 @@ class CapacitanceScan(QtCore.QThread):
         pydevd.settrace(suspend=False)
 
         # Set voltage and current (they shall remain constant over the entire sweep)
-        self.hf_source.set_voltage(self.measurement_parameters["voltage"])
-        self.hf_source.set_current(self.measurement_parameters["current_compliance"])
+        self.source.set_voltage(self.measurement_parameters["voltage"], channel=2)
+        self.source.set_current(
+            self.measurement_parameters["current_compliance"], channel=2
+        )
 
         # Clear axis before the measurement
         self.parent.capw_ax.cla()
@@ -126,7 +128,7 @@ class CapacitanceScan(QtCore.QThread):
         for capacitance in selected_available_cap:
             # Now set the capacitance
             self.arduino.set_capacitance(capacitance)
-            self.hf_source.output(True)
+            self.source.output(True, channel=2)
 
             # Define dataframe to store data in
             del self.df_data
@@ -177,7 +179,7 @@ class CapacitanceScan(QtCore.QThread):
                 time.sleep(self.measurement_parameters["frequency_settling_time"])
 
                 # Measure the voltage and current (and posssibly paramters on the osci)
-                voltage, current = self.hf_source.read_values()
+                voltage, current = self.source.read_values(channel=2)
 
                 # Now measure Vpp from channel one on the oscilloscope
                 # vpp = float(self.oscilloscope.measure_vpp())
@@ -239,8 +241,8 @@ class CapacitanceScan(QtCore.QThread):
 
                 if self.is_killed:
                     # Close the connection to the spectrometer
-                    self.hf_source.output(False)
-                    self.hf_source.set_voltage(5)
+                    self.source.output(False, channel=2)
+                    self.source.set_voltage(5, channel=2)
                     self.arduino.trigger_frequency_generation(False)
                     # Save all resonance data you have
                     self.save_resonance_data()
@@ -297,6 +299,7 @@ class CapacitanceScan(QtCore.QThread):
             color_counter += 1
 
         self.arduino.trigger_frequency_generation(False)
+        self.source.output(False, channel=2)
         self.save_resonance_data()
         self.parent.capw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_capacitance(self.arduino.base_capacitance)

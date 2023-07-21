@@ -24,8 +24,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         # Load from file to fill the lines
         default_settings = cf.read_global_settings()
 
-        self.dc_source_address_lineEdit.setText(default_settings["dc_source_address"])
-        self.hf_source_address_lineEdit.setText(default_settings["hf_source_address"])
+        self.source_address_lineEdit.setText(default_settings["source_address"])
         self.rigol_oscilloscope_address_lineEdit.setText(
             default_settings["rigol_oscilloscope_address"]
         )
@@ -106,8 +105,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         settings_data["overwrite"] = []
         settings_data["overwrite"].append(
             {
-                "dc_source_address": self.dc_source_address_lineEdit.text(),
-                "hf_source_address": self.hf_source_address_lineEdit.text(),
+                "source_address": self.source_address_lineEdit.text(),
                 "rigol_oscilloscope_address": self.rigol_oscilloscope_address_lineEdit.text(),
                 "arduino_address": self.arduino_com_address_lineEdit.text(),
                 "default_saving_path": self.default_saving_path_lineEdit.text(),
@@ -161,8 +159,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         if any(
             key in reload_window_comparison.keys()
             for key in [
-                "dc_source_address",
-                "hf_source_address",
+                "source_address",
                 "arduino_com_address",
                 "rigol_oscilloscope_address",
             ]
@@ -184,7 +181,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
         ):
             # Only reinit caps and dc field conversion factor
             self.parent.arduino.init_caps()
-            self.parent.dc_source.dc_field_conversion_factor = float(
+            self.parent.source.dc_field_conversion_factor = float(
                 settings_data["overwrite"][0]["dc_field_conversion_factor"]
             )
 
@@ -199,8 +196,7 @@ class Settings(QtWidgets.QDialog, Ui_Settings):
             data = json.load(json_file)
 
         default_settings = data["default"][0]
-        self.dc_source_address_lineEdit.setText(default_settings["dc_source_address"])
-        self.hf_source_address_lineEdit.setText(default_settings["hf_source_address"])
+        self.source_address_lineEdit.setText(default_settings["source_address"])
         self.rigol_oscilloscope_address_lineEdit.setText(
             default_settings["rigol_oscilloscope_address"]
         )

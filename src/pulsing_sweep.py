@@ -30,8 +30,7 @@ class PulsingSweep(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        hf_source,
-        dc_source,
+        source,
         oscilloscope,
         pulsing_data,
         pulsing_sweep_parameters,
@@ -43,8 +42,7 @@ class PulsingSweep(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.hf_source = hf_source
-        self.dc_source = dc_source
+        self.source = source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -80,14 +78,14 @@ class PulsingSweep(QtCore.QThread):
 
         # Measure time elapsed
         if not self.pulsing_sweep_parameters["constant_mode"]:
-            self.hf_source.set_current(2)
+            self.source.set_current(2, channel=2)
 
         self.arduino.trigger_frequency_generation(0)
 
         # Activation can not be done via the HF output since it is simply too
         # slow
-        self.dc_source.output(True)
-        self.hf_source.output(True)
+        self.source.output(True, channel=2)
+        self.source.output(True, channel=2)
         # time.sleep(1)
         # if self.pulsing_sweep_parameters["constant_mode"]:
         #     # Takes about 0.2 s
@@ -110,17 +108,15 @@ class PulsingSweep(QtCore.QThread):
         time_step = 0.01
         for index, row in self.pulsing_data.iterrows():
             if row["signal"] == "ON":
-
                 # Takes about 5ms
                 self.arduino.trigger_frequency_generation(1)
                 i = 0
 
                 while (time.time() - start_time) < float(row["time"]):
-
                     if self.is_killed:
                         # Close the connection to the spectrometer
-                        self.hf_source.output(False)
-                        self.dc_source.output(False)
+                        self.source.output(False, channel=2)
+                        self.source.output(False, channel=2)
                         # self.arduino.set_frequency(1000, True)
                         # self.parent.oscilloscope_thread.pause = False
                         self.quit()
@@ -140,7 +136,6 @@ class PulsingSweep(QtCore.QThread):
 
                 i = 0
                 while (time.time() - start_time) < float(row["time"]):
-
                     # Make sure the adjustment of the sources is preparing
                     # already the next on cycle
                     ref = time.time()
@@ -154,12 +149,13 @@ class PulsingSweep(QtCore.QThread):
                                     self.pulsing_data.iloc[index - 1]["dc_field"]
                                     != self.pulsing_data.iloc[index + 1]["dc_field"]
                                 ):
-                                    self.dc_source.set_magnetic_field(
+                                    self.source.set_magnetic_field(
                                         float(
                                             self.pulsing_data.iloc[index + 1][
                                                 "dc_field"
                                             ]
-                                        )
+                                        ),
+                                        channel=2,
                                     )
 
                                 # Takes about 20 ms
@@ -167,12 +163,13 @@ class PulsingSweep(QtCore.QThread):
                                     self.pulsing_data.iloc[index - 1]["hf_field"]
                                     != self.pulsing_data.iloc[index + 1]["hf_field"]
                                 ):
-                                    self.hf_source.set_voltage(
+                                    self.source.set_voltage(
                                         float(
                                             self.pulsing_data.iloc[index + 1][
                                                 "hf_field"
                                             ]
-                                        )
+                                        ),
+                                        channel=2,
                                     )
 
                                 # Takes about 0.5s
@@ -202,8 +199,8 @@ class PulsingSweep(QtCore.QThread):
 
                     if self.is_killed:
                         # Close the connection to the spectrometer
-                        self.hf_source.output(False)
-                        self.dc_source.output(False)
+                        self.source.output(False, channel=2)
+                        self.source.output(False, channel=1)
                         # self.arduino.set_frequency(1000, True)
                         # self.parent.oscilloscope_thread.pause = False
                         self.quit()
@@ -223,8 +220,8 @@ class PulsingSweep(QtCore.QThread):
                 )
             print(time.time() - start_time)
 
-        self.hf_source.output(False)
-        self.dc_source.output(False)
+        self.source.output(False, channel=2)
+        self.source.output(False, channel=1)
         # self.arduino.set_frequency(1000, True)
 
         self.parent.pulsew_start_measurement_pushButton.setChecked(False)
