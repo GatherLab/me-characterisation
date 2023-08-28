@@ -30,7 +30,7 @@ class BiasScan(QtCore.QThread):
     def __init__(
         self,
         arduino,
-        dc_source,
+        source,
         oscilloscope,
         measurement_parameters,
         setup_parameters,
@@ -42,7 +42,7 @@ class BiasScan(QtCore.QThread):
         # Assign hardware and reset
         self.arduino = arduino
         self.arduino.init_serial_connection()
-        self.dc_source = dc_source
+        self.source = source
         self.oscilloscope = oscilloscope
         self.parent = parent
 
@@ -111,7 +111,7 @@ class BiasScan(QtCore.QThread):
 
         # self.parent.oscilloscope_thread.pause = True
         # self.parent.oscilloscope_thread.pause = True
-        self.dc_source.set_voltage(20)
+        self.source.set_voltage(20, channel=1)
 
         # Set voltage and current (they shall remain constant over the entire sweep)
         self.source.set_voltage(self.measurement_parameters["voltage"], channel=2)
@@ -166,7 +166,7 @@ class BiasScan(QtCore.QThread):
         if self.measurement_parameters["reverse_sweep"]:
             dc_field_list = np.append(dc_field_list, np.flip(dc_field_list))
 
-        self.dc_source.output(True)
+        self.source.output(True, channel=1)
 
         time.sleep(1)
 
@@ -175,7 +175,7 @@ class BiasScan(QtCore.QThread):
             # cf.log_message("Frequency set to " + str(frequency) + " kHz")
 
             # Set DC Field
-            self.dc_source.set_magnetic_field(dc_field)
+            self.source.set_magnetic_field(dc_field, channel=1)
 
             # Measure the voltage and current (and possibly parameters on the osci)
             me_voltage = float(self.oscilloscope.measure_vmax(channel=2))
@@ -196,7 +196,7 @@ class BiasScan(QtCore.QThread):
                 source_voltage,
                 self.df_data.loc[i, "current"],
                 dc_magnetic_field,
-            ) = self.dc_source.read_values()
+            ) = self.source.read_values(channel=1)
             self.df_data.loc[i, "bias_field"] = dc_magnetic_field
             self.df_data.loc[i, "me_voltage"] = me_voltage
             # Directly in mW/mm^2
@@ -221,7 +221,7 @@ class BiasScan(QtCore.QThread):
                 # Close the connection to the spectrometer
                 self.source.output(False, channel=2)
                 self.source.set_voltage(1, channel=2)
-                self.dc_source.output(False)
+                self.source.output(False, channel=1)
                 self.arduino.set_frequency(1000, True)
                 self.arduino.trigger_frequency_generation(False)
                 # self.parent.oscilloscope_thread.pause = False
@@ -233,8 +233,8 @@ class BiasScan(QtCore.QThread):
 
             time.sleep(self.measurement_parameters["bias_field_settling_time"])
 
+        self.source.output(False, channel=1)
         self.source.output(False, channel=2)
-        self.dc_source.output(False)
         self.save_data()
         self.parent.bw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)

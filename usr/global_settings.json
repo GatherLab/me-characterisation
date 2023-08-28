@@ -1,30 +1,30 @@
 {
     "overwrite": [
         {
-            "source_address": "ASRL7::INSTR",
+            "source_address": "ASRL3::INSTR",
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
-            "arduino_address": "ASRL9::INSTR",
+            "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "D:\\Eigene Dateien\\Dokumente\\01-Studium\\03-Promotion\\02-Data\\me-devices",
             "pid_parameters": "0.7, 6, 0.01",
             "luminance_mode": false,
-            "base_capacitance": "680.0",
-            "coil_inductance": "0.019",
-            "coil_windings": "17.0",
-            "coil_radius": "19.0",
+            "base_capacitance": "3300.0",
+            "coil_inductance": "0.2",
+            "coil_windings": "53.0",
+            "coil_radius": "36.0",
             "pickup_coil_windings": "1.0",
             "pickup_coil_radius": "11.3",
-            "circuit_resistance": "8.0",
-            "capacitances": "39, 81, 160, 330, 680, 1200, 2200, 4700, 10, 20",
+            "circuit_resistance": "12.0",
+            "capacitances": "39, 81, 160, 330, 680, 1200, 2200, 4700, 9100, 20",
             "arduino_pins": "4,5,6,7,8,9,10,1,2,3",
-            "calibration_file_path": "D:\\Eigene Dateien\\Dokumente\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2023-07-21_19uH-680pF_resonances.csv",
+            "calibration_file_path": "D:\\Eigene Dateien\\Dokumente\\01-Studium\\03-Promotion\\02-Data\\me-devices\\calibration\\2023-08-24_200uH-3300pF_resonances.csv",
             "dc_field_conversion_factor": "1.966"
         }
     ],
     "default": [
         {
-            "source_address": "ASRL7::INSTR",
+            "source_address": "ASRL3::INSTR",
             "rigol_oscilloscope_address": "USB0::0x1AB1::0x0517::DS1ZE223304729::INSTR",
-            "arduino_address": "ASRL9::INSTR",
+            "arduino_address": "ASRL6::INSTR",
             "default_saving_path": "D:\\Eigene Dateien\\Dokumente\\01-Studium\\03-Promotion\\02-Data\\me-devices",
             "luminance_mode": false,
             "pid_parameters": "0.7, 6, 0.01",

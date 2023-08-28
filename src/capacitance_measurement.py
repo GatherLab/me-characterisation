@@ -104,7 +104,9 @@ class CapacitanceScan(QtCore.QThread):
                 ].values[0],
                 index=["constituents", "arduino_pins", "sum", "resonance_frequency"],
             )
-            available_caps = available_caps.append(temp_series, ignore_index=True)
+            available_caps = pd.concat(
+                [available_caps, pd.DataFrame([temp_series])], ignore_index=True
+            )
 
         # First check the given minimum and maximum value for the capacitance
         selected_available_cap = available_caps["sum"].to_numpy()

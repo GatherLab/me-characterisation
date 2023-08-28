@@ -883,8 +883,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Clear plot
         # self.specw_ax.cla()
         try:
-            del self.pulsew_ax.lines[:]
-        except IndexError:
+            lines = self.pulsew_ax.get_lines()
+            lines[-1].remove()
+        except:
             cf.log_message("Pulsing line can not be deleted")
 
         # Only for plotting we have to add a line with the zeros
@@ -1045,10 +1046,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
-            del self.specw_ax.lines[0]
-            del self.specw_ax2.lines[0]
-            del self.specw_ax2.lines[0]
-        except IndexError:
+            lines = self.specw_ax.get_lines()
+            lines[-1].remove()
+            lines2 = self.specw_ax2.get_lines()
+            lines2[-1].remove()
+            lines2[-2].remove()
+        except:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
@@ -1159,9 +1162,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
-            del self.bw_ax.lines[0]
-            del self.bw_ax2.lines[0]
-        except IndexError:
+            lines = self.bw_ax.get_lines()
+            lines[-1].remove()
+            lines2 = self.bw_ax2.get_lines()
+            lines2[-1].remove()
+        except:
             cf.log_message("Plot lines could not be deleted")
 
         # Set x and y limit
@@ -1251,9 +1256,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
-            del self.hfw_ax.lines[0]
+            lines = self.hfw_ax.get_lines()
+            lines[-1].remove()
             # del self.hfw_ax2.lines[0]
-        except IndexError:
+        except:
             cf.log_message("Plot lines could not be deleted")
 
         # Set x and y limit
@@ -1388,9 +1394,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
-            del self.ltw_ax.lines[0]
+            lines = self.ltw_ax.get_lines()
+            lines[-1].remove()
             # del self.ltw_ax2.lines[0]
-        except IndexError:
+        except:
             cf.log_message("Plot lines could not be deleted")
 
         # Set x and y limit
@@ -1533,7 +1540,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 lines = self.capw_ax.get_lines()
                 lines[-1].remove()
                 # del self.specw_ax.lines[0]
-            except IndexError:
+            except:
                 cf.log_message("Spectrum line can not be deleted")
 
         # Set x and y limit
@@ -1576,9 +1583,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Clear plot
         # self.specw_ax.cla()
         try:
-            del self.ow_ax.lines[0]
-            del self.ow_ax.lines[0]
-        except IndexError:
+            lines = self.ow_ax.get_lines()
+            lines[-1].remove()
+            lines[-2].remove()
+        except:
             cf.log_message("Oscilloscope line can not be deleted")
 
         # Set x and y limit
@@ -1744,10 +1752,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.specw_ax.cla()
         try:
             # Delete two times zero because after the first deletion the first element will be element zero
-            del self.pidw_ax.lines[0]
-            del self.pidw_ax.lines[0]
+            lines = self.pidw_ax.get_lines()
+            lines[-1].remove()
+            lines[-2].remove()
             # del self.pidw_ax2.lines[0]
-        except IndexError:
+        except:
             pass
 
         # Set x and y limit
