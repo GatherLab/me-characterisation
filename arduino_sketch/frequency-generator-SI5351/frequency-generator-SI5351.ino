@@ -158,7 +158,7 @@ void loop()
         if (value == -1) {
           Serial.println(frequency); 
         }
-        else if (value >= 8000 && value <= 150000000) {
+        else if (value >= 2000 && value <= 150000000) {
           si5351.set_freq(value * 100, SI5351_CLK0);
           frequency = value;
           Serial.print("Frequency set to: ");
