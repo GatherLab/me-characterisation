@@ -120,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_frequency_spinBox.valueChanged.connect(self.frequency_changed)
         self.sw_capacitance_spinBox.valueChanged.connect(self.capacitance_changed)
         self.sw_dc_current_spinBox.valueChanged.connect(self.dc_current_changed)
-        self.sw_resistance_spinBox.valueChanged.connect(self.resistance_changed)
+        # self.sw_resistance_spinBox.valueChanged.connect(self.resistance_changed)
 
         self.sw_source_output_pushButton.clicked.connect(self.toggle_source_output)
         self.sw_source_output_pushButton.setCheckable(True)
@@ -250,14 +250,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.sw_dc_current_spinBox.setValue(0)
 
-        self.sw_resistance_spinBox.setMinimum(70)
-        self.sw_resistance_spinBox.setMaximum(2600)
-        self.sw_resistance_spinBox.setKeyboardTracking(False)
-        self.sw_resistance_spinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.NoButtons
-        )
-        self.sw_resistance_spinBox.setValue(500)
-        self.sw_resistance_spinBox.setSingleStep(10)
+        # self.sw_resistance_spinBox.setMinimum(70)
+        # self.sw_resistance_spinBox.setMaximum(2600)
+        # self.sw_resistance_spinBox.setKeyboardTracking(False)
+        # self.sw_resistance_spinBox.setButtonSymbols(
+        # QtWidgets.QAbstractSpinBox.NoButtons
+        # )
+        # self.sw_resistance_spinBox.setValue(500)
+        # self.sw_resistance_spinBox.setSingleStep(10)
 
         self.sw_autoset_capacitance_toggleSwitch.setChecked(True)
 
@@ -689,15 +689,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sw_dc_field_lcdNumber.display(str(dc_current * 0.37))
         # self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
 
+    """
     def resistance_changed(self):
-        """
-        Function that changes resistance on arduino when it is changed on spinbox
-        """
+        # Function that changes resistance on arduino when it is changed on spinbox
         resistance = self.sw_resistance_spinBox.value()
         self.arduino.set_resistance(resistance)
 
         self.sw_resistance_lcdNumber.display(str(resistance))
         # self.sw_resistance_lcdNumber.display(str(self.arduino.read_resistance()))
+    """
 
     def safe_read_setup_parameters(self):
         """

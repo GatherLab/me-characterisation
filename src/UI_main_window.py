@@ -392,6 +392,7 @@ class Ui_MainWindow(object):
         self.sw_dc_field_lcdNumber.setObjectName("sw_dc_field_lcdNumber")
         self.sw_dc_current_field_verticalLayout.addWidget(self.sw_dc_field_lcdNumber)
 
+        """
         # resistance LCD number widget
         self.sw_resistance_lcdNumber = QtWidgets.QLCDNumber(self.setup_widget)
         sizePolicy = QtWidgets.QSizePolicy(
@@ -407,6 +408,7 @@ class Ui_MainWindow(object):
         self.sw_resistance_lcdNumber.setAutoFillBackground(False)
         self.sw_resistance_lcdNumber.setSmallDecimalPoint(False)
         self.sw_resistance_lcdNumber.setObjectName("sw_resistance_lcdNumber")
+        """
 
         self.sw_source_vc_horizonalLayout.addWidget(self.sw_voltage_lcdNumber)
         self.sw_source_vc_horizonalLayout.addLayout(
@@ -417,7 +419,7 @@ class Ui_MainWindow(object):
         self.sw_source_vc_horizonalLayout.addLayout(
             self.sw_dc_current_field_verticalLayout
         )
-        self.sw_source_vc_horizonalLayout.addWidget(self.sw_resistance_lcdNumber)
+        # self.sw_source_vc_horizonalLayout.addWidget(self.sw_resistance_lcdNumber)
 
         self.gridLayout_7.addLayout(self.sw_source_vc_horizonalLayout, 6, 0, 1, 2)
 
@@ -448,9 +450,9 @@ class Ui_MainWindow(object):
         self.sw_dc_current_spinBox.setObjectName("sw_dc_current_spinBox")
         self.sw_set_vc_horizontalLayout.addWidget(self.sw_dc_current_spinBox)
 
-        self.sw_resistance_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
-        self.sw_resistance_spinBox.setObjectName("sw_resistance_spinBox")
-        self.sw_set_vc_horizontalLayout.addWidget(self.sw_resistance_spinBox)
+        # self.sw_resistance_spinBox = QtWidgets.QDoubleSpinBox(self.setup_widget)
+        # self.sw_resistance_spinBox.setObjectName("sw_resistance_spinBox")
+        # self.sw_set_vc_horizontalLayout.addWidget(self.sw_resistance_spinBox)
 
         self.gridLayout_7.addLayout(self.sw_set_vc_horizontalLayout, 7, 0, 1, 2)
 
@@ -1289,7 +1291,7 @@ class Ui_MainWindow(object):
             self.bw_dc_magnetic_field_step_spinBox, 15, 0, 1, 1
         )
 
-        # Set resistance settling time
+        # Set bias settling time
         self.bw_dc_magnetic_field_settling_time_label = QtWidgets.QLabel(
             self.bw_scrollAreaWidgetContents
         )
@@ -1504,7 +1506,7 @@ class Ui_MainWindow(object):
         self.hfw_frequency_spinBox.setObjectName("hfw_frequency_spinBox")
         self.hfw_scrollArea_gridLayout.addWidget(self.hfw_frequency_spinBox, 9, 0, 1, 1)
 
-        # Set minimum scan resistance
+        # Set minimum scan voltage 
         self.hfw_minimum_voltage_label = QtWidgets.QLabel(
             self.hfw_scrollAreaWidgetContents
         )
@@ -2383,7 +2385,7 @@ class Ui_MainWindow(object):
         self.sw_frequency_spinBox.setSuffix(_translate("MainWindow", " kHz"))
         self.sw_capacitance_spinBox.setSuffix(_translate("MainWindow", " pF"))
         self.sw_dc_current_spinBox.setSuffix(_translate("MainWindow", " A"))
-        self.sw_resistance_spinBox.setSuffix(_translate("MainWindow", " Ohm"))
+        # self.sw_resistance_spinBox.setSuffix(_translate("MainWindow", " Ohm"))
         self.sw_source_output_pushButton.setText(
             _translate("MainWindow", "Output On/Off")
         )
