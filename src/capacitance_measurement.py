@@ -261,42 +261,55 @@ class CapacitanceScan(QtCore.QThread):
             # If selected by the user, do a fit of the data
             # around the expected range, get all resonance frequencies and save
             # to file
-            fit_class = ResonanceFit(
-                resistance=self.global_settings["circuit_resistance"],
-                voltage=self.measurement_parameters["voltage"],
-            )
-            popt, pcov = fit_class.fit(
-                self.df_data["frequency"].to_numpy(), self.df_data["current"].to_numpy()
-            )
+            try:
+                fit_class = ResonanceFit(
+                    resistance=self.global_settings["circuit_resistance"],
+                    voltage=self.measurement_parameters["voltage"],
+                )
+                popt, pcov = fit_class.fit(
+                    self.df_data["frequency"].to_numpy(),
+                    self.df_data["current"].to_numpy(),
+                )
 
-            self.df_resonance_fit.loc[color_counter, "capacitance"] = capacitance
-            self.df_resonance_fit.loc[color_counter, "resonance_frequency"] = popt[0]
-            self.df_resonance_fit.loc[color_counter, "maximum_current"] = self.df_data[
-                "current"
-            ].max()
-            self.df_resonance_fit.loc[color_counter, "quality_factor"] = popt[1]
+                self.df_resonance_fit.loc[color_counter, "capacitance"] = capacitance
+                self.df_resonance_fit.loc[color_counter, "resonance_frequency"] = popt[
+                    0
+                ]
+                self.df_resonance_fit.loc[
+                    color_counter, "maximum_current"
+                ] = self.df_data["current"].max()
+                self.df_resonance_fit.loc[color_counter, "quality_factor"] = popt[1]
 
-            # Extend the plotted range
-            x_fit = np.linspace(
-                self.df_data["frequency"].min(), self.df_data["frequency"].max(), 500
-            )
+                # Extend the plotted range
+                x_fit = np.linspace(
+                    self.df_data["frequency"].min(),
+                    self.df_data["frequency"].max(),
+                    500,
+                )
 
-            # Plot Fit
-            self.update_spectrum_signal.emit(
-                x_fit,
-                fit_class.func(x_fit, *popt),
-                [
-                    self.measurement_parameters["minimum_frequency"]
-                    - self.measurement_parameters["frequency_margin"],
-                    self.measurement_parameters["maximum_frequency"]
-                    + self.measurement_parameters["frequency_margin"],
-                ],
-                str(capacitance) + "pF fit",
-                first_bool,
-                device_color[color_counter],
-                True
-                # self.df_data["vpp"],
-            )
+                # Plot Fit
+                self.update_spectrum_signal.emit(
+                    x_fit,
+                    fit_class.func(x_fit, *popt),
+                    [
+                        self.measurement_parameters["minimum_frequency"]
+                        - self.measurement_parameters["frequency_margin"],
+                        self.measurement_parameters["maximum_frequency"]
+                        + self.measurement_parameters["frequency_margin"],
+                    ],
+                    str(capacitance) + "pF fit",
+                    first_bool,
+                    device_color[color_counter],
+                    True
+                    # self.df_data["vpp"],
+                )
+            except:
+                self.df_resonance_fit.loc[color_counter, "capacitance"] = capacitance
+                self.df_resonance_fit.loc[color_counter, "resonance_frequency"] = 0
+                self.df_resonance_fit.loc[
+                    color_counter, "maximum_current"
+                ] = self.df_data["current"].max()
+                self.df_resonance_fit.loc[color_counter, "quality_factor"] = 0
 
             color_counter += 1
 
