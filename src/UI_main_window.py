@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         # self.gatherlab_picture = QtWidgets.QWidget(self.centralwidget)
         # self.gatherlab_picture.setObjectName("gatherlab_picture")
         self.gatherlab_label = QtWidgets.QLabel()
-        pixmap = QtGui.QPixmap("icons/logo_cropped.jpg")
+        pixmap = QtGui.QPixmap("icons/logo_cropped2.png")
         self.gatherlab_label.setPixmap(pixmap)
         self.gatherlab_label.setScaledContents(True)
         # self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
@@ -1638,12 +1638,20 @@ class Ui_MainWindow(object):
         self.ltw_ax = self.ltw_fig.figure.subplots()
         # self.ltw_ax.set_facecolor("#E0E0E0")
         self.ltw_ax.grid(True)
-        self.ltw_ax.set_xlabel("AC Field Voltage (V)", fontsize=14)
-        self.ltw_ax.set_ylabel("Max ME Response (V)", fontsize=14)
+        self.ltw_ax.set_xlabel("Time (s)", fontsize=14)
+        self.ltw_ax.set_ylabel("Max. ME Voltage (V)", fontsize=14)
         self.ltw_ax.set_xlim([50, 600])
 
         self.ltw_ax.axhline(linewidth=1, color="black")
         self.ltw_ax.axvline(linewidth=1, color="black")
+
+        self.ltw_ax2 = self.ltw_ax.twinx()
+        self.ltw_ax2.set_ylabel(
+            "Magnetic Field (mT)",
+            fontsize=14,
+            color=(85 / 255, 170 / 255, 255 / 255),
+        )
+        # self.ltw_ax2.yaxis.label.set_color((85 / 255, 170 / 255, 255 / 255))
 
         # self.ltw_ax2 = self.ltw_ax.twinx()
         # self.ltw_ax2.set_ylabel(

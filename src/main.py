@@ -210,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # -------------------------------------------------------------------- #
 
         # Set standard parameters for setup
-        self.sw_frequency_spinBox.setMinimum(8)
+        self.sw_frequency_spinBox.setMinimum(2)
         self.sw_frequency_spinBox.setMaximum(150000)
         self.sw_frequency_spinBox.setKeyboardTracking(False)
         self.sw_frequency_spinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -270,11 +270,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.specw_current_spinBox.setMaximum(12)
         self.specw_current_spinBox.setValue(0.5)
 
-        self.specw_minimum_frequency_spinBox.setMinimum(8)
+        self.specw_minimum_frequency_spinBox.setMinimum(2)
         self.specw_minimum_frequency_spinBox.setMaximum(150000)
         self.specw_minimum_frequency_spinBox.setValue(135)
 
-        self.specw_maximum_frequency_spinBox.setMinimum(8)
+        self.specw_maximum_frequency_spinBox.setMinimum(2)
         self.specw_maximum_frequency_spinBox.setMaximum(150000)
         self.specw_maximum_frequency_spinBox.setValue(310)
 
@@ -303,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bw_current_spinBox.setMaximum(12)
         self.bw_current_spinBox.setValue(0.5)
 
-        self.bw_frequency_spinBox.setMinimum(8)
+        self.bw_frequency_spinBox.setMinimum(2)
         self.bw_frequency_spinBox.setMaximum(150000)
         self.bw_frequency_spinBox.setValue(145)
 
@@ -366,7 +366,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ltw_dc_magnetic_field_spinBox.setMaximum(10)
         self.ltw_dc_magnetic_field_spinBox.setValue(1.5)
 
-        self.ltw_frequency_spinBox.setMinimum(8)
+        self.ltw_frequency_spinBox.setMinimum(2)
         self.ltw_frequency_spinBox.setMaximum(150000)
         self.ltw_frequency_spinBox.setValue(150)
 
@@ -391,11 +391,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.capw_current_spinBox.setMaximum(12)
         self.capw_current_spinBox.setValue(1)
 
-        self.capw_minimum_frequency_spinBox.setMinimum(8)
+        self.capw_minimum_frequency_spinBox.setMinimum(2)
         self.capw_minimum_frequency_spinBox.setMaximum(150000)
         self.capw_minimum_frequency_spinBox.setValue(62)
 
-        self.capw_maximum_frequency_spinBox.setMinimum(8)
+        self.capw_maximum_frequency_spinBox.setMinimum(2)
         self.capw_maximum_frequency_spinBox.setMaximum(150000)
         self.capw_maximum_frequency_spinBox.setValue(350)
 
@@ -424,7 +424,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pidw_current_spinBox.setMaximum(12)
         self.pidw_current_spinBox.setValue(0.5)
 
-        self.pidw_frequency_spinBox.setMinimum(8)
+        self.pidw_frequency_spinBox.setMinimum(2)
         self.pidw_frequency_spinBox.setMaximum(150000)
         self.pidw_frequency_spinBox.setValue(105)
 
@@ -1384,8 +1384,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.lt_sweep.start()
 
-    @QtCore.Slot(list, list, list, list)
-    def update_lt_plot(self, time, me_voltage):
+    @QtCore.Slot(list, list, list)
+    def update_lt_plot(self, time, me_voltage, magnetic_field):
         """
         Function that is continuously evoked when the spectrum is updated by
         the other thread
@@ -1396,6 +1396,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # Delete two times zero because after the first deletion the first element will be element zero
             lines = self.ltw_ax.get_lines()
             lines[-1].remove()
+            lines2 = self.ltw_ax2.get_lines()
+            lines2[-1].remove()
             # del self.ltw_ax2.lines[0]
         except:
             cf.log_message("Plot lines could not be deleted")
@@ -1412,6 +1414,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             marker="o",
         )
 
+        self.ltw_ax2.plot(
+            time,
+            magnetic_field,
+            color=(85 / 255, 170 / 255, 255 / 255),
+            marker="o",
+            label="Magnetic Field (mT)",
+        )
+
         # self.ltw_ax2.plot(
         #     hf_field,
         #     hf_magnetic_field,
@@ -1420,6 +1430,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # )
 
         # lines, labels = self.ltw_ax.legend(loc="best")
+
+        self.ltw_ax2.format_coord = self.make_format(self.ltw_ax2, self.ltw_ax)
+
+        lines, labels = self.ltw_ax.get_legend_handles_labels()
+        lines2, labels2 = self.ltw_ax2.get_legend_handles_labels()
+        legend = self.ltw_ax2.legend(lines + lines2, labels + labels2, loc="best")
+        legend.set_draggable(True)
 
         self.ltw_fig.draw()
 

@@ -26,7 +26,7 @@ class LTScan(QtCore.QThread):
     # Define costum signals
     # https://stackoverflow.com/questions/36434706/pyqt-proper-use-of-emit-and-pyqtsignal
     # With pyside2 https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
-    update_lt_scan_plot = QtCore.Signal(list, list)
+    update_lt_scan_plot = QtCore.Signal(list, list, list)
     update_progress_bar = QtCore.Signal(str, float)
     pause_thread_lt_scan = QtCore.Signal(str)
 
@@ -65,6 +65,7 @@ class LTScan(QtCore.QThread):
         )
 
         self.is_killed = False
+        self.last_file_path = ""
 
         self.source.set_current(2, channel=2)
         if measurement_parameters["constant_magnetic_field_mode"]:
@@ -73,8 +74,8 @@ class LTScan(QtCore.QThread):
             )
             self.source.start_constant_magnetic_field_mode(
                 pid_parameters,
-                self.measurement_parameters["current_compliance"],
-                self.measurement_parameters["voltage"],
+                self.measurement_parameters["hf_voltage"],
+                self.measurement_parameters["voltage_compliance"],
             )
 
             # with open(
@@ -110,6 +111,9 @@ class LTScan(QtCore.QThread):
 
         pydevd.settrace(suspend=False)
 
+        # Init data saving
+        self.save_data_init()
+
         # Measure time elapsed
         start_time = time.time()
 
@@ -136,7 +140,23 @@ class LTScan(QtCore.QThread):
 
         # Activate output (necessary to adjust field)
         self.source.output(True, channel=2)
-        self.source.set_voltage(self.measurement_parameters["hf_voltage"], channel=2)
+        if not self.measurement_parameters["constant_magnetic_field_mode"]:
+            self.source.set_voltage(
+                self.measurement_parameters["hf_voltage"], channel=2
+            )
+        else:
+            # Adjust the magnetic field
+            pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
+                self.global_parameters["pickup_coil_windings"],
+                self.global_parameters["pickup_coil_radius"],
+                self.measurement_parameters["frequency"],
+                self.oscilloscope,
+                break_if_too_long=False,
+                channel=2,
+            )
+
+            # Return total adjustment time to let user know how long it took
+            # total_adjustment_time += elapsed_time
 
         self.source.output(True, channel=1)
         time.sleep(1)
@@ -215,6 +235,20 @@ class LTScan(QtCore.QThread):
             self.measurement_parameters["total_time"] + 0.1
         ):
             if (time.time() - initial_time) >= time_step_list[i]:
+                # Readjust magnetic field to initial value
+                """
+                if self.measurement_parameters["constant_magnetic_field_mode"]:
+                    # Adjust the magnetic field
+                    pid_voltage, elapsed_time = self.source.adjust_magnetic_field(
+                        self.global_parameters["pickup_coil_windings"],
+                        self.global_parameters["pickup_coil_radius"],
+                        self.measurement_parameters["frequency"],
+                        self.oscilloscope,
+                        break_if_too_long=True,
+                        channel=2,
+                    )
+                """
+
                 self.df_data.loc[i, "time"] = time.time() - initial_time
 
                 # Measure the voltage and current (and possibly parameters on the osci)
@@ -222,11 +256,20 @@ class LTScan(QtCore.QThread):
                 # self.oscilloscope.auto_scale(1)
                 (
                     self.osci_data[str(time_step_list[i]) + "_time"],
-                    osci_data_raw,
-                ) = self.oscilloscope.get_data()
+                    raw_field,
+                ) = self.oscilloscope.get_data("CHAN1")
+                self.osci_data[str(time_step_list[i]) + "_field"] = (
+                    pf.calculate_magnetic_field_from_Vind(
+                        self.global_parameters["pickup_coil_windings"],
+                        self.global_parameters["pickup_coil_radius"] * 1e-3,
+                        raw_field,
+                        float(self.measurement_parameters["frequency"]) * 1e3,
+                    )
+                    * 1e3
+                )
                 (
                     time_data,
-                    self.osci_data[str(time_step_list[i]) + "_field"],
+                    osci_data_raw,
                 ) = self.oscilloscope.get_data("CHAN2")
 
                 self.osci_data[str(time_step_list[i])] = uniform_filter1d(
@@ -256,7 +299,9 @@ class LTScan(QtCore.QThread):
                 self.update_lt_scan_plot.emit(
                     self.df_data["time"],
                     self.df_data["me_voltage"],
+                    self.df_data["hf_field"],
                 )
+                self.save_data_individually()
 
                 # Increase iterator
                 i += 1
@@ -268,7 +313,7 @@ class LTScan(QtCore.QThread):
                     self.source.set_voltage(1, channel=2)
                     self.source.output(False, channel=1)
                     self.arduino.set_frequency(1000, True)
-                    self.save_data()
+                    self.save_data_osci()
                     # self.parent.oscilloscope_thread.pause = False
                     self.quit()
                     return
@@ -277,7 +322,7 @@ class LTScan(QtCore.QThread):
 
         self.source.output(False, channel=2)
         self.source.output(False, channel=1)
-        self.save_data()
+        self.save_data_osci()
         self.parent.ltw_start_measurement_pushButton.setChecked(False)
         self.arduino.set_frequency(1000, True)
 
@@ -289,7 +334,7 @@ class LTScan(QtCore.QThread):
         """
         self.is_killed = True
 
-    def save_data(self):
+    def save_data_init(self):
         """
         Function to save the measured data to file. This should probably be
         integrated into the AutotubeMeasurement class
@@ -345,13 +390,6 @@ class LTScan(QtCore.QThread):
             line07,
         ]
 
-        header_lines_full = [
-            line02,
-            line03,
-            line04,
-            line05,
-        ]
-
         # Write header lines to file
         file_path = (
             self.setup_parameters["folder_path"]
@@ -363,6 +401,57 @@ class LTScan(QtCore.QThread):
             + ".csv"
         )
 
+        self.df_data["time"] = self.df_data["time"].map(lambda x: "{0:.3f}".format(x))
+
+        self.last_file_path = cf.save_file(
+            self.df_data, file_path, header_lines, return_file_path=True
+        )
+
+    def save_data_osci(self):
+        line02 = (
+            "Base Capacitance: "
+            + str(self.global_parameters["base_capacitance"])
+            + " pF\t Coil Inductance: "
+            + str(self.global_parameters["coil_inductance"])
+            + " mH\t Device Size: "
+            + str(self.setup_parameters["device_size"])
+            + " mm"
+        )
+        line03 = (
+            "Maximum Voltage:   "
+            + str(self.measurement_parameters["voltage_compliance"])
+            + " V   "
+        )
+        if self.measurement_parameters["constant_magnetic_field_mode"]:
+            line03 += (
+                "Constant HF Magnetic Field:   "
+                + str(self.measurement_parameters["hf_voltage"])
+                + " V"
+            )
+        else:
+            line03 += (
+                "DC Magnetic Field Bias:   "
+                + str(self.measurement_parameters["dc_magnetic_field"])
+                + " A"
+            )
+
+        line04 = (
+            "Frequency: " + str(self.measurement_parameters["frequency"]) + " kHz \t"
+            "Measurement Interval:   "
+            + str(self.measurement_parameters["time_step"])
+            + " s \t"
+            + "Total Measurement Time:   "
+            + str(self.measurement_parameters["total_time"])
+            + " s \t"
+        )
+        line05 = "### Measurement data ###"
+
+        header_lines_full = [
+            line02,
+            line03,
+            line04,
+            line05,
+        ]
         file_path_full = (
             self.setup_parameters["folder_path"]
             + dt.date.today().strftime("%Y-%m-%d_")
@@ -372,12 +461,29 @@ class LTScan(QtCore.QThread):
             + "_lt-osci"
             + ".csv"
         )
-        self.df_data["time"] = self.df_data["time"].map(lambda x: "{0:.3f}".format(x))
-
-        cf.save_file(self.df_data, file_path, header_lines)
-
         cf.save_file(
             self.osci_data, file_path_full, header_lines_full, save_header=True
+        )
+
+    def save_data_individually(self):
+        """
+        Function to save the measured data line by line to file.
+        """
+
+        # self.df_data["time"] = self.df_data["time"].map(lambda x: "{0:.3f}".format(x))
+        # self.df_data["hf_field"] = self.df_data["hf_field"].map(
+            # lambda x: "{0:.3f}".format(x)
+        # )
+        # self.df_data["me_voltage"] = self.df_data["me_voltage"].map(
+            # lambda x: "{0:.4f}".format(x)
+        # )
+        # Append to file
+        self.df_data.iloc[-1:].to_csv(
+            self.last_file_path,
+            index=False,
+            header=False,
+            mode="a",  # append data to csv file
+            sep="\t",
         )
 
         # with open(file_path, "a") as the_file:

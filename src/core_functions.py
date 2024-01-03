@@ -74,7 +74,7 @@ def read_global_settings():
 #     return settings[0]
 
 
-def save_file(df, file_path, header_lines, save_header=False):
+def save_file(df, file_path, header_lines, save_header=False, return_file_path=False):
     """
     Generic function that allows to save a file. If it exists already, rename
     it.
@@ -100,6 +100,9 @@ def save_file(df, file_path, header_lines, save_header=False):
 
     # Now write pandas dataframe to file
     df.to_csv(file_path, index=False, mode="a", header=save_header, sep="\t")
+
+    if return_file_path:
+        return file_path
 
 
 def find_nearest(array, value):
