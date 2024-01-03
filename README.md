@@ -1,10 +1,19 @@
-# Magnetoelectric Device Characterisation
+<h1 align="center">
+    Magnetoelectric Device Characterisation
+</h1>
+
+<p align="center">
+   <a href="https://github.com/GatherLab/me-measurement/commits" title="Last Commit"><img src="https://img.shields.io/github/last-commit/GatherLab/me-measurement?style=flat"></a>
+   <a href="./LICENSE" title="License"><img src="https://img.shields.io/github/license/GatherLab/me-measurement"></a>
+</p>
 
 Software that interfaces several hardware components (listed below) used for the
 generation of AC and DC magnetic fields to characterize and drive
 magnetoelectric transducers as outlined in _Butscher et al._ (-doi-).
 
-## Hardware
+## Setup
+
+### Hardware
 
 | Item                                                                 | Brand   | Model Number              |
 | -------------------------------------------------------------------- | ------- | ------------------------- |
@@ -14,7 +23,7 @@ magnetoelectric transducers as outlined in _Butscher et al._ (-doi-).
 | SI5351A based function generator with IR2213 based class-D amplifier |         |                           |
 | Variable capacitor relays interfaced with Arduino                    |         |                           |
 
-## First Installation
+### First Installation
 
 1. Clone project folder to local machine
 2. Generate virtual environement
