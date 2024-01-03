@@ -522,7 +522,7 @@ class VoltcraftSource:
             setpoint=set_point,
         )
         # Minimum of one volt is required by the voltcraft source
-        self.pid.output_limits = (1, maximum_voltage)
+        self.pid.output_limits = (0.1, maximum_voltage)
 
     def adjust_magnetic_field(
         self,
@@ -564,7 +564,7 @@ class VoltcraftSource:
 
             # If the magnetic field and the setpoint deviate by less than 0.02,
             # increase a else set it back to zero
-            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.05):
                 a += 1
             else:
                 a = 0
@@ -1328,7 +1328,7 @@ class KoradSource:
             setpoint=set_point,
         )
         # Minimum of one volt is required by the voltcraft source
-        self.pid.output_limits = (1, maximum_voltage)
+        self.pid.output_limits = (0.1, maximum_voltage)
 
     def adjust_magnetic_field(
         self,
@@ -1370,7 +1370,7 @@ class KoradSource:
 
             # If the magnetic field and the setpoint deviate by less than 0.02,
             # increase a else set it back to zero
-            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.05):
                 a += 1
             else:
                 a = 0
@@ -1604,7 +1604,7 @@ class KoradKD3305PSource:
             setpoint=set_point,
         )
         # Minimum of one volt is required by the voltcraft source
-        self.pid.output_limits = (1, maximum_voltage)
+        self.pid.output_limits = (0.1, maximum_voltage)
 
     def adjust_magnetic_field(
         self,
@@ -1646,7 +1646,7 @@ class KoradKD3305PSource:
 
             # If the magnetic field and the setpoint deviate by less than 0.02,
             # increase a else set it back to zero
-            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.05):
                 a += 1
             else:
                 a = 0

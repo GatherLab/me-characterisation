@@ -72,7 +72,7 @@ class PIDScan(QtCore.QThread):
             setpoint=self.measurement_parameters["magnetic_field"],
         )
         # Minimum of one volt is required by the voltcraft hf_source
-        self.pid.output_limits = (1, self.measurement_parameters["voltage"])
+        self.pid.output_limits = (0.1, self.measurement_parameters["voltage"])
 
         # with open(
         # os.path.join(Path(__file__).parent.parent, "usr", "pid_tuning.json")
@@ -192,7 +192,7 @@ class PIDScan(QtCore.QThread):
 
             # If the magnetic field and the setpoint deviate by less than 0.02,
             # increase a else set it back to zero
-            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.03):
+            if math.isclose(self.pid.setpoint, magnetic_field, rel_tol=0.05):
                 a += 1
             else:
                 a = 0
