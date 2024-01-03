@@ -1,104 +1,110 @@
 # Magnetoelectric Device Characterisation
 
-Software that interfaces several hardware components (listed below) to determine
-the performance of magnetoelectric thin films. The software allows for
-calibration of the devices, and control of a pair of DC Helmholtz coils as well
-as a high-frequency AC coil.
-
-Self-built electronics are interfaced with an Arduino.
-
-## Setup
-### First Setup
-
-1. Install the python packages provided by requirements.txt best in a new virtual environment
-2. Install Ultra Sigma from the rigol website (https://www.rigolna.com/download/), takes ages to download and install
-3. Install Ultra Scope from rigol website
-4. Connect oscilloscope
-5. I couldn't make Ultra sigma work but the oscilloscope is now recognized by windows
-6. Download Voltcraft PPS-16005 software (https://www.conrad.de/de/p/voltcraft-pps-16005-labornetzgeraet-einstellbar-1-36-v-dc-0-10-a-360-w-usb-remote-programmierbar-anzahl-ausgaenge-2-513914.html?refresh=true#productDownloads)
-7. Against all intuition the voltcraft pps-16005 must be set to normal mode when controlled remotly by the pc and not to "Remote Control" on the rear side of the device.
-8. Connect KORAD 3005P and install the software
-
-### Development
-- Python formatter: black
+Software that interfaces several hardware components (listed below) used for the
+generation of AC and DC magnetic fields to characterize and drive
+magnetoelectric transducers as outlined in _Butscher et al._ (-doi-).
 
 ## Hardware
 
-| Item         | Brand     | Model Number              |
-| ------------ | --------- | ------------------------- |
-| Oscilloscope | Rigol     | DS1202 Z-E (1000Z Series) |
-| DC Source    | Korad     | KA3005P                   |
-| RF Source    | Voltcraft | PPS-16005                 |
+| Item                                                                 | Brand   | Model Number              |
+| -------------------------------------------------------------------- | ------- | ------------------------- |
+| Oscilloscope                                                         | Rigol   | DS1202 Z-E (1000Z Series) |
+| Two channel power source                                             | Korad   | KA33005P                  |
+| Arduino nano                                                         | Arduino |                           |
+| SI5351A based function generator with IR2213 based class-D amplifier |         |                           |
+| Variable capacitor relays interfaced with Arduino                    |         |                           |
+
+## First Installation
+
+1. Clone project folder to local machine
+2. Generate virtual environement
+   ```terminal
+   py -m venv venv
+   ```
+3. Activate virtual environment
+   ```terminal
+   Set-ExecutionPolicy Unrestricted -Scope Process
+   .\venv\Scripts\activate
+   ```
+4. Install required python packages in a virtual environment from requirements.txx using
+   ```
+   pip install -r requirements.txt
+   ```
+5. Install Ultra Sigma from the Rigol website (https://www.rigolna.com/download).
+6. Install Ultra Scope from Rigol website.
+7. Install driver and software for KORAD 33005P (https://www.koradtechnology.com/companyfile/6/).
+8. Flush /arduino_sketch/frequency-generator-SI5351.ino to the Arduino nano and connect to function generator and capacitor board.
+9. Connect all devices using USB ports to the computer and execute software
 
 ## User Journey
+
 ### Setup
-#### Loading Window
 
-To start the program execute main.py in your virtual environment setup as
-described above. The start screen that appears should look something like this.
-It will guide you through the initialisation of all different hardware
-components.
+Start software to make sure all devices are recognized. The loading window will
+inform about devices that are not correctly recognized. Make sure the hardware
+parameters are correctly entered in /usr/global_settings.json.
 
-In case everything went well and all hardware could be initialised the screen
-will directly disappear. However, if the program had a problem initialising any
-of the component it will indicate that in the following dialog. You can either
-select to continue anyways if the device that could not be initialised is not
-necessary for your measurements or you can troubleshoot your device and retry
-the initialisation again. In case the device address is not correct, either
-continue and modify it in the settings as described below or directly modify it
-in the /usr/global_settings.json file.
+<p align="center">
+  <img width="500em" src="./icons/loading-window.png">
+</p>
 
-In case everything went well or the user decided to continue anyways she will
-end up with the following window.
-
-This main window gives you several options that can be selected from the top tabs and are
-
-- Setup
-- Oscilloscope
-- Resonance Frequency
-- Bias Field
-- Power
-- Capacitance Calibration
-- PID Tuning
-
-Additionally, the user can select Settings from the top menubar. The different
-tabs as well as the settings are described in more detail in the following.
-
-#### Setup
-
-Here the user has to define the saving path, batch name, device number and the
-size of the device. These quantities are used during measurement and are saved
-in the measurement file for future reference.
-
-Furthermore, the user has the option to manually adjust all hardware parameters
-for a quick test of the device and the equipment. The LCD numbers directly yield
-the current value that is set at the equipment itself.
-
-#### Oscilloscope 
-
-Direct interface to the attached Rigol Oscilloscope allowing the user to
-permanently read out the oscilloscope output and easily stop it and save it.
-There is a latency of about 1 s between the updates of the oscilloscope due to a
-lag in communication between computer and oscilloscope.
-
-### Measurement
-
-An ME device can be characterized by its resonance frequency, the bias field
-necessary to obtain the maximum resonance voltage and the power that can be
-generated from the device. In order to do one full characterization a device has
-to be measured in this three different tabs. In case the resonance frequency is
-already roughly known this should take less than 5-10 min per device.
-
-#### Resonance Frequency
-The resonance frequency tab allows the user to sweep over a broad frequency
-range (depending on coil capacitance configuration) to identify the resonance
-frequency of the investigated ME device. For this the user enters all relevant
-parameters for the measurement and can decide on some automatization options.
-
-
-#### Bias Field
-#### Power 
+If not already done, enter the device parameters such as AC coil inductance,
+capacitance values via the GUI to the settings or /usr/global_settings.json.
 
 ### Calibration
-#### Capacitance Calibration
-#### PID Tuning 
+
+**Calibrate capacitance** values using the calibration tab.
+Select sensible parameters to e.g. obtain RLC resonances with reasonable
+overlap. The software will automatically calculate and decide for the closest LC
+combination.
+
+<p align="center">
+  <img width="500em" src="./icons/calibration.png">
+</p>
+
+### Manual mode, Pulsing, Oscilloscope Interface
+
+The easiest way of using the software is via the **setup tab**, where the AC and DC
+magnetic fied and capacitance can be controlled manually. Set a folder path
+where all measurements are saved and define file names to recognize your files
+in the future.
+
+<p align="center">
+  <img width="500em" src="./icons/setup.png">
+</p>
+
+Directly interface the response from the **oscilloscope** and save the raw data
+to the PC. The **pulsing** tab allows pulsing sequences, written to a separate
+.txt file, to be exectued.
+
+<p align="center">
+  <img width="500em" src="./icons/osci.png">
+  <img width="500em" src="./icons/pulsing.png">
+</p>
+
+### Device Charracterization
+
+Fully characterize the actual magnetoelectric device using automatic **frequency scan**,
+**bias field scan**, **hf field scan** and **lifetime** measurements.
+Using an additional pick-up coil, the AC magnetic field is automatically
+adjusted during the measurement to the desired constant value.
+
+<p align="center">
+  <img width="500em" src="./icons/frequency-scan.png">
+  <img width="500em" src="./icons/bias-scan.png">
+</p>
+<p align="center">
+  <img width="500em" src="./icons/hf-scan.png">
+  <img width="500em" src="./icons/lifetime-measurement.png">
+</p>
+
+The PID parameters used for automatic adjustment can be set via the settings.
+For a simple test and further adjustment of the tuning of the parameters the PID
+tab can be used.
+
+<p align="center">
+  <img width="500em" src="./icons/pid.png">
+</p>
+
+&copy; Software developed by Julian Butscher @GatherLab, University of St
+Andrews and University of Cologne. Please get in touch for further information.
