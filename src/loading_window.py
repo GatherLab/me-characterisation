@@ -1,9 +1,6 @@
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from init_thread import InitThread
 from UI_loading_window import Ui_LoadingWindow
-
-import core_functions as cf
-
 
 class LoadingWindow(QtWidgets.QDialog):
     """

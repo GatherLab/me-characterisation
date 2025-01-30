@@ -17,32 +17,25 @@ from pulsing_sweep import PulsingSweep
 
 from hardware import (
     KoradKD3305PSource,
-    KoradSource,
     RigolOscilloscope,
-    VoltcraftSource,
     Arduino,
 )
 
 import core_functions as cf
 import physics_functions as pf
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 import time
 import os
-import json
 import sys
-import functools
-from datetime import date
 import datetime as dt
 import logging
 from logging.handlers import RotatingFileHandler
 
-import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 import math
-import matplotlib as mpl
 
 import webbrowser
 
@@ -1855,4 +1848,4 @@ if __name__ == "__main__":
     app.setWindowIcon(app_icon)
 
     ui.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

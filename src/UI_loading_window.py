@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 # Template by Wanderson-Magalhaes
-
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtGui import QLinearGradient
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtGui import QLinearGradient
 
 
 class Ui_LoadingWindow(object):

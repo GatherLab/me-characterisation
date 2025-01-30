@@ -1,19 +1,8 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 import time
-import datetime as dt
-import numpy as np
-import pandas as pd
-import math
-
-# import json
-# import os.path
-# from pathlib import Path
 
 import core_functions as cf
-import physics_functions as pf
-
-from simple_pid import PID
 
 
 class PulsingSweep(QtCore.QThread):

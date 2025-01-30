@@ -1,24 +1,12 @@
-# -*- coding: utf-8 -*-
-
-# Initial gui design with QtCreator then translated into python code and adjusted
-
-# from UI_settings_window import Ui_Settings
 from UI_toggle_switch import ToggleSwitch
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
-import matplotlib as mpl
-
-# mpl.rcParams["text.usetex"] = True
-import matplotlib.pylab as plt
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.figure import Figure
-import matplotlib.backends.backend_qt5
-
-import time
 
 
 # ---------------------------------------------------------------------------- #
@@ -35,7 +23,7 @@ class Ui_MainWindow(object):
         """
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1200, 800)
+        #MainWindow.resize(1200, 800)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
@@ -149,6 +137,7 @@ class Ui_MainWindow(object):
         # self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         # self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         # self.gatherlab_picture.setLayout(self.horizontalLayout_2)
+        self.gatherlab_label.setMinimumSize(50, 50)
         self.gridLayout.addWidget(self.gatherlab_label, 0, 0, 1, 1)
 
         # Tab widget
@@ -2290,23 +2279,23 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
 
         # Define actions for menubar
-        self.actionOpen_Logs = QtWidgets.QAction(MainWindow)
+        self.actionOpen_Logs = QtGui.QAction(MainWindow)
         self.actionOpen_Logs.setObjectName("actionOpen_Logs")
         # self.actionOpen_Logfile_on_Machine = QtWidgets.QAction(MainWindow)
         # self.actionOpen_Logfile_on_Machine.setObjectName(
         # "actionOpen_Logfile_on_Machine"
         # )
 
-        self.actionChange_Path = QtWidgets.QAction(MainWindow)
+        self.actionChange_Path = QtGui.QAction(MainWindow)
         self.actionChange_Path.setObjectName("actionChange_Path")
 
-        self.actionOptions = QtWidgets.QAction(MainWindow)
+        self.actionOptions = QtGui.QAction(MainWindow)
         self.actionOptions.setObjectName("actionOptions")
 
-        self.actionDocumentation = QtWidgets.QAction(MainWindow)
+        self.actionDocumentation = QtGui.QAction(MainWindow)
         self.actionDocumentation.setObjectName("actionDocumentation")
 
-        self.actionOpen_Log = QtWidgets.QAction(MainWindow)
+        self.actionOpen_Log = QtGui.QAction(MainWindow)
         self.actionOpen_Log.setObjectName("actionOpen_Log")
         self.menuSettings.addAction(self.actionOptions)
         self.menuSettings.addAction(self.actionDocumentation)
@@ -2777,6 +2766,7 @@ class Ui_MainWindow(object):
         # desktopWidget = QtWidgets.QApplication.desktop()
         # PCGeometry = desktopWidget.screenGeometry()
         # self.resize(PCGeometry.height(), PCGeometry.height())
-        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+        screen = QtWidgets.QApplication.primaryScreen()
+        cp = screen.availableGeometry().center()
         qc.moveCenter(cp)
         self.move(qc.topLeft())

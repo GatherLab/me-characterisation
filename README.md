@@ -39,10 +39,10 @@ magnetoelectric transducers as outlined in _Butscher et al._ (-doi-).
    ```
    pip install -r requirements.txt
    ```
-5. Install Ultra Sigma from the Rigol website (https://www.rigolna.com/download).
-6. Install Ultra Scope from Rigol website.
-7. Install driver and software for KORAD 33005P (https://www.koradtechnology.com/companyfile/6/).
-8. Flush /arduino_sketch/frequency-generator-SI5351.ino to the Arduino nano and connect to function generator and capacitor board.
+5. Install IVI core components (e.g. https://www.ni.com/ivi/ivi_prod.htm)
+5. DS1000Z IVI DriverInstall Ultra Sigma from the Rigol website (https://www.rigolna.com/download).
+7. Install driver and testing software for KORAD 33005P (both can be downloaded in a single file https://www.koradtechnology.com/companyfile/6/#c_portalResCompanyFile_list-16495041742074581-2).
+8. Install Arduino IDE and flush /arduino_sketch/frequency-generator-SI5351.ino to the Arduino nano and connect to function generator and capacitor board.
 9. Connect all devices using USB ports to the computer and execute software
 
 ## User Journey

@@ -3,8 +3,6 @@ import pandas as pd
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
 
-from pathlib import Path
-
 data = pd.read_csv(
     "C:\\Users\\GatherLab-Julian\\Documents\\Nextcloud\\01-Studium\\03-Promotion\\02-Data\ME-Devices\\2021-02-10_Capacitance-Sweep\\2021-02-10_test_d0_3300.0pF_03.csv",
     sep="\t",

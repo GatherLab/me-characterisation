@@ -3,7 +3,6 @@ import json
 import os.path
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
 
 

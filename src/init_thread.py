@@ -1,18 +1,14 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 import core_functions as cf
 import time
 
 from hardware import (
-    KoradSource,
     RigolOscilloscope,
-    VoltcraftSource,
-    KoradSource,
     KoradKD3305PSource,
     Arduino,
 )
 from tests.tests import (
     MockRigoOscilloscope,
-    MockKoradSource,
     MockVoltcraftSource,
     MockArduino,
 )

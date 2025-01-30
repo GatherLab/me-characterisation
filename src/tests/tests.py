@@ -32,7 +32,7 @@ class MockKoradSource:
         self.current = 1
         self.magnetic_field = 1
 
-    def read_values(self):
+    def read_values(self, channel=1):
         return (
             self.voltage,
             self.current,
@@ -103,11 +103,18 @@ class MockVoltcraftSource:
         self.voltage = 5
         self.current = 1
 
-    def read_values(self):
-        return (
-            self.voltage,
-            self.current,
-        )
+    def read_values(self, channel=1):
+        if channel==1:
+            return (
+                self.voltage,
+                self.current,
+                1,
+            )
+        elif channel==2:
+            return (
+                self.voltage,
+                self.current,
+            )
 
     def set_voltage(self, voltage):
         self.voltage = voltage

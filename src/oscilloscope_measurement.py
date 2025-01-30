@@ -1,6 +1,4 @@
-from PySide2 import QtCore
-
-from hardware import RigolOscilloscope, VoltcraftSource
+from PySide6 import QtCore
 
 import time
 

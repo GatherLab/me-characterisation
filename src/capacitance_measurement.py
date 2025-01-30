@@ -1,4 +1,4 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 import time
 import datetime as dt
@@ -9,7 +9,6 @@ import core_functions as cf
 from physics_functions import ResonanceFit, calculate_resonance_frequency
 
 import matplotlib as mpl
-from scipy.optimize import curve_fit
 
 
 class CapacitanceScan(QtCore.QThread):

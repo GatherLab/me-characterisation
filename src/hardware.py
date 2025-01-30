@@ -1,8 +1,8 @@
 import pyvisa
 import serial
 
-from PySide2 import QtCore
-from serial.serialutil import SerialException, SerialTimeoutException
+from PySide6 import QtCore
+from serial.serialutil import SerialTimeoutException
 
 import core_functions as cf
 import physics_functions as pf
@@ -19,6 +19,7 @@ import copy
 import numpy as np
 import pandas as pd
 from itertools import chain, combinations
+
 import debugpy
 
 debugpy.debug_this_thread()
@@ -37,7 +38,7 @@ class RigolOscilloscope:
         Init the oscilloscope
         """
         # Define a mutex
-        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+        self.mutex = QtCore.QRecursiveMutex()
 
         # Keithley Finding Device
         rm = pyvisa.ResourceManager()
@@ -376,7 +377,7 @@ class VoltcraftSource:
         """
         Initialise voltcraft source
         """
-        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+        self.mutex = QtCore.QRecursiveMutex()
 
         # Keithley Finding Device
         rm = pyvisa.ResourceManager()
@@ -640,7 +641,7 @@ class Arduino:
         pydevd.settrace(suspend=False)
 
         # Define a mutex
-        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+        self.mutex = QtCore.QRecursiveMutex()
 
         # Check for devices on the pc
         rm = pyvisa.ResourceManager()
@@ -1176,7 +1177,7 @@ class KoradSource:
         import pydevd
 
         pydevd.settrace(suspend=False)
-        self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+        self.mutex = QtCore.QRecursiveMutex()
 
         rm = pyvisa.ResourceManager()
         # The actual addresses for the devices can be accessed via rm.list_resources()
